@@ -16,8 +16,10 @@ struct HashPruneParams {
 class HashPruner {
  public:
   explicit HashPruner(HashPruneParams params);
+  HashPruner(HashPruneParams params, Matrix manual_hyperplanes);
 
   std::vector<int> PruneNode(const Matrix& points, int p, const std::vector<int>& candidates) const;
+  std::uint64_t HashResidualForTest(const Vec& p, const Vec& c) const;
 
  private:
   void EnsureHyperplanes(std::size_t dim) const;
@@ -26,5 +28,6 @@ class HashPruner {
   HashPruneParams params_;
   mutable std::once_flag init_once_;
   mutable Matrix hyperplanes_;
+  bool has_manual_hyperplanes_ = false;
 };
 }  // namespace pipnn

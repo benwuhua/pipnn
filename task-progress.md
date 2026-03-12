@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 17/18 passing · Last: Feature 17 NFR-006 远端 targeted mutation pipeline (2026-03-12) · Next: Feature 18 NFR-006 scored mutation evidence
+Progress: 18/22 passing · Last: Increment Wave 4 algorithm iteration (2026-03-12) · Next: Feature 19 Wave 4 HashPrune fidelity
 
 ---
 
@@ -265,3 +265,44 @@ Progress: 17/18 passing · Last: Feature 17 NFR-006 远端 targeted mutation pip
   - `bash examples/feature-17-remote-targeted-mutation-pipeline.sh smoke` -> passed end-to-end
   - `bash scripts/quality/remote_coverage.sh` -> refreshed remote GCC coverage evidence with sync-noise removed
 - Residual risk is intentionally carried by feature 18 rather than feature 17: the current full targeted aggregate score is `33.3`, so the scored-state gate and report/repro integration remain open.
+
+### Session 18 — 2026-03-12
+- Completed feature 18 (`NFR-006 scored mutation evidence`) by closing the remote scored-state gate at `118/146 = 80.8`.
+- Added and refreshed the feature-18 acceptance/documentation assets:
+  - `docs/test-cases/feature-18-scored-mutation-evidence.md`
+  - `examples/feature-18-scored-mutation-evidence.sh`
+- Switched shared quality entry points from the legacy probe to the authoritative scored-state command:
+  - `scripts/get_tool_commands.py`
+  - `long-task-guide.md`
+  - `docs/runbooks/mutation-evidence.md`
+- Updated scored-state evidence consumers:
+  - `results/repro_manifest.json`
+  - `docs/plans/2026-03-12-st-report.md`
+- Fresh verification evidence:
+  - `ctest --test-dir build --output-on-failure -R '^(rbc|pipnn_integration|runner_metrics|cli_app)$'` -> passed
+  - `bash scripts/quality/remote_mutation_run.sh --mode full --workers 4` -> fetched fresh scored artifacts
+  - `results/st/mutation_score.txt` -> `80.8`
+  - `python3 scripts/validate_mutation_evidence.py` -> `mutation_status=scored`
+  - `python3 scripts/validate_repro_manifest.py results/repro_manifest.json` -> passed
+  - `python3 scripts/check_st_readiness.py feature-list.json` -> expected to return `READY` after feature persistence
+- Project state is back to all-active-features-passing; the next phase is system-testing refresh.
+
+### Session 19 — 2026-03-12
+- Entered `long-task-increment` for wave 4 after approving the algorithm-iteration impact matrix.
+- Updated the SRS in place for wave 4:
+  - added `NFR-007` (`paper fidelity` staged iteration gate)
+  - added `NFR-008` (`1M/100` authority benchmark gate)
+  - extended `NFR-001` with the new `100k/200` and `1M/100` benchmark slices
+- Updated the design in place with wave-4 sections:
+  - `4.5 HashPrune fidelity`
+  - `4.6 RBC fidelity`
+  - `4.7 leaf_kNN optimization`
+  - `4.8 1M authority benchmark`
+- Appended wave-4 features to `feature-list.json`:
+  - Feature 19 `Wave 4 HashPrune fidelity`
+  - Feature 20 `Wave 4 RBC fidelity`
+  - Feature 21 `Wave 4 leaf_kNN optimization`
+  - Feature 22 `Wave 4 1M authority benchmark`
+- Added the wave-4 design companion:
+  - `docs/superpowers/specs/2026-03-12-wave4-algorithm-iteration-design.md`
+- The next router target is back to `long-task-work`, starting at feature 19.

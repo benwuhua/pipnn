@@ -14,6 +14,10 @@ struct RunnerConfig {
   std::string output = "results/metrics.json";
 };
 
+std::vector<int> ExactTopK(const Matrix& base, const Vec& query, int k);
+double RecallAtK(const std::vector<std::vector<int>>& truth, const std::vector<std::vector<int>>& pred, int k);
+double ComputeQps(std::size_t query_count, double query_seconds);
+
 Metrics RunBenchmark(const RunnerConfig& cfg, const Matrix& base, const Matrix& queries,
                      const std::vector<std::vector<int>>& truth, const PipnnBuildParams& build_params,
                      const SearchParams& search_params);

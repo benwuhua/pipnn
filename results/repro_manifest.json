@@ -4,7 +4,7 @@
   "remote_repo": "/data/work/pipnn",
   "dataset_root": "/data/work/knowhere-rs-src/data/sift",
   "remote_log_root": "/data/work/logs",
-  "local_log_root": "remote-logs",
+  "local_log_root": "/Users/ryan/Code/Paper/pipnn/remote-logs",
   "commands": {
     "check_env": "/Users/ryan/.codex/skills/generic-x86-remote/scripts/check-env.sh --json",
     "sync_repo": "/Users/ryan/.codex/skills/generic-x86-remote/scripts/sync.sh --src /Users/ryan/Code/Paper/pipnn --dest /data/work/pipnn --delete --exclude .git --exclude build --exclude remote-logs --exclude .DS_Store",
@@ -21,11 +21,18 @@
       "branch_coverage": 92
     },
     "mutation_probe": {
-      "command": "bash scripts/quality/remote_mutation_probe.sh",
-      "status": "blocked",
-      "local_probe": "results/st/mutation_probe_local.txt",
-      "remote_probe": "results/st/remote/mutation_probe_remote.txt",
-      "follow_up": "Install mull-runner on the remote x86 host and rerun mutation plus system testing."
+      "command": "bash scripts/quality/remote_mutation_run.sh --mode full --workers 4",
+      "status": "scored",
+      "score": 80.8,
+      "score_path": "results/st/mutation_score.txt",
+      "report": "results/st/mutation_report.json",
+      "survivors": "results/st/mutation_survivors.txt",
+      "raw_report_dir": "results/st/mutation/full",
+      "run_manifest": "results/st/mutation/full/run_manifest.txt",
+      "tool_versions": {
+        "llvm": "17.0.6",
+        "mull": "0.29.0"
+      }
     }
   },
   "runs": [
@@ -36,7 +43,7 @@
       "scale": "500k/100",
       "command": "/Users/ryan/.codex/skills/generic-x86-remote/scripts/run-bg.sh --repo /data/work/pipnn --name pipnn-500k100-subset -- env PIPNN_PROFILE=1 PIPNN_ECHO_CONFIG=1 ./build/pipnn --mode pipnn --dataset sift1m --metric l2 --base /data/work/knowhere-rs-src/data/sift/base.fvecs --query /data/work/knowhere-rs-src/data/sift/query.fvecs --max-base 500000 --max-query 100 --rbc-cmax 128 --rbc-fanout 1 --leader-frac 0.02 --max-leaders 128 --replicas 2 --leaf-k 12 --leaf-scan-cap 0 --max-degree 32 --hash-bits 12 --beam 256 --bidirected 1 --output results/bench_500k_100_subset/pipnn_metrics.json",
       "remote_log": "/data/work/logs/pipnn-500k100-subset_20260312T005341Z.log",
-      "local_log": "remote-logs/pipnn-500k100-subset_20260312T005341Z.log",
+      "local_log": "/Users/ryan/Code/Paper/pipnn/remote-logs/pipnn-500k100-subset_20260312T005341Z.log",
       "remote_result": "/data/work/pipnn/results/bench_500k_100_subset/pipnn_metrics.json",
       "local_result": "results/bench_500k_100_subset/pipnn_metrics.json",
       "metrics": {
@@ -54,7 +61,7 @@
       "scale": "500k/100",
       "command": "/Users/ryan/.codex/skills/generic-x86-remote/scripts/run-bg.sh --repo /data/work/pipnn --name hnsw-500k100-subset -- ./build/pipnn --mode hnsw --dataset sift1m --metric l2 --base /data/work/knowhere-rs-src/data/sift/base.fvecs --query /data/work/knowhere-rs-src/data/sift/query.fvecs --max-base 500000 --max-query 100 --output results/bench_500k_100_subset/hnsw_metrics.json",
       "remote_log": "/data/work/logs/hnsw-500k100-subset_20260312T010152Z.log",
-      "local_log": "remote-logs/hnsw-500k100-subset_20260312T010152Z.log",
+      "local_log": "/Users/ryan/Code/Paper/pipnn/remote-logs/hnsw-500k100-subset_20260312T010152Z.log",
       "remote_result": "/data/work/pipnn/results/bench_500k_100_subset/hnsw_metrics.json",
       "local_result": "results/bench_500k_100_subset/hnsw_metrics.json",
       "metrics": {
@@ -72,7 +79,7 @@
       "scale": "100k/100",
       "command": "/Users/ryan/.codex/skills/generic-x86-remote/scripts/run-bg.sh --repo /data/work/pipnn --name feature12-100k-beam384 -- env PIPNN_PROFILE=1 PIPNN_ECHO_CONFIG=1 ./build/pipnn --mode pipnn --dataset sift1m --metric l2 --base /data/work/knowhere-rs-src/data/sift/base.fvecs --query /data/work/knowhere-rs-src/data/sift/query.fvecs --max-base 100000 --max-query 100 --rbc-cmax 128 --rbc-fanout 1 --leader-frac 0.02 --max-leaders 128 --replicas 2 --leaf-k 12 --leaf-scan-cap 0 --max-degree 32 --hash-bits 12 --beam 384 --bidirected 1 --output results/feature12_100k_beam384.json",
       "remote_log": "/data/work/logs/feature12-100k-beam384_20260312T014340Z.log",
-      "local_log": "remote-logs/feature12-100k-beam384_20260312T014340Z.log",
+      "local_log": "/Users/ryan/Code/Paper/pipnn/remote-logs/feature12-100k-beam384_20260312T014340Z.log",
       "remote_result": "/data/work/pipnn/results/feature12_100k_beam384.json",
       "local_result": "results/feature12_100k_beam384.json",
       "metrics": {
@@ -90,7 +97,7 @@
       "scale": "200k/100",
       "command": "/Users/ryan/.codex/skills/generic-x86-remote/scripts/run-bg.sh --repo /data/work/pipnn --name feature12-200k-beam384 -- env PIPNN_PROFILE=1 PIPNN_ECHO_CONFIG=1 ./build/pipnn --mode pipnn --dataset sift1m --metric l2 --base /data/work/knowhere-rs-src/data/sift/base.fvecs --query /data/work/knowhere-rs-src/data/sift/query.fvecs --max-base 200000 --max-query 100 --rbc-cmax 128 --rbc-fanout 1 --leader-frac 0.02 --max-leaders 128 --replicas 2 --leaf-k 12 --leaf-scan-cap 0 --max-degree 32 --hash-bits 12 --beam 384 --bidirected 1 --output results/feature12_200k_beam384.json",
       "remote_log": "/data/work/logs/feature12-200k-beam384_20260312T014607Z.log",
-      "local_log": "remote-logs/feature12-200k-beam384_20260312T014607Z.log",
+      "local_log": "/Users/ryan/Code/Paper/pipnn/remote-logs/feature12-200k-beam384_20260312T014607Z.log",
       "remote_result": "/data/work/pipnn/results/feature12_200k_beam384.json",
       "local_result": "results/feature12_200k_beam384.json",
       "metrics": {
@@ -108,7 +115,7 @@
       "scale": "500k/100",
       "command": "/Users/ryan/.codex/skills/generic-x86-remote/scripts/run-bg.sh --repo /data/work/pipnn --name feature12-500k-beam384 -- env PIPNN_PROFILE=1 PIPNN_ECHO_CONFIG=1 ./build/pipnn --mode pipnn --dataset sift1m --metric l2 --base /data/work/knowhere-rs-src/data/sift/base.fvecs --query /data/work/knowhere-rs-src/data/sift/query.fvecs --max-base 500000 --max-query 100 --rbc-cmax 128 --rbc-fanout 1 --leader-frac 0.02 --max-leaders 128 --replicas 2 --leaf-k 12 --leaf-scan-cap 0 --max-degree 32 --hash-bits 12 --beam 384 --bidirected 1 --output results/feature12_500k_beam384.json",
       "remote_log": "/data/work/logs/feature12-500k-beam384_20260312T013522Z.log",
-      "local_log": "remote-logs/feature12-500k-beam384_20260312T013522Z.log",
+      "local_log": "/Users/ryan/Code/Paper/pipnn/remote-logs/feature12-500k-beam384_20260312T013522Z.log",
       "remote_result": "/data/work/pipnn/results/feature12_500k_beam384.json",
       "local_result": "results/feature12_500k_beam384.json",
       "metrics": {

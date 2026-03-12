@@ -84,19 +84,26 @@ bash scripts/quality/remote_mutation_run.sh --mode smoke --workers 1
 Full targeted mode:
 
 ```bash
-bash scripts/quality/remote_mutation_run.sh --mode full --workers 1
+bash scripts/quality/remote_mutation_run.sh --mode full --workers 4
 ```
 
 Expected fetched outputs:
 
 - `results/st/mutation/smoke/`
 - `results/st/mutation/full/`
+- `results/st/mutation_score.txt`
+- `results/st/mutation_report.json`
+- `results/st/mutation_survivors.txt`
 
 Each run must include:
 
 - `run_manifest.txt`
 - one raw `*.json` Elements report per executable
 - one `*.log` file per executable
+- one scored-state aggregate summary with:
+  - mutation score
+  - per-file killed/survived counts
+  - survivor list
 
 ## Local Fixture Mode
 

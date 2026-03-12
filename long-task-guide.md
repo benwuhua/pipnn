@@ -49,10 +49,10 @@ bash scripts/quality/remote_coverage.sh
 ## Mutation Gate
 - Run mutation tooling check/execute when available:
 ```bash
-bash scripts/quality/remote_mutation_probe.sh
+bash scripts/quality/remote_mutation_run.sh --mode full --workers 4
 ```
-- For full mutation campaign, configure mull test command and target files.
-- If `mull-runner` is unavailable on both local and remote x86 environments, record the blocked-state command output and carry it into ST/repro artifacts instead of silently skipping the gate.
+- This is the authoritative scored-state command for the approved remote x86 increment set.
+- Legacy blocked-state evidence is only for pre-wave-3 revisions that do not ship the scored pipeline.
 
 ## Verification Enforcement
 - No completion claim without fresh command evidence.
@@ -73,7 +73,7 @@ ctest --test-dir build --output-on-failure
 ```
 - Direct mutation tooling command:
 ```bash
-bash scripts/quality/remote_mutation_probe.sh
+bash scripts/quality/remote_mutation_run.sh --mode full --workers 4
 ```
 - Direct coverage command:
 ```bash

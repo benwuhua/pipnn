@@ -11,7 +11,7 @@ No UI features detected in SRS — skipping UCD phase.
 ## 1. 设计驱动输入
 
 - 功能驱动: FR-001..FR-010
-- NFR驱动: 三档口径（100k/100, 200k/100, 500k/100）、Recall@10 >= 0.95、远端 x86 GCC 权威 coverage、远端 x86 Clang/Mull scored mutation evidence
+- NFR驱动: 三档口径（100k/100, 200k/100, 500k/100）、wave 4 口径（100k/200, 1M/100）、Recall@10 >= 0.95、远端 x86 GCC 权威 coverage、远端 x86 Clang/Mull scored mutation evidence
 - 约束: C++ + CMake；HNSW 必须用标准 hnswlib；远端 x86 主机评测
 - 关键已知瓶颈: leaf-kNN 阶段在构图时间中占主导
 
@@ -260,6 +260,87 @@ flowchart TD
   I --> J([End])
 ```
 
+### 4.5 特性E：HashPrune Fidelity
+
+#### 流程图
+
+```mermaid
+flowchart TD
+  A([Start]) --> B[定义 paper-oriented prune 语义]
+  B --> C[实现 bucket / replacement / tie-break 诊断]
+  C --> D[跑 100k/200 快速迭代]
+  D --> E{Recall@10 >= 0.95?}
+  E -- NO --> B
+  E -- YES --> F([End])
+```
+
+#### 设计要点
+
+- 该阶段只处理 `HashPrune` 语义，不混入 `RBC` 或 `leaf_kNN` 优化。
+- 需要输出 kept/dropped candidate 统计，避免仅靠 recall 反推语义是否贴近 paper。
+- 顺序无关性和 bounded-memory 行为要通过机械化测试固定下来。
+
+### 4.6 特性F：RBC Fidelity
+
+#### 流程图
+
+```mermaid
+flowchart TD
+  A([Start]) --> B[调整 leader / overlap 策略]
+  B --> C[输出 leaf_count / overlap 统计]
+  C --> D[跑 100k/200 快速迭代]
+  D --> E{Recall@10 >= 0.95?}
+  E -- NO --> B
+  E -- YES --> F([End])
+```
+
+#### 设计要点
+
+- 在 `HashPrune` 语义固定后再调 `RBC`，避免把候选质量问题与剪枝语义问题混淆。
+- 该阶段必须把 overlap 诊断纳入 benchmark artifact，而不是依赖一次性 shell 观察。
+
+### 4.7 特性G：leaf_kNN Optimization
+
+#### 时序图
+
+```mermaid
+sequenceDiagram
+  participant Bench as benchmark
+  participant Builder as BuildPipnnGraph
+  participant Leaf as leaf_kNN
+  participant Stats as stage stats
+
+  Bench->>Builder: build on 100k/200
+  Builder->>Leaf: candidate generation
+  Leaf-->>Builder: candidate edges
+  Builder->>Stats: record leaf_knn_sec
+  Stats-->>Bench: partition / leaf_knn / prune timings
+```
+
+#### 设计要点
+
+- 该阶段默认继承特性E/F 的语义，不重新打开 fidelity 决策。
+- 主要目标是压低 `leaf_knn_sec`，并保持阶段结束时 `Recall@10 >= 0.95`。
+
+### 4.8 特性H：1M Authority Benchmark
+
+#### 流程图
+
+```mermaid
+flowchart TD
+  A([Start]) --> B[冻结当前 PoC 的 1M/100 baseline]
+  B --> C[运行 wave 4 candidate 的 1M/100]
+  C --> D[比较 recall/build/qps/edges]
+  D --> E{recall >= baseline && build faster?}
+  E -- NO --> F([Return to feature 19/20/21])
+  E -- YES --> G([End])
+```
+
+#### 设计要点
+
+- `1M/100` baseline 必须先冻结一次，后续 authority 比较都以它为准。
+- 该阶段是 wave 4 的唯一 authority gate，不在中间阶段反复跑全量。
+
 ## 5. 数据模型
 
 PoC 采用内存结构，不引入持久化 DB。
@@ -309,7 +390,7 @@ graph LR
 
 - 单元测试: `hashprune/sift_reader/rbc/leaf_knn`
 - 集成测试: `pipnn_integration`
-- 评测回归: 100k/100, 200k/100, 500k/100（子集内真值口径）
+- 评测回归: 100k/100, 200k/100, 500k/100（固定矩阵） + 100k/200（wave 4 快速迭代） + 1M/100（wave 4 authority）
 - 关键验证:
   - `ctest --test-dir build --output-on-failure`
   - 远端重复运行结果 JSON 比对
@@ -340,6 +421,8 @@ graph LR
   - 缓解: 固定推荐参数带，脚本化扫描
 - 风险-04: 远端 LLVM/Mull 版本与 clang 构建链不兼容
   - 缓解: 固定版本对；独立 `build-mull/`；先 smoke 单目标再跑 full targeted set
+- 风险-05: 语义改动与优化改动混合推进导致问题不可归因
+  - 缓解: wave 4 强制拆成 `HashPrune -> RBC -> leaf_kNN -> 1M authority` 四个阶段
 
 ## 11. 开发计划
 
@@ -350,6 +433,7 @@ graph LR
 - M3 Profile & Tuning: 阶段 profile + 参数带收敛
 - M4 Scale Validation: 100k/200k/500k 对比验证
 - M5 Polish & Release: 文档、脚本、结果固化
+- M6 Wave 4 Algorithm Iteration: fidelity-first staged improvements + 1M authority benchmark
 
 ### 11.2 任务分解（P0-P3）
 
@@ -360,6 +444,10 @@ graph LR
 - P2: 参数扫描与报告自动汇总
 - P2: 远端 x86 GCC 质量证据固化（coverage / mutation probe）
 - P2: 远端 x86 Clang/Mull scored mutation pipeline（user-space toolchain + build-mull）
+- P2: Wave 4 `HashPrune` fidelity
+- P2: Wave 4 `RBC` fidelity
+- P2: Wave 4 `leaf_kNN` optimization
+- P2: Wave 4 `1M/100` authority benchmark
 - P3: 可选高级优化（SIMD/GEMM/近似候选）
 
 ### 11.3 依赖链（关键路径）
@@ -373,7 +461,10 @@ graph LR
   P1C --> P2Q[P2 Quality Evidence]
   P2Q --> P2M[P2 Mutation Scoring]
   P2M --> P2A[P2 Profiling]
-  P2A --> P2B[P2 Optimization]
+  P2A --> P2H[P2 HashPrune Fidelity]
+  P2H --> P2R[P2 RBC Fidelity]
+  P2R --> P2L[P2 leaf_kNN Optimization]
+  P2L --> P2B[P2 1M Authority Benchmark]
   P2B --> P2C[P2 Tuning Sweep]
   P2C --> P3[P3 Optional Advanced Optimizations]
 ```

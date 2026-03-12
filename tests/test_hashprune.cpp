@@ -37,6 +37,35 @@ int main() {
   assert(same_bucket.size() == 1);
   assert(same_bucket[0] == 1);
 
+  // Equal-distance candidates in the same bucket should tie-break on smaller id.
+  pipnn::Matrix tie_points = {
+      {0.0f}, {1.0f}, {-1.0f},
+  };
+  pipnn::HashPruneParams tie_params;
+  tie_params.hash_bits = 0;
+  tie_params.max_degree = 1;
+  pipnn::HashPruner tie_pruner(tie_params);
+  auto tied = tie_pruner.PruneNode(tie_points, 0, {2, 1});
+  assert(tied.size() == 1);
+  assert(tied[0] == 1);
+
+  // Identical residuals should hash to all-ones because dot==0 sets every bit.
+  pipnn::HashPruneParams residual_params;
+  residual_params.hash_bits = 3;
+  pipnn::HashPruner residual_pruner(residual_params);
+  auto self_code = residual_pruner.HashResidualForTest(pipnn::Vec{1.0f, -2.0f}, pipnn::Vec{1.0f, -2.0f});
+  assert(self_code == 7);
+  auto pos_code = residual_pruner.HashResidualForTest(pipnn::Vec{0.0f}, pipnn::Vec{1.0f});
+  auto neg_code = residual_pruner.HashResidualForTest(pipnn::Vec{0.0f}, pipnn::Vec{-1.0f});
+  assert(pos_code != neg_code);
+
+  pipnn::HashPruneParams manual_params;
+  manual_params.hash_bits = 2;
+  manual_params.max_degree = 1;
+  pipnn::HashPruner manual_pruner(manual_params, pipnn::Matrix{{1.0f}, {-1.0f}});
+  assert(manual_pruner.HashResidualForTest(pipnn::Vec{0.0f}, pipnn::Vec{1.0f}) == 1);
+  assert(manual_pruner.HashResidualForTest(pipnn::Vec{0.0f}, pipnn::Vec{-1.0f}) == 2);
+
   // With one bit and one slot, a closer candidate from a different bucket should replace a farther one.
   pipnn::Matrix line = {
       {-2.0f}, {-1.0f}, {0.0f}, {1.0f}, {2.0f},
@@ -49,5 +78,10 @@ int main() {
   auto replaced = replace_pruner.PruneNode(line, 2, {4, 1});
   assert(replaced.size() == 1);
   assert(replaced[0] == 1);
+
+  // Once the best candidate is already present, a farther candidate from another bucket must not replace it.
+  auto not_replaced = replace_pruner.PruneNode(line, 2, {1, 4});
+  assert(not_replaced.size() == 1);
+  assert(not_replaced[0] == 1);
   return 0;
 }

@@ -12,7 +12,7 @@ EXECUTABLE_DIR="${PIPNN_MUTATION_EXECUTABLE_DIR:-}"
 TOOLCHAIN_FILE="${PIPNN_MUTATION_TOOLCHAIN_FILE:-}"
 
 SMOKE_TARGETS=(test_hashprune)
-FULL_TARGETS=(test_cli_app test_hashprune test_leaf_knn test_rbc test_pipnn_integration)
+FULL_TARGETS=(test_cli_app test_hashprune test_leaf_knn test_distance test_rbc test_runner_metrics test_pipnn_integration)
 
 fail() {
   echo "$1" >&2
@@ -177,6 +177,22 @@ for target in "${TARGETS[@]}"; do
     echo "log=${log_path}"
   } >>"${MANIFEST}"
 done
+
+if [[ "${MODE}" == "full" ]]; then
+  SCORE_ARTIFACT="${REPO_ROOT}/results/st/mutation_score.txt"
+  REPORT_ARTIFACT="${REPO_ROOT}/results/st/mutation_report.json"
+  SURVIVORS_ARTIFACT="${REPO_ROOT}/results/st/mutation_survivors.txt"
+  python3 "${REPO_ROOT}/scripts/quality/aggregate_mutation_reports.py" \
+    --input-dir "${REPORT_DIR}" \
+    --output "${REPORT_ARTIFACT}" \
+    --score-output "${SCORE_ARTIFACT}" \
+    --survivors-output "${SURVIVORS_ARTIFACT}"
+  {
+    echo "score_artifact=${SCORE_ARTIFACT}"
+    echo "report_artifact=${REPORT_ARTIFACT}"
+    echo "survivors_artifact=${SURVIVORS_ARTIFACT}"
+  } >>"${MANIFEST}"
+fi
 
 echo "mutation=ok"
 echo "mode=${MODE}"

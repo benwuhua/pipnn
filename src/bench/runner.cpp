@@ -5,13 +5,13 @@
 #include "core/distance.h"
 
 #include <algorithm>
+#include <cassert>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 
 namespace pipnn {
-namespace {
 std::vector<int> ExactTopK(const Matrix& base, const Vec& query, int k) {
   std::vector<std::pair<float, int>> d;
   d.reserve(base.size());
@@ -30,7 +30,9 @@ double RecallAtK(const std::vector<std::vector<int>>& truth, const std::vector<s
   for (std::size_t i = 0; i < truth.size(); ++i) {
     int hit = 0;
     for (int j = 0; j < k && j < static_cast<int>(pred[i].size()); ++j) {
+      assert(j < static_cast<int>(pred[i].size()));
       for (int t = 0; t < k && t < static_cast<int>(truth[i].size()); ++t) {
+        assert(t < static_cast<int>(truth[i].size()));
         if (pred[i][j] == truth[i][t]) {
           ++hit;
           break;
@@ -41,7 +43,10 @@ double RecallAtK(const std::vector<std::vector<int>>& truth, const std::vector<s
   }
   return total / truth.size();
 }
-}  // namespace
+
+double ComputeQps(std::size_t query_count, double query_seconds) {
+  return query_count == 0 ? 0.0 : query_count / std::max(1e-6, query_seconds);
+}
 
 Metrics RunBenchmark(const RunnerConfig& cfg, const Matrix& base, const Matrix& queries,
                      const std::vector<std::vector<int>>& truth, const PipnnBuildParams& build_params,
@@ -67,7 +72,7 @@ Metrics RunBenchmark(const RunnerConfig& cfg, const Matrix& base, const Matrix& 
   pred.reserve(queries.size());
   for (const auto& q : queries) pred.push_back(SearchGraph(base, graph, q, search_params));
   double qsec = tquery.Sec();
-  m.qps = queries.empty() ? 0.0 : queries.size() / std::max(1e-6, qsec);
+  m.qps = ComputeQps(queries.size(), qsec);
 
   if (!truth.empty()) {
     m.recall_at_10 = RecallAtK(truth, pred, 10);

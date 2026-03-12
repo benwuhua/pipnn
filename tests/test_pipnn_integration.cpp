@@ -1,9 +1,50 @@
 #include "bench/runner.h"
 #include "core/pipnn_builder.h"
 #include "core/graph.h"
+#include "core/leaf_knn.h"
 #include "search/greedy_beam.h"
 
 #include <cassert>
+#include <cstdlib>
+#include <iostream>
+#include <sstream>
+
+namespace {
+struct ScopedEnv {
+  explicit ScopedEnv(const char* name, const char* value) : name(name) {
+    const char* cur = std::getenv(name);
+    if (cur != nullptr) {
+      had_value = true;
+      old_value = cur;
+    }
+    if (value != nullptr) {
+      setenv(name, value, 1);
+    } else {
+      unsetenv(name);
+    }
+  }
+
+  ~ScopedEnv() {
+    if (had_value) {
+      setenv(name, old_value.c_str(), 1);
+    } else {
+      unsetenv(name);
+    }
+  }
+
+  const char* name;
+  bool had_value = false;
+  std::string old_value;
+};
+
+struct ScopedCoutCapture {
+  ScopedCoutCapture() : old(std::cout.rdbuf(stream.rdbuf())) {}
+  ~ScopedCoutCapture() { std::cout.rdbuf(old); }
+
+  std::ostringstream stream;
+  std::streambuf* old;
+};
+}  // namespace
 
 int main() {
   pipnn::PipnnBuildParams empty_bp;
@@ -38,6 +79,46 @@ int main() {
   for (int i = 0; i < g.NumNodes(); ++i) {
     assert(static_cast<int>(g.Neighbors(i).size()) <= bp.hashprune.max_degree);
   }
+
+  {
+    ScopedEnv clear_profile("PIPNN_PROFILE", nullptr);
+    ScopedCoutCapture capture;
+    pipnn::PipnnBuildStats local_stats;
+    auto quiet_graph = pipnn::BuildPipnnGraph(base, bp, &local_stats);
+    assert(quiet_graph.NumNodes() == static_cast<int>(base.size()));
+    assert(capture.stream.str().empty());
+  }
+
+  {
+    ScopedEnv enable_profile("PIPNN_PROFILE", "1");
+    ScopedCoutCapture capture;
+    auto null_stats_graph = pipnn::BuildPipnnGraph(base, bp, nullptr);
+    assert(null_stats_graph.NumNodes() == static_cast<int>(base.size()));
+    assert(capture.stream.str().empty());
+  }
+
+  pipnn::PipnnBuildParams replica_bp = bp;
+  replica_bp.replicas = 2;
+  replica_bp.rbc.seed = 11;
+  pipnn::PipnnBuildStats replica_stats;
+  auto replica_graph = pipnn::BuildPipnnGraph(base, replica_bp, &replica_stats);
+  std::size_t expected_candidate_edges = 0;
+  std::size_t expected_leaves = 0;
+  for (int rep = 0; rep < replica_bp.replicas; ++rep) {
+    auto rbc_params = replica_bp.rbc;
+    rbc_params.seed = replica_bp.rbc.seed + rep;
+    auto replica_leaves = pipnn::BuildRbcLeaves(base, rbc_params);
+    expected_leaves += replica_leaves.size();
+    for (const auto& leaf : replica_leaves) {
+      expected_candidate_edges +=
+          pipnn::BuildLeafKnnEdges(base, leaf, replica_bp.leaf_k, replica_bp.bidirected,
+                                   replica_bp.leaf_scan_cap)
+              .size();
+    }
+  }
+  assert(replica_graph.NumNodes() == static_cast<int>(base.size()));
+  assert(replica_stats.num_leaves == expected_leaves);
+  assert(replica_stats.candidate_edges == expected_candidate_edges);
 
   pipnn::RunnerConfig cfg;
   cfg.mode = "pipnn";

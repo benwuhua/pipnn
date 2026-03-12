@@ -8,8 +8,11 @@
 
 namespace pipnn {
 HashPruner::HashPruner(HashPruneParams params) : params_(params) {}
+HashPruner::HashPruner(HashPruneParams params, Matrix manual_hyperplanes)
+    : params_(params), hyperplanes_(std::move(manual_hyperplanes)), has_manual_hyperplanes_(true) {}
 
 void HashPruner::EnsureHyperplanes(std::size_t dim) const {
+  if (has_manual_hyperplanes_) return;
   std::call_once(init_once_, [&]() {
     std::mt19937 gen(params_.seed);
     std::normal_distribution<float> nd(0.0f, 1.0f);
@@ -31,6 +34,11 @@ std::uint64_t HashPruner::HashResidual(const Vec& p, const Vec& c) const {
     if (dot >= 0) code |= (1ULL << b);
   }
   return code;
+}
+
+std::uint64_t HashPruner::HashResidualForTest(const Vec& p, const Vec& c) const {
+  EnsureHyperplanes(p.size());
+  return HashResidual(p, c);
 }
 
 std::vector<int> HashPruner::PruneNode(const Matrix& points, int p, const std::vector<int>& candidates) const {

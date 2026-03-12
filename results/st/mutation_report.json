@@ -1,0 +1,829 @@
+{
+  "per_file": {
+    "/data/work/pipnn/src/bench/runner.cpp": {
+      "by_status": {
+        "killed": 23,
+        "mutants_total": 26,
+        "survived": 3
+      },
+      "killed": 23,
+      "mutants_total": 26,
+      "other": 0,
+      "survived": 3
+    },
+    "/data/work/pipnn/src/cli/app.cpp": {
+      "by_status": {
+        "killed": 24,
+        "mutants_total": 24
+      },
+      "killed": 24,
+      "mutants_total": 24,
+      "other": 0,
+      "survived": 0
+    },
+    "/data/work/pipnn/src/core/distance.h": {
+      "by_status": {
+        "killed": 5,
+        "mutants_total": 5
+      },
+      "killed": 5,
+      "mutants_total": 5,
+      "other": 0,
+      "survived": 0
+    },
+    "/data/work/pipnn/src/core/hashprune.cpp": {
+      "by_status": {
+        "killed": 14,
+        "mutants_total": 32,
+        "survived": 18
+      },
+      "killed": 14,
+      "mutants_total": 32,
+      "other": 0,
+      "survived": 18
+    },
+    "/data/work/pipnn/src/core/leaf_knn.cpp": {
+      "by_status": {
+        "killed": 20,
+        "mutants_total": 25,
+        "survived": 5
+      },
+      "killed": 20,
+      "mutants_total": 25,
+      "other": 0,
+      "survived": 5
+    },
+    "/data/work/pipnn/src/core/pipnn_builder.cpp": {
+      "by_status": {
+        "killed": 13,
+        "mutants_total": 13
+      },
+      "killed": 13,
+      "mutants_total": 13,
+      "other": 0,
+      "survived": 0
+    },
+    "/data/work/pipnn/src/core/rbc.cpp": {
+      "by_status": {
+        "killed": 14,
+        "mutants_total": 16,
+        "survived": 2
+      },
+      "killed": 14,
+      "mutants_total": 16,
+      "other": 0,
+      "survived": 2
+    },
+    "/data/work/pipnn/src/search/greedy_beam.cpp": {
+      "by_status": {
+        "killed": 5,
+        "mutants_total": 5
+      },
+      "killed": 5,
+      "mutants_total": 5,
+      "other": 0,
+      "survived": 0
+    }
+  },
+  "raw_totals": {
+    "by_status": {
+      "killed": 211,
+      "mutants_total": 483,
+      "survived": 272
+    },
+    "killed": 211,
+    "mutants_total": 483,
+    "mutation_score": 43.7,
+    "other": 0,
+    "survived": 272
+  },
+  "report_count": 7,
+  "reports": [
+    {
+      "files": [
+        "/data/work/pipnn/src/bench/runner.cpp",
+        "/data/work/pipnn/src/cli/app.cpp",
+        "/data/work/pipnn/src/core/distance.h",
+        "/data/work/pipnn/src/core/hashprune.cpp",
+        "/data/work/pipnn/src/core/leaf_knn.cpp",
+        "/data/work/pipnn/src/core/pipnn_builder.cpp",
+        "/data/work/pipnn/src/core/rbc.cpp",
+        "/data/work/pipnn/src/search/greedy_beam.cpp"
+      ],
+      "killed": 51,
+      "mutants_total": 146,
+      "mutation_score": 34.9,
+      "other": 0,
+      "report": "test_cli_app.json",
+      "survived": 95
+    },
+    {
+      "files": [
+        "/data/work/pipnn/src/core/distance.h"
+      ],
+      "killed": 5,
+      "mutants_total": 5,
+      "mutation_score": 100.0,
+      "other": 0,
+      "report": "test_distance.json",
+      "survived": 0
+    },
+    {
+      "files": [
+        "/data/work/pipnn/src/core/distance.h",
+        "/data/work/pipnn/src/core/hashprune.cpp"
+      ],
+      "killed": 16,
+      "mutants_total": 37,
+      "mutation_score": 43.2,
+      "other": 0,
+      "report": "test_hashprune.json",
+      "survived": 21
+    },
+    {
+      "files": [
+        "/data/work/pipnn/src/core/distance.h",
+        "/data/work/pipnn/src/core/leaf_knn.cpp"
+      ],
+      "killed": 24,
+      "mutants_total": 30,
+      "mutation_score": 80.0,
+      "other": 0,
+      "report": "test_leaf_knn.json",
+      "survived": 6
+    },
+    {
+      "files": [
+        "/data/work/pipnn/src/bench/runner.cpp",
+        "/data/work/pipnn/src/core/distance.h",
+        "/data/work/pipnn/src/core/hashprune.cpp",
+        "/data/work/pipnn/src/core/leaf_knn.cpp",
+        "/data/work/pipnn/src/core/pipnn_builder.cpp",
+        "/data/work/pipnn/src/core/rbc.cpp",
+        "/data/work/pipnn/src/search/greedy_beam.cpp"
+      ],
+      "killed": 48,
+      "mutants_total": 122,
+      "mutation_score": 39.3,
+      "other": 0,
+      "report": "test_pipnn_integration.json",
+      "survived": 74
+    },
+    {
+      "files": [
+        "/data/work/pipnn/src/core/distance.h",
+        "/data/work/pipnn/src/core/rbc.cpp"
+      ],
+      "killed": 16,
+      "mutants_total": 21,
+      "mutation_score": 76.2,
+      "other": 0,
+      "report": "test_rbc.json",
+      "survived": 5
+    },
+    {
+      "files": [
+        "/data/work/pipnn/src/bench/runner.cpp",
+        "/data/work/pipnn/src/core/distance.h",
+        "/data/work/pipnn/src/core/hashprune.cpp",
+        "/data/work/pipnn/src/core/leaf_knn.cpp",
+        "/data/work/pipnn/src/core/pipnn_builder.cpp",
+        "/data/work/pipnn/src/core/rbc.cpp",
+        "/data/work/pipnn/src/search/greedy_beam.cpp"
+      ],
+      "killed": 51,
+      "mutants_total": 122,
+      "mutation_score": 41.8,
+      "other": 0,
+      "report": "test_runner_metrics.json",
+      "survived": 71
+    }
+  ],
+  "survivors": [
+    {
+      "file": "/data/work/pipnn/src/bench/runner.cpp",
+      "id": "cxx_lt_to_le",
+      "location": {
+        "end": {
+          "column": 24,
+          "line": 32
+        },
+        "start": {
+          "column": 23,
+          "line": 32
+        }
+      },
+      "replacement": "<=",
+      "reports": [
+        "test_cli_app.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/bench/runner.cpp",
+      "id": "cxx_lt_to_le",
+      "location": {
+        "end": {
+          "column": 26,
+          "line": 34
+        },
+        "start": {
+          "column": 25,
+          "line": 34
+        }
+      },
+      "replacement": "<=",
+      "reports": [
+        "test_cli_app.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/bench/runner.cpp",
+      "id": "cxx_lt_to_le",
+      "location": {
+        "end": {
+          "column": 35,
+          "line": 34
+        },
+        "start": {
+          "column": 34,
+          "line": 34
+        }
+      },
+      "replacement": "<=",
+      "reports": [
+        "test_cli_app.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_lt_to_le",
+      "location": {
+        "end": {
+          "column": 32,
+          "line": 31
+        },
+        "start": {
+          "column": 31,
+          "line": 31
+        }
+      },
+      "replacement": "<=",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_pre_inc_to_pre_dec",
+      "location": {
+        "end": {
+          "column": 45,
+          "line": 31
+        },
+        "start": {
+          "column": 43,
+          "line": 31
+        }
+      },
+      "replacement": "--",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_lt_to_le",
+      "location": {
+        "end": {
+          "column": 14,
+          "line": 64
+        },
+        "start": {
+          "column": 13,
+          "line": 64
+        }
+      },
+      "replacement": "<=",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_lt_to_le",
+      "location": {
+        "end": {
+          "column": 48,
+          "line": 64
+        },
+        "start": {
+          "column": 47,
+          "line": 64
+        }
+      },
+      "replacement": "<=",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_gt_to_ge",
+      "location": {
+        "end": {
+          "column": 30,
+          "line": 77
+        },
+        "start": {
+          "column": 29,
+          "line": 77
+        }
+      },
+      "replacement": ">=",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_gt_to_le",
+      "location": {
+        "end": {
+          "column": 30,
+          "line": 77
+        },
+        "start": {
+          "column": 29,
+          "line": 77
+        }
+      },
+      "replacement": "<=",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_eq_to_ne",
+      "location": {
+        "end": {
+          "column": 32,
+          "line": 78
+        },
+        "start": {
+          "column": 30,
+          "line": 78
+        }
+      },
+      "replacement": "!=",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_gt_to_ge",
+      "location": {
+        "end": {
+          "column": 73,
+          "line": 78
+        },
+        "start": {
+          "column": 72,
+          "line": 78
+        }
+      },
+      "replacement": ">=",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_gt_to_le",
+      "location": {
+        "end": {
+          "column": 73,
+          "line": 78
+        },
+        "start": {
+          "column": 72,
+          "line": 78
+        }
+      },
+      "replacement": "<=",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_lt_to_le",
+      "location": {
+        "end": {
+          "column": 12,
+          "line": 83
+        },
+        "start": {
+          "column": 11,
+          "line": 83
+        }
+      },
+      "replacement": "<=",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_eq_to_ne",
+      "location": {
+        "end": {
+          "column": 41,
+          "line": 83
+        },
+        "start": {
+          "column": 39,
+          "line": 83
+        }
+      },
+      "replacement": "!=",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_lt_to_ge",
+      "location": {
+        "end": {
+          "column": 68,
+          "line": 83
+        },
+        "start": {
+          "column": 67,
+          "line": 83
+        }
+      },
+      "replacement": ">=",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_lt_to_le",
+      "location": {
+        "end": {
+          "column": 68,
+          "line": 83
+        },
+        "start": {
+          "column": 67,
+          "line": 83
+        }
+      },
+      "replacement": "<=",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_ne_to_eq",
+      "location": {
+        "end": {
+          "column": 18,
+          "line": 93
+        },
+        "start": {
+          "column": 16,
+          "line": 93
+        }
+      },
+      "replacement": "==",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_lt_to_ge",
+      "location": {
+        "end": {
+          "column": 42,
+          "line": 93
+        },
+        "start": {
+          "column": 41,
+          "line": 93
+        }
+      },
+      "replacement": ">=",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_lt_to_le",
+      "location": {
+        "end": {
+          "column": 42,
+          "line": 93
+        },
+        "start": {
+          "column": 41,
+          "line": 93
+        }
+      },
+      "replacement": "<=",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_lt_to_ge",
+      "location": {
+        "end": {
+          "column": 18,
+          "line": 94
+        },
+        "start": {
+          "column": 17,
+          "line": 94
+        }
+      },
+      "replacement": ">=",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/hashprune.cpp",
+      "id": "cxx_lt_to_le",
+      "location": {
+        "end": {
+          "column": 18,
+          "line": 94
+        },
+        "start": {
+          "column": 17,
+          "line": 94
+        }
+      },
+      "replacement": "<=",
+      "reports": [
+        "test_cli_app.json",
+        "test_hashprune.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/leaf_knn.cpp",
+      "id": "cxx_mul_to_div",
+      "location": {
+        "end": {
+          "column": 46,
+          "line": 16
+        },
+        "start": {
+          "column": 45,
+          "line": 16
+        }
+      },
+      "replacement": "/",
+      "reports": [
+        "test_cli_app.json",
+        "test_leaf_knn.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/leaf_knn.cpp",
+      "id": "cxx_mul_to_div",
+      "location": {
+        "end": {
+          "column": 89,
+          "line": 16
+        },
+        "start": {
+          "column": 88,
+          "line": 16
+        }
+      },
+      "replacement": "/",
+      "reports": [
+        "test_cli_app.json",
+        "test_leaf_knn.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/leaf_knn.cpp",
+      "id": "cxx_sub_to_add",
+      "location": {
+        "end": {
+          "column": 25,
+          "line": 67
+        },
+        "start": {
+          "column": 24,
+          "line": 67
+        }
+      },
+      "replacement": "+",
+      "reports": [
+        "test_cli_app.json",
+        "test_leaf_knn.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/leaf_knn.cpp",
+      "id": "cxx_lt_to_le",
+      "location": {
+        "end": {
+          "column": 51,
+          "line": 68
+        },
+        "start": {
+          "column": 50,
+          "line": 68
+        }
+      },
+      "replacement": "<=",
+      "reports": [
+        "test_cli_app.json",
+        "test_leaf_knn.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/leaf_knn.cpp",
+      "id": "cxx_lt_to_le",
+      "location": {
+        "end": {
+          "column": 30,
+          "line": 78
+        },
+        "start": {
+          "column": 29,
+          "line": 78
+        }
+      },
+      "replacement": "<=",
+      "reports": [
+        "test_cli_app.json",
+        "test_leaf_knn.json",
+        "test_pipnn_integration.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/rbc.cpp",
+      "id": "cxx_le_to_lt",
+      "location": {
+        "end": {
+          "column": 38,
+          "line": 54
+        },
+        "start": {
+          "column": 36,
+          "line": 54
+        }
+      },
+      "replacement": "<",
+      "reports": [
+        "test_cli_app.json",
+        "test_pipnn_integration.json",
+        "test_rbc.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    },
+    {
+      "file": "/data/work/pipnn/src/core/rbc.cpp",
+      "id": "cxx_add_to_sub",
+      "location": {
+        "end": {
+          "column": 56,
+          "line": 57
+        },
+        "start": {
+          "column": 55,
+          "line": 57
+        }
+      },
+      "replacement": "-",
+      "reports": [
+        "test_cli_app.json",
+        "test_pipnn_integration.json",
+        "test_rbc.json",
+        "test_runner_metrics.json"
+      ],
+      "status": "survived"
+    }
+  ],
+  "totals": {
+    "by_status": {
+      "killed": 118,
+      "mutants_total": 146,
+      "survived": 28
+    },
+    "killed": 118,
+    "mutants_total": 146,
+    "mutation_score": 80.8,
+    "other": 0,
+    "survived": 28
+  }
+}

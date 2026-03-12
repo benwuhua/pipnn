@@ -56,6 +56,11 @@
   - `scripts/quality/remote_mutation_run_inner.sh`
   - `docs/test-cases/feature-17-remote-targeted-mutation-pipeline.md`
   - `examples/feature-17-remote-targeted-mutation-pipeline.sh`
+- Feature 18 scored-state assets:
+  - `docs/test-cases/feature-18-scored-mutation-evidence.md`
+  - `examples/feature-18-scored-mutation-evidence.sh`
+- Wave 4 planning assets:
+  - `docs/superpowers/specs/2026-03-12-wave4-algorithm-iteration-design.md`
 
 ### Changed
 - Updated the SIFT1M benchmark report with the completed `500k/100` subset-truth PiPNN/HNSW results and corrected remote command examples
@@ -86,6 +91,8 @@
 - `docs/runbooks/mutation-evidence.md` now documents the split between the tarball toolchain used for Mull runtime and the Ubuntu-package compiler used for `build-mull`
 - `scripts/quality/remote_coverage.sh` now excludes `build-mull`, `.tools`, and `.worktrees` during sync so remote coverage no longer emits delete-noise after mutation runs
 - `scripts/get_tool_commands.py` intentionally remains on the legacy mutation probe until feature 18 wires the scored-state command into the shared quality workflow
+- Feature 18 closes the scored-state path: the shared mutation command now runs `bash scripts/quality/remote_mutation_run.sh --mode full --workers 4`, and the reproducibility bundle plus ST report now reference `mutation_score.txt`, `mutation_report.json`, and `mutation_survivors.txt`
+- Opened Wave 4 for algorithm iteration: the SRS/design now track `100k/200` fast iteration, `1M/100` authority benchmarking, and the staged order `HashPrune -> RBC -> leaf_kNN -> authority`
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used

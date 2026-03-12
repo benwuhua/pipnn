@@ -16,4 +16,4 @@ print("env_activate: source .venv/bin/activate  # if python tooling env is used"
 print("build: cmake -S . -B build && cmake --build build -j")
 print("test: ctest --test-dir build --output-on-failure")
 print("coverage: bash scripts/quality/remote_coverage.sh")
-print("mutation: bash scripts/quality/remote_mutation_probe.sh")
+print("mutation: bash scripts/quality/remote_mutation_run.sh --mode full --workers 4")

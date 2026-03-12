@@ -14,6 +14,10 @@ add_executable(test_leaf_knn test_leaf_knn.cpp)
 target_link_libraries(test_leaf_knn PRIVATE pipnn_core)
 add_test(NAME leaf_knn COMMAND test_leaf_knn)
 
+add_executable(test_distance test_distance.cpp)
+target_link_libraries(test_distance PRIVATE pipnn_core)
+add_test(NAME distance COMMAND test_distance)
+
 add_executable(test_pipnn_integration test_pipnn_integration.cpp)
 target_link_libraries(test_pipnn_integration PRIVATE pipnn_core)
 add_test(NAME pipnn_integration COMMAND test_pipnn_integration)
@@ -21,6 +25,10 @@ add_test(NAME pipnn_integration COMMAND test_pipnn_integration)
 add_executable(test_hnsw_runner test_hnsw_runner.cpp)
 target_link_libraries(test_hnsw_runner PRIVATE pipnn_core)
 add_test(NAME hnsw_runner COMMAND test_hnsw_runner)
+
+add_executable(test_runner_metrics test_runner_metrics.cpp)
+target_link_libraries(test_runner_metrics PRIVATE pipnn_core)
+add_test(NAME runner_metrics COMMAND test_runner_metrics)
 
 add_executable(test_cli_app test_cli_app.cpp)
 target_link_libraries(test_cli_app PRIVATE pipnn_core)

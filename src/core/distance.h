@@ -2,6 +2,7 @@
 
 #include "common/types.h"
 
+#include <cassert>
 #include <cmath>
 #include <stdexcept>
 
@@ -12,6 +13,8 @@ inline float L2Squared(const Vec& a, const Vec& b) {
   }
   float sum = 0.0f;
   for (std::size_t i = 0; i < a.size(); ++i) {
+    assert(i < a.size());
+    assert(i < b.size());
     float d = a[i] - b[i];
     sum += d * d;
   }

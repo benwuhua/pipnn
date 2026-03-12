@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -138,6 +139,48 @@ int main() {
   }
 
   {
+    auto output = std::filesystem::temp_directory_path() / "pipnn_cli_app_hnsw_bounds.json";
+    std::ostringstream out;
+    std::ostringstream err;
+    int rc = pipnn::cli::Run({"--mode",
+                              "hnsw",
+                              "--dataset",
+                              "synthetic",
+                              "--metric",
+                              "l2",
+                              "--output",
+                              output.string(),
+                              "--beam",
+                              std::to_string(std::numeric_limits<int>::max()),
+                              "--max-base",
+                              std::to_string(std::numeric_limits<std::size_t>::max())},
+                             out, err);
+    assert(rc == 0);
+    assert(err.str().empty());
+    std::filesystem::remove(output);
+  }
+
+  {
+    auto output = std::filesystem::temp_directory_path() / "pipnn_cli_app_hnsw_intmin.json";
+    std::ostringstream out;
+    std::ostringstream err;
+    int rc = pipnn::cli::Run({"--mode",
+                              "hnsw",
+                              "--dataset",
+                              "synthetic",
+                              "--metric",
+                              "l2",
+                              "--output",
+                              output.string(),
+                              "--rbc-cmax",
+                              std::to_string(std::numeric_limits<int>::min())},
+                             out, err);
+    assert(rc == 0);
+    assert(err.str().empty());
+    std::filesystem::remove(output);
+  }
+
+  {
     std::ostringstream out;
     std::ostringstream err;
     int rc = pipnn::cli::Run({"--mode", "pipnn", "--dataset", "sift1m", "--metric", "l2"}, out, err);
@@ -239,6 +282,31 @@ int main() {
            std::string::npos);
     std::filesystem::remove(output);
     std::filesystem::remove(output.parent_path());
+  }
+
+  {
+    auto output = std::filesystem::temp_directory_path() / "pipnn_cli_app_bidirected_echo.json";
+    setenv("PIPNN_ECHO_CONFIG", "1", 1);
+    std::ostringstream out0;
+    std::ostringstream err0;
+    int rc0 = pipnn::cli::Run({"--mode", "pipnn", "--dataset", "synthetic", "--metric", "l2",
+                               "--output", output.string(), "--bidirected", "0"},
+                              out0, err0);
+    assert(rc0 == 0);
+    assert(err0.str().empty());
+    assert(out0.str().find("bidirected=0") != std::string::npos);
+
+    std::ostringstream out1;
+    std::ostringstream err1;
+    int rc1 = pipnn::cli::Run({"--mode", "pipnn", "--dataset", "synthetic", "--metric", "l2",
+                               "--output", output.string(), "--bidirected", "1"},
+                              out1, err1);
+    unsetenv("PIPNN_ECHO_CONFIG");
+    assert(rc1 == 0);
+    assert(err1.str().empty());
+    assert(out1.str().find("bidirected=1") != std::string::npos);
+
+    std::filesystem::remove(output);
   }
 
   return 0;

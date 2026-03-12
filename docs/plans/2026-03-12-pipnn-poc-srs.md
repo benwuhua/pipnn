@@ -16,6 +16,7 @@
 - C++ 单机 PoC 实现（PiPNN + HNSW 基线）
 - SIFT 数据加载、建图、查询、评测、结果产出
 - 远端 x86 编译评测工作流
+- 分阶段算法迭代工作流（paper fidelity -> authority benchmark）
 
 ### 1.3 明确不在范围（Exclusions）
 - EXC-001: 不包含分布式训练/建图。
@@ -141,6 +142,8 @@ flowchart TD
 - NFR-001 性能（Must）
   - 需求: 系统应支持并固定评测口径 `100k/100`、`200k/100`、`500k/100` 三档，并在每档输出 PiPNN 与 HNSW 的 `build_sec` 对比。
   - 验证: 三档口径均产出双方法 JSON 结果文件。
+  <!-- Wave 4: Modified 2026-03-12 — add algorithm-iteration benchmark slices -->
+  - 注记: wave 4 算法迭代额外使用 `100k/200` 作为快速迭代口径，使用 `1M/100` 作为 authority benchmark 口径。
 
 - NFR-002 质量（Must）
   - 需求: 在 `100k/100`、`200k/100`、`500k/100`（子集内真值口径）下，优化配置应满足 `recall_at_10 >= 0.95`。
@@ -164,6 +167,15 @@ flowchart TD
   - 需求: 系统应优先在远端 x86 主机上使用用户态 `LLVM + Mull` 工具链执行 mutation campaign，并对批准的 `src/` 增量集满足 `mutation_score >= 80%`；仅当 scored-state pipeline 尚未引入到目标环境时，才允许记录 blocked-state evidence，并在测试报告中给出处置结论与后续动作。
   - 验证: 运行文档化远端 mutation 命令或 probe/command，检查日志、报告、聚合分数、以及 `Go/Conditional-Go/No-Go` 结论。
 
+<!-- Wave 4: Added 2026-03-12 — algorithm iteration -->
+- NFR-007 Paper Fidelity 迭代（Must）
+  - 需求: 系统应支持按 `HashPrune -> RBC -> leaf_kNN` 的顺序执行分阶段算法迭代；每个完成的阶段都必须在 `100k/200` 口径上恢复到 `Recall@10 >= 0.95`。
+  - 验证: 对每个阶段读取结果 JSON 与阶段统计输出，确认 recall 门槛恢复且诊断指标存在。
+
+- NFR-008 Authority Benchmark（Must）
+  - 需求: 系统应支持先冻结当前 PoC 的 `1M/100` baseline，再用 wave 4 候选与其比较；最终候选必须保证 recall 不低于 baseline，且 build time 低于 baseline。
+  - 验证: 比较 `1M/100` baseline 与 wave 4 authority benchmark 的 JSON/日志结果。
+
 ## 6. 约束、假设、接口
 
 ### 6.1 约束（CON）
@@ -171,11 +183,13 @@ flowchart TD
 - CON-002: 基线必须使用标准 `hnswlib`。
 - CON-003: 编译与评测优先在远端 x86 Linux 主机执行。
 - CON-004: mutation score 权威口径使用远端 x86 用户态 `LLVM + Mull` 与独立 `build-mull` 构建目录。
+- CON-005: wave 4 必须在保持当前 PoC 路径可运行的前提下推进，禁止语义改动与重优化在同一阶段混合提交。
 
 ### 6.2 假设（ASM）
 - ASM-001: 远端主机可访问 SIFT 数据文件。
 - ASM-002: 远端主机具备 GCC/CMake/OpenMP 基础工具链。
 - ASM-003: 远端主机可下载或已缓存匹配版本的 `LLVM` 与 `Mull` 发布包。
+- ASM-004: 当前 PoC 可在远端 x86 上重复运行 `1M/100`，用于冻结 authority baseline。
 
 ### 6.3 接口（IFR）
 - IFR-001: CLI 接口通过 `./build/pipnn` 提供。
@@ -193,3 +207,5 @@ flowchart TD
 - CQ-002: 质量阈值固定为 `recall_at_10 >= 0.95`。
 - CQ-003: 覆盖率权威口径固定为远端 x86 GCC clean `build-cov`，且 branch 排除 throw/unreachable 编译器分支。
 - CQ-004: mutation 证据允许两种终态：远端 scored-state `score >= 80%`（优先），或 legacy `blocked-state evidence + 明确处置结论`。
+- CQ-005: wave 4 的优先级固定为 `HashPrune fidelity -> RBC fidelity -> leaf_kNN optimization -> 1M/100 authority benchmark`。
+- CQ-006: wave 4 采用 `100k/200` 快速迭代、`1M/100` authority benchmark、以及 `hybrid` 门槛策略（阶段完成后 `Recall@10 >= 0.95`）。

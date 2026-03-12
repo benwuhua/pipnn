@@ -23,12 +23,14 @@
     "CON-001: 实现语言为 C++，构建系统为 CMake。",
     "CON-002: 基线必须使用标准 hnswlib。",
     "CON-003: 编译与评测优先在远端 x86 Linux 主机执行。",
-    "CON-004: mutation 评分权威口径使用远端 x86 用户态 LLVM + Mull 与独立 build-mull 构建目录。"
+    "CON-004: mutation 评分权威口径使用远端 x86 用户态 LLVM + Mull 与独立 build-mull 构建目录。",
+    "CON-005: wave 4 必须保持当前 PoC 路径可运行，并按 HashPrune -> RBC -> leaf_kNN -> authority benchmark 的顺序推进。"
   ],
   "assumptions": [
     "ASM-001: 远端主机可访问 SIFT 数据文件。",
     "ASM-002: 远端主机具备 GCC/CMake/OpenMP 基础工具链。",
-    "ASM-003: 远端主机可下载或已缓存匹配版本的 LLVM 与 Mull 发布包。"
+    "ASM-003: 远端主机可下载或已缓存匹配版本的 LLVM 与 Mull 发布包。",
+    "ASM-004: 当前 PoC 可以在远端 x86 上重复运行 1M/100 以冻结 authority baseline。"
   ],
   "required_configs": [
     {
@@ -36,12 +38,16 @@
       "type": "env",
       "key": "SIFT1M_DIR",
       "description": "远端 SIFT 数据目录，包含 base.fvecs/query.fvecs/groundtruth.ivecs",
-      "required_by": [
-        8,
-        9,
-        10,
-        11
-      ],
+        "required_by": [
+          8,
+          9,
+          10,
+          11,
+          19,
+          20,
+          21,
+          22
+        ],
       "check_hint": "设置 SIFT1M_DIR=/data/work/knowhere-rs-src/data/sift 或实际路径"
     },
     {
@@ -49,15 +55,19 @@
       "type": "env",
       "key": "REMOTE_HOST",
       "description": "generic-x86-remote 连接主机",
-      "required_by": [
-        8,
-        9,
-        10,
-        11,
-        16,
-        17,
-        18
-      ],
+        "required_by": [
+          8,
+          9,
+          10,
+          11,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22
+        ],
       "check_hint": "在 ~/.config/generic-x86-remote/remote.env 中配置 REMOTE_HOST"
     },
     {
@@ -65,15 +75,19 @@
       "type": "env",
       "key": "REMOTE_USER",
       "description": "generic-x86-remote 连接用户",
-      "required_by": [
-        8,
-        9,
-        10,
-        11,
-        16,
-        17,
-        18
-      ],
+        "required_by": [
+          8,
+          9,
+          10,
+          11,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22
+        ],
       "check_hint": "在 ~/.config/generic-x86-remote/remote.env 中配置 REMOTE_USER"
     }
   ],
@@ -406,8 +420,10 @@
       "title": "NFR-006 scored mutation evidence",
       "description": "聚合远端 targeted mutation 结果并以 scored-state 更新 validator、ST report 与 repro manifest",
       "priority": "high",
-      "status": "failing",
+      "status": "passing",
       "ui": false,
+      "st_case_count": 2,
+      "st_case_path": "docs/test-cases/feature-18-scored-mutation-evidence.md",
       "verification_steps": [
         "Given 远端 mutation 原始报告, when 执行聚合与校验命令, then 生成 mutation_score.txt、mutation_report.json、mutation_survivors.txt 且 aggregate score >= 80。",
         "Given scored mutation evidence, when 更新 ST report 与 repro manifest, then 文档记录 mutation score、工具版本、报告路径，并通过 validate_mutation_evidence.py。"
@@ -416,6 +432,75 @@
         13,
         15,
         17
+      ]
+    },
+    {
+      "id": 19,
+      "wave": 4,
+      "category": "non-functional",
+      "title": "Wave 4 HashPrune fidelity",
+      "description": "对齐 HashPrune bucket/replacement/tie-break 语义并输出候选保留诊断",
+      "priority": "high",
+      "status": "failing",
+      "ui": false,
+      "verification_steps": [
+        "Given paper-oriented HashPrune micro cases, when 执行剪枝, then bucket/replacement/tie-break 行为与文档化语义一致且顺序无关。",
+        "Given 100k/200 SIFT 切片, when 完成 feature 19 阶段, then Recall@10 >= 0.95 且产出 kept/dropped candidate 诊断。"
+      ],
+      "dependencies": [
+        18
+      ]
+    },
+    {
+      "id": 20,
+      "wave": 4,
+      "category": "non-functional",
+      "title": "Wave 4 RBC fidelity",
+      "description": "增强 RBC leader/overlap 语义并产出 leaf/overlap 统计",
+      "priority": "high",
+      "status": "failing",
+      "ui": false,
+      "verification_steps": [
+        "Given 更新后的 RBC 策略, when 生成叶子与候选, then 输出 leaf_count/overlap 统计并符合文档化策略。",
+        "Given 100k/200 SIFT 切片, when 完成 feature 20 阶段, then Recall@10 >= 0.95。"
+      ],
+      "dependencies": [
+        19
+      ]
+    },
+    {
+      "id": 21,
+      "wave": 4,
+      "category": "non-functional",
+      "title": "Wave 4 leaf_kNN optimization",
+      "description": "在保持 feature 19/20 语义的前提下压低 leaf_kNN 阶段耗时",
+      "priority": "high",
+      "status": "failing",
+      "ui": false,
+      "verification_steps": [
+        "Given 100k/200 SIFT 切片与阶段 profile, when 启用优化后的 leaf_kNN 路径, then leaf_knn_sec 低于 feature 20 baseline。",
+        "Given feature 21 阶段完成, when 重新评测 100k/200, then Recall@10 >= 0.95。"
+      ],
+      "dependencies": [
+        20
+      ]
+    },
+    {
+      "id": 22,
+      "wave": 4,
+      "category": "non-functional",
+      "title": "Wave 4 1M authority benchmark",
+      "description": "冻结当前 PoC 的 1M/100 baseline，并验证 wave 4 candidate 的 authority 结果",
+      "priority": "high",
+      "status": "failing",
+      "ui": false,
+      "verification_steps": [
+        "Given 当前 PoC 配置, when 执行 1M/100 authority benchmark, then 产出 baseline JSON、日志路径与阶段耗时。",
+        "Given wave 4 candidate, when 执行 1M/100 authority benchmark, then recall 不低于 frozen baseline 且 build_sec 低于 frozen baseline。"
+      ],
+      "dependencies": [
+        11,
+        21
       ]
     }
   ],
@@ -434,6 +519,11 @@
       "id": 3,
       "date": "2026-03-12",
       "description": "Remote LLVM/Mull mutation scoring upgrade for NFR-006"
+    },
+    {
+      "id": 4,
+      "date": "2026-03-12",
+      "description": "Algorithm iteration wave: HashPrune fidelity, RBC fidelity, leaf_kNN optimization, and 1M authority benchmark"
     }
   ]
 }

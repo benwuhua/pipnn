@@ -60,11 +60,17 @@ void WriteReport(const std::filesystem::path& path, const std::string& contents)
 }
 
 CommandResult RunAggregator(const std::filesystem::path& input_dir,
-                            const std::filesystem::path& output_path) {
+                            const std::filesystem::path& output_path,
+                            const std::filesystem::path& score_output_path = {},
+                            const std::filesystem::path& survivors_output_path = {}) {
   const auto repo_root = std::filesystem::path(PIPNN_REPO_ROOT);
   const auto script = repo_root / "scripts/quality/aggregate_mutation_reports.py";
   const std::string command = "python3 " + ShellQuote(script) + " --input-dir " +
-                              ShellQuote(input_dir) + " --output " + ShellQuote(output_path);
+                              ShellQuote(input_dir) + " --output " + ShellQuote(output_path) +
+                              (score_output_path.empty() ? "" : " --score-output " + ShellQuote(score_output_path)) +
+                              (survivors_output_path.empty() ? ""
+                                                            : " --survivors-output " +
+                                                                  ShellQuote(survivors_output_path));
   return RunCommand(command);
 }
 }  // namespace
@@ -145,6 +151,77 @@ int main() {
     }
     assert(result.exit_code == 1);
     assert(result.err.find("missing files object") != std::string::npos);
+    std::filesystem::remove_all(dir);
+  }
+
+  {
+    const auto dir = std::filesystem::temp_directory_path() / "pipnn_mutation_agg_dedup";
+    std::filesystem::remove_all(dir);
+    const auto input_dir = dir / "raw";
+    const auto output_path = dir / "summary.json";
+    const auto score_output = dir / "mutation_score.txt";
+    const auto survivors_output = dir / "mutation_survivors.txt";
+
+    WriteReport(input_dir / "first.json",
+                R"JSON({
+  "schemaVersion": "1",
+  "files": {
+    "src/core/hashprune.cpp": {
+      "language": "cpp",
+      "mutants": [
+        {
+          "id": "cxx_eq_to_ne",
+          "replacement": "!=",
+          "location": { "start": { "line": 56, "column": 30 }, "end": { "line": 56, "column": 32 } },
+          "status": "Survived"
+        },
+        {
+          "id": "cxx_lt_to_ge",
+          "replacement": ">=",
+          "location": { "start": { "line": 75, "column": 67 }, "end": { "line": 75, "column": 68 } },
+          "status": "Survived"
+        }
+      ]
+    }
+  }
+})JSON");
+    WriteReport(input_dir / "second.json",
+                R"JSON({
+  "schemaVersion": "1",
+  "files": {
+    "src/core/hashprune.cpp": {
+      "language": "cpp",
+      "mutants": [
+        {
+          "id": "cxx_eq_to_ne",
+          "replacement": "!=",
+          "location": { "start": { "line": 56, "column": 30 }, "end": { "line": 56, "column": 32 } },
+          "status": "Killed"
+        }
+      ]
+    }
+  }
+})JSON");
+
+    const auto result = RunAggregator(input_dir, output_path, score_output, survivors_output);
+    if (result.exit_code != 0) {
+      std::cerr << "aggregator dedup stdout:\n" << result.out << "\n";
+      std::cerr << "aggregator dedup stderr:\n" << result.err << "\n";
+    }
+    assert(result.exit_code == 0);
+
+    const auto summary = ReadAll(output_path);
+    const auto score = ReadAll(score_output);
+    const auto survivors = ReadAll(survivors_output);
+    assert(summary.find("\"raw_totals\"") != std::string::npos);
+    assert(summary.find("\"totals\"") != std::string::npos);
+    assert(summary.find("\"mutants_total\": 2") != std::string::npos);
+    assert(summary.find("\"killed\": 1") != std::string::npos);
+    assert(summary.find("\"survived\": 1") != std::string::npos);
+    assert(summary.find("\"mutation_score\": 50.0") != std::string::npos);
+    assert(score.find("50.0") != std::string::npos);
+    assert(survivors.find("src/core/hashprune.cpp:75:67") != std::string::npos);
+    assert(survivors.find("56:30") == std::string::npos);
     std::filesystem::remove_all(dir);
   }
 
