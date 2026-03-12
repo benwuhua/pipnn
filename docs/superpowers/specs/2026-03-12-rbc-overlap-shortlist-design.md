@@ -109,6 +109,12 @@ The first implementation should keep the policy simple:
 - local to the builder or a small helper
 - no new CLI knobs unless profiling proves they are necessary
 
+The first implementation should also fix an explicit starting budget so planning does not invent one ad hoc. For this iteration, the budget should be treated as an internal constant with a conservative default, for example:
+
+- `candidate_cap = max_degree * 8`
+
+The exact constant may be revised during implementation only if tests and smoke results show it is clearly too small or too large.
+
 The goal of the first pass is to test whether candidate reduction itself is the right structural move.
 
 ## 6. Correctness Requirements
