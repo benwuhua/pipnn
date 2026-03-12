@@ -1,5 +1,6 @@
 #include "core/leaf_knn.h"
 
+#include "core/leaf_knn_blocked.h"
 #include "core/distance.h"
 
 #include <algorithm>
@@ -9,11 +10,13 @@
 #endif
 
 namespace pipnn {
-std::vector<Edge> BuildLeafKnnEdges(const Matrix& points, const std::vector<int>& leaf, int k,
-                                    bool bidirected, int scan_cap) {
+namespace {
+std::vector<Edge> BuildLeafKnnEdgesCapped(const Matrix& points, const std::vector<int>& leaf, int k,
+                                          bool bidirected, int scan_cap) {
   std::vector<Edge> edges;
-  const std::size_t approx =
-      static_cast<std::size_t>(leaf.size()) * static_cast<std::size_t>(std::max(1, k)) * (bidirected ? 2 : 1);
+  const std::size_t approx = static_cast<std::size_t>(leaf.size()) *
+                             static_cast<std::size_t>(std::max(1, k)) *
+                             (bidirected ? 2 : 1);
   edges.reserve(approx);
 
 #if defined(_OPENMP)
@@ -26,71 +29,68 @@ std::vector<Edge> BuildLeafKnnEdges(const Matrix& points, const std::vector<int>
     out.reserve(approx / static_cast<std::size_t>(threads) + 64);
 #pragma omp for schedule(static)
     for (int idx = 0; idx < static_cast<int>(leaf.size()); ++idx) {
-      int u = leaf[static_cast<std::size_t>(idx)];
+      const int u = leaf[static_cast<std::size_t>(idx)];
       std::vector<std::pair<float, int>> dists;
       const int m = static_cast<int>(leaf.size());
-      const int full = m - 1;
-      const bool capped = scan_cap > 0 && scan_cap < full;
-      dists.reserve(static_cast<std::size_t>(capped ? scan_cap : full));
-      if (!capped) {
-        for (int v : leaf) {
-          if (u == v) continue;
-          dists.push_back({L2Squared(points[u], points[v]), v});
-        }
-      } else {
-        const int start = (idx * 2654435761u) % static_cast<unsigned>(m);
-        int picked = 0;
-        for (int off = 0; off < m && picked < scan_cap; ++off) {
-          int v = leaf[static_cast<std::size_t>((start + off) % m)];
-          if (u == v) continue;
-          dists.push_back({L2Squared(points[u], points[v]), v});
-          ++picked;
-        }
+      const int start = (idx * 2654435761u) % static_cast<unsigned>(m);
+      int picked = 0;
+      dists.reserve(static_cast<std::size_t>(std::min(scan_cap, m > 0 ? m - 1 : 0)));
+      for (int off = 0; off < m && picked < scan_cap; ++off) {
+        const int v = leaf[static_cast<std::size_t>((start + off) % m)];
+        if (u == v) continue;
+        dists.push_back({L2Squared(points[static_cast<std::size_t>(u)],
+                                   points[static_cast<std::size_t>(v)]),
+                         v});
+        ++picked;
       }
-      int kk = std::min(k, static_cast<int>(dists.size()));
+      const int kk = std::min(k, static_cast<int>(dists.size()));
       std::partial_sort(dists.begin(), dists.begin() + kk, dists.end());
       for (int i = 0; i < kk; ++i) {
-        int v = dists[i].second;
+        const int v = dists[static_cast<std::size_t>(i)].second;
         out.push_back({u, v});
         if (bidirected) out.push_back({v, u});
       }
     }
   }
-  for (auto& v : local) {
-    edges.insert(edges.end(), v.begin(), v.end());
-  }
+  for (auto& v : local) edges.insert(edges.end(), v.begin(), v.end());
 #else
   for (int idx = 0; idx < static_cast<int>(leaf.size()); ++idx) {
-    int u = leaf[static_cast<std::size_t>(idx)];
+    const int u = leaf[static_cast<std::size_t>(idx)];
     std::vector<std::pair<float, int>> dists;
     const int m = static_cast<int>(leaf.size());
-    const int full = m - 1;
-    const bool capped = scan_cap > 0 && scan_cap < full;
-    dists.reserve(static_cast<std::size_t>(capped ? scan_cap : full));
-    if (!capped) {
-      for (int v : leaf) {
-        if (u == v) continue;
-        dists.push_back({L2Squared(points[u], points[v]), v});
-      }
-    } else {
-      const int start = (idx * 2654435761u) % static_cast<unsigned>(m);
-      int picked = 0;
-      for (int off = 0; off < m && picked < scan_cap; ++off) {
-        int v = leaf[static_cast<std::size_t>((start + off) % m)];
-        if (u == v) continue;
-        dists.push_back({L2Squared(points[u], points[v]), v});
-        ++picked;
-      }
+    const int start = (idx * 2654435761u) % static_cast<unsigned>(m);
+    int picked = 0;
+    dists.reserve(static_cast<std::size_t>(std::min(scan_cap, m > 0 ? m - 1 : 0)));
+    for (int off = 0; off < m && picked < scan_cap; ++off) {
+      const int v = leaf[static_cast<std::size_t>((start + off) % m)];
+      if (u == v) continue;
+      dists.push_back({L2Squared(points[static_cast<std::size_t>(u)],
+                                 points[static_cast<std::size_t>(v)]),
+                       v});
+      ++picked;
     }
-    int kk = std::min(k, static_cast<int>(dists.size()));
+    const int kk = std::min(k, static_cast<int>(dists.size()));
     std::partial_sort(dists.begin(), dists.begin() + kk, dists.end());
     for (int i = 0; i < kk; ++i) {
-      int v = dists[i].second;
+      const int v = dists[static_cast<std::size_t>(i)].second;
       edges.push_back({u, v});
       if (bidirected) edges.push_back({v, u});
     }
   }
 #endif
   return edges;
+}
+}  // namespace
+
+std::vector<Edge> BuildLeafKnnEdges(const Matrix& points, const std::vector<int>& leaf, int k,
+                                    bool bidirected, int scan_cap) {
+  if (leaf.empty() || k <= 0) return {};
+  const int full = static_cast<int>(leaf.size()) - 1;
+  const bool capped = scan_cap > 0 && scan_cap < full;
+  if (capped) return BuildLeafKnnEdgesCapped(points, leaf, k, bidirected, scan_cap);
+
+  const LeafKnnConfig cfg;
+  const auto mode = SelectLeafKnnMode(leaf.size(), 0, cfg);
+  return BuildLeafKnnExactEdges(points, leaf, k, bidirected, mode, cfg);
 }
 }  // namespace pipnn
