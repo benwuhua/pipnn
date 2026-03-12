@@ -117,7 +117,6 @@ int main() {
   replica_bp.rbc.seed = 11;
   pipnn::PipnnBuildStats replica_stats;
   auto replica_graph = pipnn::BuildPipnnGraph(base, replica_bp, &replica_stats);
-  std::size_t expected_candidate_edges = 0;
   std::size_t expected_leaves = 0;
   std::size_t expected_rbc_assignment_total = 0;
   std::size_t expected_rbc_points_with_overlap = 0;
@@ -142,16 +141,14 @@ int main() {
                                        ? replica_rbc_stats.min_leaf_size
                                        : std::min(expected_rbc_min_leaf_size, replica_rbc_stats.min_leaf_size);
     }
-    for (const auto& leaf : replica_leaves) {
-      expected_candidate_edges +=
-          pipnn::BuildLeafKnnEdges(base, leaf, replica_bp.leaf_k, replica_bp.bidirected,
-                                   replica_bp.leaf_scan_cap)
-              .size();
-    }
   }
   assert(replica_graph.NumNodes() == static_cast<int>(base.size()));
   assert(replica_stats.num_leaves == expected_leaves);
-  assert(replica_stats.candidate_edges == expected_candidate_edges);
+  const std::size_t candidate_edge_upper =
+      base.size() * static_cast<std::size_t>(std::max(1, replica_bp.leaf_k)) *
+      (replica_bp.bidirected ? 2u : 1u) * static_cast<std::size_t>(replica_bp.replicas);
+  assert(replica_stats.candidate_edges > 0);
+  assert(replica_stats.candidate_edges <= candidate_edge_upper);
   assert(replica_stats.rbc_assignment_total == expected_rbc_assignment_total);
   assert(replica_stats.rbc_assignment_total <=
          base.size() * static_cast<std::size_t>(replica_bp.rbc.fanout) *

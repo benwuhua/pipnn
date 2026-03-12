@@ -14,8 +14,10 @@ int main() {
   p.leader_frac = 0.1f;
 
   pipnn::RbcStats stats;
-  auto leaves = pipnn::BuildRbcLeaves(points, p, &stats);
+  auto result = pipnn::BuildRbc(points, p, &stats);
+  const auto& leaves = result.leaves;
   assert(!leaves.empty());
+  assert(result.point_memberships.size() == points.size());
   for (const auto& leaf : leaves) {
     assert(!leaf.empty());
   }
@@ -32,6 +34,20 @@ int main() {
     for (int id : leaf) appear[id]++;
   }
   for (int x : appear) assert(x >= 1);
+  for (int id = 0; id < static_cast<int>(points.size()); ++id) {
+    const auto& memberships = result.point_memberships[static_cast<std::size_t>(id)];
+    assert(static_cast<int>(memberships.size()) == appear[static_cast<std::size_t>(id)]);
+    assert(!memberships.empty());
+    for (int leaf_index : memberships) {
+      assert(leaf_index >= 0);
+      assert(leaf_index < static_cast<int>(leaves.size()));
+      const auto& leaf = leaves[static_cast<std::size_t>(leaf_index)];
+      assert(std::find(leaf.begin(), leaf.end(), id) != leaf.end());
+    }
+  }
+  auto repeated = pipnn::BuildRbc(points, p);
+  assert(repeated.point_memberships == result.point_memberships);
+
   std::size_t overlap_points = 0;
   int max_membership = 0;
   for (int x : appear) {

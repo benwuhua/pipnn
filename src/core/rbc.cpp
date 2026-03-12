@@ -175,9 +175,21 @@ void FillStats(const Matrix& points, const Leaves& leaves, std::size_t fallback_
     stats->max_membership = std::max(stats->max_membership, count);
   }
 }
+
+std::vector<std::vector<int>> BuildPointMemberships(const Leaves& leaves, std::size_t point_count) {
+  std::vector<std::vector<int>> point_memberships(point_count);
+  for (int leaf_index = 0; leaf_index < static_cast<int>(leaves.size()); ++leaf_index) {
+    const auto& leaf = leaves[static_cast<std::size_t>(leaf_index)];
+    for (int id : leaf) {
+      if (id < 0 || static_cast<std::size_t>(id) >= point_memberships.size()) continue;
+      point_memberships[static_cast<std::size_t>(id)].push_back(leaf_index);
+    }
+  }
+  return point_memberships;
+}
 }  // namespace
 
-Leaves BuildRbcLeaves(const Matrix& points, const RbcParams& params, RbcStats* stats) {
+RbcResult BuildRbc(const Matrix& points, const RbcParams& params, RbcStats* stats) {
   if (stats != nullptr) *stats = {};
   if (points.empty()) return {};
   std::vector<int> ids(points.size());
@@ -187,8 +199,15 @@ Leaves BuildRbcLeaves(const Matrix& points, const RbcParams& params, RbcStats* s
   std::size_t fallback_chunk_splits = 0;
   auto root = BuildNode(points, params, gen, ids, -1, &fallback_chunk_splits);
   CollectLeaves(root, base_leaves);
-  auto leaves = ApplyLeafOverlap(points, params, root, base_leaves);
-  FillStats(points, leaves, fallback_chunk_splits, stats);
-  return leaves;
+  auto result_leaves = ApplyLeafOverlap(points, params, root, base_leaves);
+  FillStats(points, result_leaves, fallback_chunk_splits, stats);
+  RbcResult result;
+  result.point_memberships = BuildPointMemberships(result_leaves, points.size());
+  result.leaves = std::move(result_leaves);
+  return result;
+}
+
+Leaves BuildRbcLeaves(const Matrix& points, const RbcParams& params, RbcStats* stats) {
+  return BuildRbc(points, params, stats).leaves;
 }
 }  // namespace pipnn

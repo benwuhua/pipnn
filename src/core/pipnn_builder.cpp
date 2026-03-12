@@ -1,8 +1,7 @@
 #include "core/pipnn_builder.h"
 
 #include "common/timer.h"
-#include "core/leaf_knn.h"
-#include "core/leaf_knn_blocked.h"
+#include "core/leaf_candidates.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -23,10 +22,10 @@ Graph BuildPipnnGraph(const Matrix& points, const PipnnBuildParams& params, Pipn
     auto rbc_params = params.rbc;
     rbc_params.seed = params.rbc.seed + rep;
     RbcStats rbc_stats;
-    auto leaves = BuildRbcLeaves(points, rbc_params, stats != nullptr ? &rbc_stats : nullptr);
+    auto rbc = BuildRbc(points, rbc_params, stats != nullptr ? &rbc_stats : nullptr);
     if (stats != nullptr) {
       stats->partition_sec += t_partition.Sec();
-      stats->num_leaves += leaves.size();
+      stats->num_leaves += rbc.leaves.size();
       stats->rbc_assignment_total += rbc_stats.assignment_total;
       stats->rbc_points_with_overlap += rbc_stats.points_with_overlap;
       stats->rbc_max_membership = std::max(stats->rbc_max_membership, rbc_stats.max_membership);
@@ -40,25 +39,13 @@ Graph BuildPipnnGraph(const Matrix& points, const PipnnBuildParams& params, Pipn
     }
 
     Timer t_leaf;
-    LeafBatchConfig batch_cfg;
-    std::vector<LeafBatchJob> deferred_jobs;
-    for (const auto& leaf : leaves) {
-      const bool capped = params.leaf_scan_cap > 0 &&
-                          params.leaf_scan_cap < static_cast<int>(leaf.size()) - 1;
-      const bool should_batch = !capped &&
-                                static_cast<int>(leaf.size()) >= batch_cfg.min_leaf_for_batch;
-      if (should_batch) {
-        deferred_jobs.push_back({leaf});
-        continue;
-      }
-      auto edges = BuildLeafKnnEdges(points, leaf, params.leaf_k, params.bidirected,
-                                     params.leaf_scan_cap);
-      if (stats != nullptr) stats->candidate_edges += edges.size();
-      for (const auto& [u, v] : edges) candidates[u].push_back(v);
-    }
-    if (!deferred_jobs.empty()) {
-      auto edges = BuildLeafKnnExactBatchedEdges(points, deferred_jobs, params.leaf_k,
-                                                 params.bidirected, batch_cfg);
+    ShortlistConfig shortlist_cfg;
+    shortlist_cfg.candidate_cap = std::max(1, params.hashprune.max_degree * 8);
+    for (int point_id = 0; point_id < static_cast<int>(points.size()); ++point_id) {
+      auto shortlist =
+          BuildShortlistForPoint(point_id, rbc.leaves, rbc.point_memberships, shortlist_cfg);
+      auto edges =
+          ScoreShortlistExact(points, point_id, shortlist, params.leaf_k, params.bidirected);
       if (stats != nullptr) stats->candidate_edges += edges.size();
       for (const auto& [u, v] : edges) candidates[u].push_back(v);
     }

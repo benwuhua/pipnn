@@ -14,6 +14,10 @@ add_executable(test_leaf_knn test_leaf_knn.cpp)
 target_link_libraries(test_leaf_knn PRIVATE pipnn_core)
 add_test(NAME leaf_knn COMMAND test_leaf_knn)
 
+add_executable(test_leaf_candidates test_leaf_candidates.cpp)
+target_link_libraries(test_leaf_candidates PRIVATE pipnn_core)
+add_test(NAME leaf_candidates COMMAND test_leaf_candidates)
+
 add_executable(test_distance test_distance.cpp)
 target_link_libraries(test_distance PRIVATE pipnn_core)
 add_test(NAME distance COMMAND test_distance)

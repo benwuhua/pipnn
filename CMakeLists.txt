@@ -46,6 +46,7 @@ add_library(pipnn_core
   src/core/hashprune.cpp
   src/core/rbc.cpp
   src/core/rbc_assignment.cpp
+  src/core/leaf_candidates.cpp
   src/core/leaf_knn.cpp
   src/core/leaf_knn_blocked.cpp
   src/core/pipnn_builder.cpp

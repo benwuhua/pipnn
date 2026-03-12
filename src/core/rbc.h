@@ -16,6 +16,11 @@ struct RbcParams {
 
 using Leaves = std::vector<std::vector<int>>;
 
+struct RbcResult {
+  Leaves leaves;
+  std::vector<std::vector<int>> point_memberships;
+};
+
 struct RbcStats {
   std::size_t leaf_count = 0;
   std::size_t assignment_total = 0;
@@ -26,5 +31,6 @@ struct RbcStats {
   std::size_t fallback_chunk_splits = 0;
 };
 
+RbcResult BuildRbc(const Matrix& points, const RbcParams& params, RbcStats* stats = nullptr);
 Leaves BuildRbcLeaves(const Matrix& points, const RbcParams& params, RbcStats* stats = nullptr);
 }  // namespace pipnn
