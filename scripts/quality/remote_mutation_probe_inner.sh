@@ -2,6 +2,7 @@
 
 set -uo pipefail
 
+cmake -E rm -rf results/st
 mkdir -p results/st
 {
   echo '$ mull-runner --help'

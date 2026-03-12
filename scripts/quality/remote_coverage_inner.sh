@@ -7,6 +7,7 @@ CXXFLAGS='--coverage -O0 -g' CFLAGS='--coverage -O0 -g' cmake -S . -B build-cov
 cmake --build build-cov -j
 ctest --test-dir build-cov --output-on-failure
 
+cmake -E rm -rf results/st
 mkdir -p results/st
 python3 -m gcovr build-cov -r . \
   --merge-mode-functions=merge-use-line-max \

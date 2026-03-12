@@ -26,6 +26,7 @@ mkdir -p "${REPO_ROOT}/results/st"
   --exclude .git \
   --exclude build \
   --exclude build-cov \
+  --exclude results/st \
   --exclude remote-logs \
   --exclude '*.gcov'
 

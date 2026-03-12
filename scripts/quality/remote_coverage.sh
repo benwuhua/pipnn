@@ -14,6 +14,7 @@ REMOTE_REPO="${REMOTE_REPO_DIR:-/data/work/pipnn}"
   --exclude .git \
   --exclude build \
   --exclude build-cov \
+  --exclude results/st \
   --exclude remote-logs \
   --exclude '*.gcov'
 

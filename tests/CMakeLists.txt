@@ -30,3 +30,7 @@ add_executable(test_cli test_cli.cpp)
 target_compile_definitions(test_cli PRIVATE PIPNN_BIN_PATH="$<TARGET_FILE:pipnn>")
 add_dependencies(test_cli pipnn)
 add_test(NAME cli COMMAND test_cli)
+
+add_executable(test_quality_evidence test_quality_evidence.cpp)
+target_compile_definitions(test_quality_evidence PRIVATE PIPNN_REPO_ROOT="${CMAKE_SOURCE_DIR}")
+add_test(NAME quality_evidence COMMAND test_quality_evidence)
