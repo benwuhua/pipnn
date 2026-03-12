@@ -1,5 +1,6 @@
 #include "core/rbc.h"
 
+#include "core/rbc_assignment.h"
 #include "core/distance.h"
 
 #include <algorithm>
@@ -59,18 +60,13 @@ RbcNode BuildNode(const Matrix& points, const RbcParams& params, std::mt19937& g
   std::vector<int> leaders(shuffled.begin(), shuffled.begin() + leader_count);
 
   std::vector<std::vector<int>> buckets(leader_count);
+  const RbcAssignConfig assign_cfg;
+  const auto assign_mode = SelectRbcAssignMode(ids.size(), leaders.size(), assign_cfg);
+  const auto assignments = AssignPointsToLeaders(points, ids, leaders, assign_mode, assign_cfg);
 
-  for (int x : ids) {
-    float best_distance = std::numeric_limits<float>::max();
-    int best_index = 0;
-    for (int i = 0; i < leader_count; ++i) {
-      const float distance = L2Squared(points[x], points[leaders[i]]);
-      if (distance < best_distance || (distance == best_distance && leaders[i] < leaders[best_index])) {
-        best_distance = distance;
-        best_index = i;
-      }
-    }
-    buckets[best_index].push_back(x);
+  for (std::size_t i = 0; i < ids.size(); ++i) {
+    const int best_index = assignments[i];
+    buckets[static_cast<std::size_t>(best_index)].push_back(ids[i]);
   }
 
   for (int i = 0; i < leader_count; ++i) {
