@@ -94,6 +94,7 @@
 - Feature 18 closes the scored-state path: the shared mutation command now runs `bash scripts/quality/remote_mutation_run.sh --mode full --workers 4`, and the reproducibility bundle plus ST report now reference `mutation_score.txt`, `mutation_report.json`, and `mutation_survivors.txt`
 - Opened Wave 4 for algorithm iteration: the SRS/design now track `100k/200` fast iteration, `1M/100` authority benchmarking, and the staged order `HashPrune -> RBC -> leaf_kNN -> authority`
 - Started feature 19 algorithm work: `HashPrune` now emits kept/dropped/replaced/evicted diagnostics through build/profile stats, and `scripts/bench/run_feature19_hashprune_100k_200.sh` captures the quick-slice remote benchmark evidence
+- Started feature 20 algorithm work: `RBC` now emits overlap/membership diagnostics through build/profile stats, and `scripts/bench/run_feature20_rbc_100k_200.sh` captures the fast-config remote quick slice
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used

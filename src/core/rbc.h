@@ -16,5 +16,15 @@ struct RbcParams {
 
 using Leaves = std::vector<std::vector<int>>;
 
-Leaves BuildRbcLeaves(const Matrix& points, const RbcParams& params);
+struct RbcStats {
+  std::size_t leaf_count = 0;
+  std::size_t assignment_total = 0;
+  std::size_t points_with_overlap = 0;
+  std::size_t max_membership = 0;
+  std::size_t min_leaf_size = 0;
+  std::size_t max_leaf_size = 0;
+  std::size_t fallback_chunk_splits = 0;
+};
+
+Leaves BuildRbcLeaves(const Matrix& points, const RbcParams& params, RbcStats* stats = nullptr);
 }  // namespace pipnn

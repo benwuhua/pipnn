@@ -21,10 +21,21 @@ Graph BuildPipnnGraph(const Matrix& points, const PipnnBuildParams& params, Pipn
     Timer t_partition;
     auto rbc_params = params.rbc;
     rbc_params.seed = params.rbc.seed + rep;
-    auto leaves = BuildRbcLeaves(points, rbc_params);
+    RbcStats rbc_stats;
+    auto leaves = BuildRbcLeaves(points, rbc_params, stats != nullptr ? &rbc_stats : nullptr);
     if (stats != nullptr) {
       stats->partition_sec += t_partition.Sec();
       stats->num_leaves += leaves.size();
+      stats->rbc_assignment_total += rbc_stats.assignment_total;
+      stats->rbc_points_with_overlap += rbc_stats.points_with_overlap;
+      stats->rbc_max_membership = std::max(stats->rbc_max_membership, rbc_stats.max_membership);
+      stats->rbc_max_leaf_size = std::max(stats->rbc_max_leaf_size, rbc_stats.max_leaf_size);
+      if (rbc_stats.min_leaf_size > 0) {
+        stats->rbc_min_leaf_size = stats->rbc_min_leaf_size == 0
+                                       ? rbc_stats.min_leaf_size
+                                       : std::min(stats->rbc_min_leaf_size, rbc_stats.min_leaf_size);
+      }
+      stats->rbc_fallback_chunk_splits += rbc_stats.fallback_chunk_splits;
     }
 
     Timer t_leaf;
@@ -67,6 +78,12 @@ Graph BuildPipnnGraph(const Matrix& points, const PipnnBuildParams& params, Pipn
     std::cout << "pipnn_profile_build partition_sec=" << stats->partition_sec
               << " leaf_knn_sec=" << stats->leaf_knn_sec << " prune_sec=" << stats->prune_sec
               << " leaves=" << stats->num_leaves << " candidate_edges=" << stats->candidate_edges
+              << " rbc_assignment_total=" << stats->rbc_assignment_total
+              << " rbc_points_with_overlap=" << stats->rbc_points_with_overlap
+              << " rbc_max_membership=" << stats->rbc_max_membership
+              << " rbc_min_leaf_size=" << stats->rbc_min_leaf_size
+              << " rbc_max_leaf_size=" << stats->rbc_max_leaf_size
+              << " rbc_fallback_chunk_splits=" << stats->rbc_fallback_chunk_splits
               << " prune_kept=" << stats->prune_kept << " prune_dropped=" << stats->prune_dropped
               << " prune_replaced=" << stats->prune_replaced
               << " prune_evicted=" << stats->prune_evicted

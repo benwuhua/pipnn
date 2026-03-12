@@ -65,6 +65,12 @@ Metrics RunBenchmark(const RunnerConfig& cfg, const Matrix& base, const Matrix& 
               << " leaf_knn_sec=" << build_stats.leaf_knn_sec
               << " prune_sec=" << build_stats.prune_sec << " leaves=" << build_stats.num_leaves
               << " candidate_edges=" << build_stats.candidate_edges
+              << " rbc_assignment_total=" << build_stats.rbc_assignment_total
+              << " rbc_points_with_overlap=" << build_stats.rbc_points_with_overlap
+              << " rbc_max_membership=" << build_stats.rbc_max_membership
+              << " rbc_min_leaf_size=" << build_stats.rbc_min_leaf_size
+              << " rbc_max_leaf_size=" << build_stats.rbc_max_leaf_size
+              << " rbc_fallback_chunk_splits=" << build_stats.rbc_fallback_chunk_splits
               << " prune_kept=" << build_stats.prune_kept
               << " prune_dropped=" << build_stats.prune_dropped
               << " prune_replaced=" << build_stats.prune_replaced

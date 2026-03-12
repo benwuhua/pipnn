@@ -76,6 +76,11 @@ int main() {
   assert(g.EdgeCount() > 0);
   assert(stats.num_leaves > 0);
   assert(stats.candidate_edges > 0);
+  assert(stats.rbc_assignment_total > base.size());
+  assert(stats.rbc_points_with_overlap > 0);
+  assert(stats.rbc_max_membership >= 2);
+  assert(stats.rbc_max_leaf_size <= static_cast<std::size_t>(bp.rbc.cmax));
+  assert(stats.rbc_min_leaf_size > 0);
   assert(stats.prune_kept > 0);
   assert(stats.prune_final_edges == g.EdgeCount());
   assert(stats.prune_kept >= stats.prune_final_edges);
@@ -113,11 +118,29 @@ int main() {
   auto replica_graph = pipnn::BuildPipnnGraph(base, replica_bp, &replica_stats);
   std::size_t expected_candidate_edges = 0;
   std::size_t expected_leaves = 0;
+  std::size_t expected_rbc_assignment_total = 0;
+  std::size_t expected_rbc_points_with_overlap = 0;
+  std::size_t expected_rbc_fallback_chunk_splits = 0;
+  std::size_t expected_rbc_max_membership = 0;
+  std::size_t expected_rbc_max_leaf_size = 0;
+  std::size_t expected_rbc_min_leaf_size = 0;
   for (int rep = 0; rep < replica_bp.replicas; ++rep) {
     auto rbc_params = replica_bp.rbc;
     rbc_params.seed = replica_bp.rbc.seed + rep;
-    auto replica_leaves = pipnn::BuildRbcLeaves(base, rbc_params);
+    pipnn::RbcStats replica_rbc_stats;
+    auto replica_leaves = pipnn::BuildRbcLeaves(base, rbc_params, &replica_rbc_stats);
     expected_leaves += replica_leaves.size();
+    expected_rbc_assignment_total += replica_rbc_stats.assignment_total;
+    expected_rbc_points_with_overlap += replica_rbc_stats.points_with_overlap;
+    expected_rbc_fallback_chunk_splits += replica_rbc_stats.fallback_chunk_splits;
+    expected_rbc_max_membership =
+        std::max(expected_rbc_max_membership, replica_rbc_stats.max_membership);
+    expected_rbc_max_leaf_size = std::max(expected_rbc_max_leaf_size, replica_rbc_stats.max_leaf_size);
+    if (replica_rbc_stats.min_leaf_size > 0) {
+      expected_rbc_min_leaf_size = expected_rbc_min_leaf_size == 0
+                                       ? replica_rbc_stats.min_leaf_size
+                                       : std::min(expected_rbc_min_leaf_size, replica_rbc_stats.min_leaf_size);
+    }
     for (const auto& leaf : replica_leaves) {
       expected_candidate_edges +=
           pipnn::BuildLeafKnnEdges(base, leaf, replica_bp.leaf_k, replica_bp.bidirected,
@@ -128,6 +151,12 @@ int main() {
   assert(replica_graph.NumNodes() == static_cast<int>(base.size()));
   assert(replica_stats.num_leaves == expected_leaves);
   assert(replica_stats.candidate_edges == expected_candidate_edges);
+  assert(replica_stats.rbc_assignment_total == expected_rbc_assignment_total);
+  assert(replica_stats.rbc_points_with_overlap == expected_rbc_points_with_overlap);
+  assert(replica_stats.rbc_fallback_chunk_splits == expected_rbc_fallback_chunk_splits);
+  assert(replica_stats.rbc_max_membership == expected_rbc_max_membership);
+  assert(replica_stats.rbc_max_leaf_size == expected_rbc_max_leaf_size);
+  assert(replica_stats.rbc_min_leaf_size == expected_rbc_min_leaf_size);
   assert(replica_stats.prune_kept > 0);
   assert(replica_stats.prune_final_edges == replica_graph.EdgeCount());
 

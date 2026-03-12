@@ -12,6 +12,12 @@ struct PipnnBuildStats {
   double prune_sec = 0.0;
   std::size_t num_leaves = 0;
   std::size_t candidate_edges = 0;
+  std::size_t rbc_assignment_total = 0;
+  std::size_t rbc_points_with_overlap = 0;
+  std::size_t rbc_max_membership = 0;
+  std::size_t rbc_min_leaf_size = 0;
+  std::size_t rbc_max_leaf_size = 0;
+  std::size_t rbc_fallback_chunk_splits = 0;
   std::size_t prune_kept = 0;
   std::size_t prune_dropped = 0;
   std::size_t prune_replaced = 0;

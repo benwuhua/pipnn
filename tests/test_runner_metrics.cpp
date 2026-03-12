@@ -94,6 +94,8 @@ int main() {
     assert(metrics.edges > 0);
     auto out = capture.stream.str();
     assert(out.find("pipnn_profile partition_sec=") != std::string::npos);
+    assert(out.find("rbc_assignment_total=") != std::string::npos);
+    assert(out.find("rbc_points_with_overlap=") != std::string::npos);
     assert(out.find("prune_kept=") != std::string::npos);
     assert(out.find("prune_dropped=") != std::string::npos);
   }

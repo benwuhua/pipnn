@@ -332,3 +332,31 @@ Progress: 18/22 passing · Last: Increment Wave 4 algorithm iteration (2026-03-1
     - `prune_replaced=150527`
     - `prune_evicted=228905`
 - Feature 19 remains `failing` for now because I intentionally did not reopen the full coverage/mutation/ST closure loop in the same session; this checkpoint is for algorithm progress and evidence capture.
+
+### Session 21 — 2026-03-12
+- Continued the wave-4 algorithm mainline without switching to benchmark-fairness or productization work.
+- Opened feature 20 (`Wave 4 RBC fidelity`) as an algorithm checkpoint, starting with diagnostics rather than policy changes.
+- Wrote the feature plan: `docs/plans/2026-03-12-feature-20-rbc-fidelity.md`.
+- Added `RbcStats` and threaded RBC diagnostics through:
+  - `src/core/rbc.*`
+  - `src/core/pipnn_builder.*`
+  - `src/bench/runner.cpp`
+- Extended tests for RBC overlap and builder/profile propagation:
+  - `tests/test_rbc.cpp`
+  - `tests/test_pipnn_integration.cpp`
+  - `tests/test_runner_metrics.cpp`
+- Added remote quick-slice entrypoint:
+  - `scripts/bench/run_feature20_rbc_100k_200.sh`
+- Fresh verification evidence:
+  - `ctest --test-dir build --output-on-failure -R '^(rbc|pipnn_integration|runner_metrics)$'` -> passed
+  - remote `100k/200` fast-config slice with diagnostics captured in `results/feature20_100k_200/`:
+    - `build_sec=91.4952`
+    - `recall_at_10=0.9885`
+    - `rbc_assignment_total=200000`
+    - `rbc_points_with_overlap=0`
+    - `rbc_max_membership=1`
+    - `rbc_min_leaf_size=1`
+    - `rbc_max_leaf_size=128`
+    - `rbc_fallback_chunk_splits=0`
+- Mainline conclusion from this checkpoint: the current fast PiPNN config (`fanout=1, replicas=2`) is not getting recall from single-pass RBC overlap; recall is being carried by replicas + search budget.
+- Additional finding: a separate `fanout=2` remote quick-slice currently leaves an empty `pipnn.stdout` and no metrics file. This is treated as the next algorithm/debugging target, not as a fairness or productization task.
