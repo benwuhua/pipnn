@@ -53,7 +53,10 @@
         8,
         9,
         10,
-        11
+        11,
+        16,
+        17,
+        18
       ],
       "check_hint": "在 ~/.config/generic-x86-remote/remote.env 中配置 REMOTE_HOST"
     },
@@ -66,7 +69,10 @@
         8,
         9,
         10,
-        11
+        11,
+        16,
+        17,
+        18
       ],
       "check_hint": "在 ~/.config/generic-x86-remote/remote.env 中配置 REMOTE_USER"
     }
