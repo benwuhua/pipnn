@@ -404,7 +404,7 @@ Expected: both exit `0`
 
 ```bash
 git add scripts/validate_mutation_evidence.py tests/test_mutation_evidence.cpp results/repro_manifest.json docs/plans/2026-03-12-st-report.md examples/feature-18-scored-mutation-evidence.sh docs/test-cases/feature-18-scored-mutation-evidence.md
-ngit commit -m "feat: add scored mutation evidence"
+git commit -m "feat: add scored mutation evidence"
 ```
 
 ## Chunk 5: Refresh Quality, ST, and Persist
