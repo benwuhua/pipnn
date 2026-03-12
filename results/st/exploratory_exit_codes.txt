@@ -1,0 +1,2 @@
+unsupported_exit=1
+missing_exit=1

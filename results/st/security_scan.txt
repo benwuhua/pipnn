@@ -1,3 +1,4 @@
-unsafe_primitives
-
-secrets_scan
+tests/test_quality_evidence.cpp:34:  int status = std::system((command + " >" + ShellQuote(stdout_path) + " 2>" + ShellQuote(stderr_path)).c_str());
+tests/test_mutation_evidence.cpp:34:  int status = std::system((command + " >" + ShellQuote(stdout_path) + " 2>" + ShellQuote(stderr_path)).c_str());
+tests/test_cli.cpp:67:  int status = std::system(command.c_str());
+tests/test_real_test_harness.cpp:35:  int status = std::system(wrapped.c_str());

@@ -1,0 +1,10 @@
+OK: validated 5 reproducibility runs
+Feature 13 example: reproducibility manifest summary
+dataset_root=/data/work/knowhere-rs-src/data/sift
+remote_repo=/data/work/pipnn
+tracked_runs=5
+feature11_pipnn_500k_beam256: scale=500k/100 mode=pipnn log=remote-logs/pipnn-500k100-subset_20260312T005341Z.log result=results/bench_500k_100_subset/pipnn_metrics.json
+feature11_hnsw_500k: scale=500k/100 mode=hnsw log=remote-logs/hnsw-500k100-subset_20260312T010152Z.log result=results/bench_500k_100_subset/hnsw_metrics.json
+feature12_pipnn_100k_beam384: scale=100k/100 mode=pipnn log=remote-logs/feature12-100k-beam384_20260312T014340Z.log result=results/feature12_100k_beam384.json
+feature12_pipnn_200k_beam384: scale=200k/100 mode=pipnn log=remote-logs/feature12-200k-beam384_20260312T014607Z.log result=results/feature12_200k_beam384.json
+feature12_pipnn_500k_beam384: scale=500k/100 mode=pipnn log=remote-logs/feature12-500k-beam384_20260312T013522Z.log result=results/feature12_500k_beam384.json

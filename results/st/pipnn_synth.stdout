@@ -1,10 +1,10 @@
 cfg mode=pipnn dataset=synthetic max_base=0 max_query=0 cmax=128 fanout=2 leader_frac=0.02 max_leaders=1000 replicas=1 leaf_k=12 leaf_scan_cap=0 max_degree=32 hash_bits=12 beam=128 bidirected=1
-pipnn_profile_build partition_sec=0.0382335 leaf_knn_sec=0.213883 prune_sec=0.21707 leaves=164 candidate_edges=280108
-pipnn_profile partition_sec=0.0382335 leaf_knn_sec=0.213883 prune_sec=0.21707 leaves=164 candidate_edges=280108
+pipnn_profile_build partition_sec=0.0168983 leaf_knn_sec=0.206457 prune_sec=0.218027 leaves=164 candidate_edges=280108
+pipnn_profile partition_sec=0.0168983 leaf_knn_sec=0.206457 prune_sec=0.218027 leaves=164 candidate_edges=280108
 {
   "mode": "pipnn",
-  "build_sec": 0.469688,
+  "build_sec": 0.441743,
   "recall_at_10": 0.993,
-  "qps": 1650.33,
+  "qps": 1637.94,
   "edges": 60366
 }

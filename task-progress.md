@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 15/15 passing · Last: Feature 1 CLI 参数与模式路由 (2026-03-12) · Next: System Testing refresh
+Progress: 15/15 passing · Last: System Testing refresh (`Go`, 2026-03-12) · Next: None
 
 ---
 
@@ -163,3 +163,29 @@ Progress: 15/15 passing · Last: Feature 1 CLI 参数与模式路由 (2026-03-12
   - `python3 scripts/validate_mutation_evidence.py` -> `mutation_status=blocked`
   - `./examples/feature-1-cli-parameter-routing.sh` -> passed end-to-end
 - Review result: no feature-1-specific findings; residual risk remains project-wide mutation tooling availability, already tracked by feature 15.
+
+### Session 13 — 2026-03-12
+- Entered `long-task-st` after `python3 scripts/check_st_readiness.py feature-list.json` returned `READY`.
+- Refreshed `docs/plans/2026-03-12-st-plan.md` and `docs/plans/2026-03-12-st-report.md` so the RTM now covers `FR-001`..`FR-010`, `NFR-001`..`NFR-006`, and `IFR-001`..`IFR-002`.
+- Refreshed local ST artifacts under `results/st/`:
+  - `help.txt`
+  - `hnsw_synth.json`
+  - `hnsw_synth.stdout`
+  - `pipnn_synth.json`
+  - `pipnn_synth.stdout`
+  - `unsupported.stdout`
+  - `missing.stdout`
+  - `feature11_example.txt`
+  - `feature12_example.txt`
+  - `feature13_example.txt`
+  - `exploratory_exit_codes.txt`
+  - `security_scan.txt`
+- Fresh ST evidence:
+  - `ctest --test-dir build --output-on-failure` -> `11/11` passing
+  - `bash scripts/quality/remote_coverage.sh` -> remote `build-cov` `ctest` `11/11` passing, fetched `line_coverage=95`, `branch_coverage=92`
+  - `bash scripts/quality/remote_mutation_probe.sh` -> blocked-state probe evidence refreshed locally and remotely
+  - `./examples/feature-11-benchmark-matrix.sh` -> passed
+  - `./examples/feature-12-recall-threshold.sh` -> passed (`0.993 / 0.978 / 0.962`)
+  - `./examples/feature-13-reproducibility.sh` -> passed (`5` tracked runs)
+  - `/Users/ryan/.codex/skills/generic-x86-remote/scripts/check-env.sh --json` -> `arch=x86_64`, `avx2=yes`, `avx512=yes`
+- System-testing verdict updated to `Go`; no open Critical/Major/Minor defects remain.

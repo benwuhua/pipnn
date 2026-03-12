@@ -1,0 +1,5 @@
+Feature 12 example: verify the fixed beam=384 quality config
+
+100k/100: recall_at_10=0.993
+200k/100: recall_at_10=0.978
+500k/100: recall_at_10=0.962
