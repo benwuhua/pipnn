@@ -85,7 +85,7 @@
       "title": "CLI 参数与模式路由",
       "description": "实现 mode/dataset/input/path 解析与错误处理",
       "priority": "high",
-      "status": "failing",
+      "status": "passing",
       "ui": false,
       "verification_steps": [
         "Given 可执行文件存在, when 运行 --help, then 输出 mode/dataset/metric/output 参数说明。",
@@ -97,7 +97,9 @@
         14,
         15
       ],
-      "wave": 2
+      "wave": 2,
+      "st_case_path": "docs/test-cases/feature-1-cli-parameter-routing.md",
+      "st_case_count": 6
     },
     {
       "id": 2,
