@@ -1,4 +1,5 @@
 #include "core/rbc.h"
+#include "core/rbc_assignment.h"
 
 #include <algorithm>
 #include <cassert>
@@ -121,6 +122,51 @@ int main() {
   assert(seeded_stats.assignment_total == seeded.size());
   assert(seeded_stats.points_with_overlap == 0);
   assert(seeded_stats.max_membership == 1);
+
+  {
+    pipnn::Matrix points = {
+        {0.0f, 0.0f},
+        {1.0f, 0.0f},
+        {2.0f, 0.0f},
+        {3.0f, 0.0f},
+    };
+    std::vector<int> ids = {0, 1, 2, 3};
+    std::vector<int> leaders = {0, 3};
+    auto scalar = pipnn::AssignPointsToLeaders(points, ids, leaders, pipnn::RbcAssignMode::Scalar);
+    auto blocked = pipnn::AssignPointsToLeaders(points, ids, leaders, pipnn::RbcAssignMode::Blocked);
+    assert((scalar == std::vector<int>{0, 0, 1, 1}));
+    assert(blocked == scalar);
+  }
+
+  {
+    pipnn::Matrix points = {
+        {1.0f, 0.0f},
+        {0.0f, 0.0f},
+        {2.0f, 0.0f},
+    };
+    std::vector<int> ids = {0};
+    std::vector<int> leaders = {2, 1};
+    auto scalar = pipnn::AssignPointsToLeaders(points, ids, leaders, pipnn::RbcAssignMode::Scalar);
+    auto blocked = pipnn::AssignPointsToLeaders(points, ids, leaders, pipnn::RbcAssignMode::Blocked);
+    assert(scalar.size() == 1);
+    assert(scalar[0] == 1);
+    assert(blocked == scalar);
+  }
+
+  {
+    pipnn::Matrix points(33, pipnn::Vec(3, 0.0f));
+    for (int i = 0; i < static_cast<int>(points.size()); ++i) {
+      points[static_cast<std::size_t>(i)][0] = static_cast<float>(i);
+      points[static_cast<std::size_t>(i)][1] = static_cast<float>(i % 5);
+      points[static_cast<std::size_t>(i)][2] = static_cast<float>(i % 7);
+    }
+    std::vector<int> ids(points.size());
+    for (int i = 0; i < static_cast<int>(ids.size()); ++i) ids[static_cast<std::size_t>(i)] = i;
+    std::vector<int> leaders = {0, 8, 16, 24, 32};
+    auto scalar = pipnn::AssignPointsToLeaders(points, ids, leaders, pipnn::RbcAssignMode::Scalar);
+    auto blocked = pipnn::AssignPointsToLeaders(points, ids, leaders, pipnn::RbcAssignMode::Blocked);
+    assert(blocked == scalar);
+  }
 
   return 0;
 }
