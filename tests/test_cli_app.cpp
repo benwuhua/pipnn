@@ -35,6 +35,7 @@ int main() {
   {
     std::ostringstream out;
     std::ostringstream err;
+    // ST-FUNC-001-001
     int rc = pipnn::cli::Run({"--help"}, out, err);
     assert(rc == 0);
     assert(out.str().find("Usage: pipnn") != std::string::npos);
@@ -80,6 +81,7 @@ int main() {
   {
     std::ostringstream out;
     std::ostringstream err;
+    // ST-BNDRY-001-002
     int rc = pipnn::cli::Run({"--beam", "nope"}, out, err);
     assert(rc == 1);
     assert(err.str().find("invalid value for --beam: nope") != std::string::npos);
@@ -112,6 +114,7 @@ int main() {
   {
     std::ostringstream out;
     std::ostringstream err;
+    // ST-BNDRY-001-001
     int rc = pipnn::cli::Run({"--dataset", "bad"}, out, err);
     assert(rc == 1);
     assert(err.str().find("unsupported dataset: bad") != std::string::npos);
@@ -121,6 +124,7 @@ int main() {
     auto output = std::filesystem::temp_directory_path() / "pipnn_cli_app_hnsw.json";
     std::ostringstream out;
     std::ostringstream err;
+    // ST-FUNC-001-002
     int rc = pipnn::cli::Run(
         {"--mode", "hnsw", "--dataset", "synthetic", "--metric", "l2", "--output", output.string()},
         out, err);
@@ -145,6 +149,7 @@ int main() {
   {
     std::ostringstream out;
     std::ostringstream err;
+    // ST-FUNC-001-003
     int rc = pipnn::cli::Run({"--mode", "pipnn",
                               "--dataset", "sift1m",
                               "--metric", "l2",
@@ -208,6 +213,7 @@ int main() {
     setenv("PIPNN_ECHO_CONFIG", "1", 1);
     std::ostringstream out;
     std::ostringstream err;
+    // ST-BNDRY-001-003
     int rc = pipnn::cli::Run({"--mode", "pipnn",
                               "--dataset", "synthetic",
                               "--metric", "l2",

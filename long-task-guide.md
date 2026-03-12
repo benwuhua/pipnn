@@ -90,14 +90,19 @@ bash scripts/quality/remote_coverage.sh
   3. Update `scripts/check_configs.py` logic if needed
 
 ## Real Test Convention
-- Identification: files matching `tests/test_*.cpp`.
+- Identification:
+  - discover candidate files via `feature-list.json` `real_test.marker_pattern`
+  - treat blocks annotated with `[integration]` as real tests
+  - treat blocks annotated with `[unit]` as non-real tests
 - Real test command:
 ```bash
-ctest --test-dir build --output-on-failure
+python3 scripts/check_real_tests.py feature-list.json --feature <id>
+ctest --test-dir build --output-on-failure -R '^cli$'
 ```
 - Example real test flow:
   - Build project
-  - Run `ctest`
+  - Run `python3 scripts/check_real_tests.py feature-list.json --feature <id>`
+  - Run the feature's `[integration]` ctest target in isolation
   - Confirm expected fail/pass based on TDD stage
 
 ## Examples

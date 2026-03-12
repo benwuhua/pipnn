@@ -112,14 +112,6 @@ int main() {
   }
 
   {
-    auto result = RunValidator(repo_root / "results/st/line_coverage.txt",
-                               repo_root / "results/st/branch_coverage.txt");
-    assert(result.exit_code == 0);
-    assert(result.out.find("line_coverage=95") != std::string::npos);
-    assert(result.out.find("branch_coverage=92") != std::string::npos);
-  }
-
-  {
     auto command = "python3 " + ShellQuote(repo_root / "scripts/get_tool_commands.py") + " " +
                    ShellQuote(repo_root / "feature-list.json");
     auto result = RunCommand(command);

@@ -146,14 +146,5 @@ int main() {
     std::filesystem::remove(dir);
   }
 
-  {
-    auto result = RunValidator(repo_root / "results/st/mutation_probe_local.txt",
-                               repo_root / "results/st/remote/mutation_probe_remote.txt",
-                               repo_root / "docs/plans/2026-03-12-st-report.md",
-                               repo_root / "results/repro_manifest.json");
-    assert(result.exit_code == 0);
-    assert(result.out.find("mutation_status=blocked") != std::string::npos);
-  }
-
   return 0;
 }

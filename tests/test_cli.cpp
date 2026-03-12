@@ -86,12 +86,14 @@ CommandResult RunCli(const std::string& args, const std::string& env_prefix = ""
 
 int main() {
   // [integration] CLI entrypoint should expose the documented interface.
+  // ST-FUNC-001-001
   auto help = RunCli("--help");
   assert(help.exit_code == 0);
   assert(help.out.find("Usage: pipnn") != std::string::npos);
   assert(help.out.find("--mode <pipnn|hnsw>") != std::string::npos);
 
   // [integration] HNSW mode should route through the standard baseline and emit the shared JSON schema.
+  // ST-FUNC-001-002
   auto json_path = std::filesystem::temp_directory_path() / "pipnn_cli_hnsw_metrics.json";
   auto hnsw =
       RunCli("--mode hnsw --dataset synthetic --metric l2 --output " + ShellQuote(json_path));
@@ -110,8 +112,10 @@ int main() {
   auto invalid_beam =
       RunCli("--mode pipnn --dataset synthetic --metric l2 --output '/tmp/pipnn_invalid_beam.json' --beam nope");
   assert(invalid_beam.exit_code == 1);
+  // ST-BNDRY-001-002
   assert(invalid_beam.err.find("invalid value for --beam: nope") != std::string::npos);
 
+  // ST-BNDRY-001-001
   auto unsupported =
       RunCli("--mode pipnn --dataset nope --metric l2 --output '/tmp/pipnn_unsupported.json'");
   assert(unsupported.exit_code == 1);
@@ -124,6 +128,7 @@ int main() {
          std::string::npos);
 
   // [integration] Missing SIFT files should be reported as a controlled CLI error, not an abort.
+  // ST-FUNC-001-003
   auto missing = RunCli("--mode pipnn --dataset sift1m --metric l2 --base '/tmp/no-such-base.fvecs' "
                         "--query '/tmp/no-such-query.fvecs' --output '/tmp/pipnn_missing.json'");
   assert(missing.exit_code == 1);
@@ -186,6 +191,7 @@ int main() {
   auto basename_dir = std::filesystem::temp_directory_path() / "pipnn_cli_basename";
   std::filesystem::create_directories(basename_dir);
   auto basename_json = basename_dir / "metrics.json";
+  // ST-BNDRY-001-003
   auto basename = RunCli("--mode pipnn --dataset synthetic --metric l2 --output metrics.json", "",
                          basename_dir);
   assert(basename.exit_code == 0);

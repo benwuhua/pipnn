@@ -33,6 +33,12 @@
   - `tests/test_mutation_evidence.cpp`
   - `examples/feature-15-mutation-evidence.sh`
   - `docs/test-cases/feature-15-mutation-evidence.md`
+- Feature 1 closure assets:
+  - `scripts/check_real_tests.py`
+  - `tests/test_real_test_harness.cpp`
+  - `examples/feature-1-cli-parameter-routing.sh`
+  - `docs/test-cases/feature-1-cli-parameter-routing.md`
+  - `docs/plans/2026-03-12-feature-1-cli-closure.md`
 
 ### Changed
 - Updated the SIFT1M benchmark report with the completed `500k/100` subset-truth PiPNN/HNSW results and corrected remote command examples
@@ -54,6 +60,7 @@
 - Feature 14 is now mechanically enforced through a validator plus ctest coverage-harness checks instead of documentation alone
 - Remote quality wrappers now exclude `results/st` during sync and reset remote `results/st` before fetch, preventing recursive artifact duplication
 - Feature 15 now makes blocked mutation evidence auditable in the ST report and reproducibility manifest instead of treating missing `mull-runner` as an implicit skip
+- Feature 1 is now closed under the wave-2 quality workflow, with explicit real-test marker enforcement and ST traceability across the CLI tests
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used
@@ -62,6 +69,7 @@
 - CLI now reports option-specific invalid numeric values instead of leaking raw `stoi`/`stof` text
 - CLI now accepts bare output filenames like `--output metrics.json` without requiring a parent directory component
 - Mutation probe collection is now stable and auditable on both local and remote environments even when `mull-runner` is unavailable
+- Coverage-harness ctests are now self-contained and no longer depend on pre-existing `results/st/*` artifacts during remote `build-cov` runs
 
 ---
 
