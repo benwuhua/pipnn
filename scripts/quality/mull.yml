@@ -1,0 +1,11 @@
+excludePaths:
+  - ".*/tests/.*"
+  - ".*/_deps/.*"
+  - ".*/CMakeFiles/.*"
+  - ".*/CompilerId.*"
+includePaths:
+  - ".*/src/cli/.*"
+  - ".*/src/bench/runner\\.cpp"
+  - ".*/src/core/.*"
+  - ".*/src/search/greedy_beam\\.cpp"
+timeout: 10000

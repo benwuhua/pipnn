@@ -387,8 +387,10 @@
       "title": "NFR-006 远端 targeted mutation pipeline",
       "description": "通过 remote_mutation_run.sh 在远端 x86 上执行 build-mull 与 targeted mutation，并抓回原始报告",
       "priority": "high",
-      "status": "failing",
+      "status": "passing",
       "ui": false,
+      "st_case_count": 3,
+      "st_case_path": "docs/test-cases/feature-17-remote-targeted-mutation-pipeline.md",
       "verification_steps": [
         "Given 远端 LLVM/Mull 工具链就绪, when 执行 remote_mutation_run.sh smoke 模式, then 为 test_hashprune 生成可解析的原始 mutation report。",
         "Given targeted test set, when 执行 remote_mutation_run.sh full 模式, then 为每个目标 executable 生成原始 mutation report 并抓回 results/st/mutation/。"

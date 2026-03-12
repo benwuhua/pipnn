@@ -47,6 +47,15 @@
   - `docs/runbooks/mutation-evidence.md`
   - `docs/test-cases/feature-16-remote-mull-toolchain.md`
   - `examples/feature-16-remote-mull-toolchain.sh`
+- Feature 17 mutation pipeline assets:
+  - `tests/test_mutation_report_aggregator.cpp`
+  - `scripts/quality/aggregate_mutation_reports.py`
+  - `scripts/quality/mull.yml`
+  - `scripts/quality/ensure_remote_mull_build_compiler.sh`
+  - `scripts/quality/remote_mutation_run.sh`
+  - `scripts/quality/remote_mutation_run_inner.sh`
+  - `docs/test-cases/feature-17-remote-targeted-mutation-pipeline.md`
+  - `examples/feature-17-remote-targeted-mutation-pipeline.sh`
 
 ### Changed
 - Updated the SIFT1M benchmark report with the completed `500k/100` subset-truth PiPNN/HNSW results and corrected remote command examples
@@ -73,6 +82,10 @@
 - Opened Wave 3 for mutation scoring: SRS/design/feature inventory now track remote user-space `LLVM + Mull`, `build-mull`, and scored-state mutation evidence via features 16/17/18
 - Feature 16 is now closed with a remote-smoke-verified repo-local LLVM/Mull toolchain, including a compat `libclang-cpp17t64` path that avoids mixing the official LLVM tarball with Ubuntu's system `libLLVM-17.so.1`
 - Added the execution plan for feature 17 targeted remote mutation orchestration: `docs/plans/2026-03-12-feature-17-remote-targeted-mutation-pipeline.md`
+- Feature 17 is now closed with remote smoke/full raw-report generation under `results/st/mutation/`, plus a compat build compiler path at `.tools/llvm-build/current`
+- `docs/runbooks/mutation-evidence.md` now documents the split between the tarball toolchain used for Mull runtime and the Ubuntu-package compiler used for `build-mull`
+- `scripts/quality/remote_coverage.sh` now excludes `build-mull`, `.tools`, and `.worktrees` during sync so remote coverage no longer emits delete-noise after mutation runs
+- `scripts/get_tool_commands.py` intentionally remains on the legacy mutation probe until feature 18 wires the scored-state command into the shared quality workflow
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used

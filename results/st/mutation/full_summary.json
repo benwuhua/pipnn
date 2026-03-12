@@ -1,0 +1,178 @@
+{
+  "per_file": {
+    "/data/work/pipnn/src/bench/runner.cpp": {
+      "by_status": {
+        "killed": 11,
+        "mutants_total": 50,
+        "survived": 39
+      },
+      "killed": 11,
+      "mutants_total": 50,
+      "other": 0,
+      "survived": 39
+    },
+    "/data/work/pipnn/src/cli/app.cpp": {
+      "by_status": {
+        "killed": 20,
+        "mutants_total": 24,
+        "survived": 4
+      },
+      "killed": 20,
+      "mutants_total": 24,
+      "other": 0,
+      "survived": 4
+    },
+    "/data/work/pipnn/src/core/distance.h": {
+      "by_status": {
+        "killed": 7,
+        "mutants_total": 25,
+        "survived": 18
+      },
+      "killed": 7,
+      "mutants_total": 25,
+      "other": 0,
+      "survived": 18
+    },
+    "/data/work/pipnn/src/core/hashprune.cpp": {
+      "by_status": {
+        "killed": 15,
+        "mutants_total": 96,
+        "survived": 81
+      },
+      "killed": 15,
+      "mutants_total": 96,
+      "other": 0,
+      "survived": 81
+    },
+    "/data/work/pipnn/src/core/leaf_knn.cpp": {
+      "by_status": {
+        "killed": 27,
+        "mutants_total": 75,
+        "survived": 48
+      },
+      "killed": 27,
+      "mutants_total": 75,
+      "other": 0,
+      "survived": 48
+    },
+    "/data/work/pipnn/src/core/pipnn_builder.cpp": {
+      "by_status": {
+        "killed": 10,
+        "mutants_total": 26,
+        "survived": 16
+      },
+      "killed": 10,
+      "mutants_total": 26,
+      "other": 0,
+      "survived": 16
+    },
+    "/data/work/pipnn/src/core/rbc.cpp": {
+      "by_status": {
+        "killed": 22,
+        "mutants_total": 48,
+        "survived": 26
+      },
+      "killed": 22,
+      "mutants_total": 48,
+      "other": 0,
+      "survived": 26
+    },
+    "/data/work/pipnn/src/search/greedy_beam.cpp": {
+      "by_status": {
+        "killed": 6,
+        "mutants_total": 10,
+        "survived": 4
+      },
+      "killed": 6,
+      "mutants_total": 10,
+      "other": 0,
+      "survived": 4
+    }
+  },
+  "report_count": 5,
+  "reports": [
+    {
+      "files": [
+        "/data/work/pipnn/src/bench/runner.cpp",
+        "/data/work/pipnn/src/cli/app.cpp",
+        "/data/work/pipnn/src/core/distance.h",
+        "/data/work/pipnn/src/core/hashprune.cpp",
+        "/data/work/pipnn/src/core/leaf_knn.cpp",
+        "/data/work/pipnn/src/core/pipnn_builder.cpp",
+        "/data/work/pipnn/src/core/rbc.cpp",
+        "/data/work/pipnn/src/search/greedy_beam.cpp"
+      ],
+      "killed": 42,
+      "mutants_total": 145,
+      "mutation_score": 29.0,
+      "other": 0,
+      "report": "test_cli_app.json",
+      "survived": 103
+    },
+    {
+      "files": [
+        "/data/work/pipnn/src/core/distance.h",
+        "/data/work/pipnn/src/core/hashprune.cpp"
+      ],
+      "killed": 9,
+      "mutants_total": 37,
+      "mutation_score": 24.3,
+      "other": 0,
+      "report": "test_hashprune.json",
+      "survived": 28
+    },
+    {
+      "files": [
+        "/data/work/pipnn/src/core/distance.h",
+        "/data/work/pipnn/src/core/leaf_knn.cpp"
+      ],
+      "killed": 15,
+      "mutants_total": 30,
+      "mutation_score": 50.0,
+      "other": 0,
+      "report": "test_leaf_knn.json",
+      "survived": 15
+    },
+    {
+      "files": [
+        "/data/work/pipnn/src/bench/runner.cpp",
+        "/data/work/pipnn/src/core/distance.h",
+        "/data/work/pipnn/src/core/hashprune.cpp",
+        "/data/work/pipnn/src/core/leaf_knn.cpp",
+        "/data/work/pipnn/src/core/pipnn_builder.cpp",
+        "/data/work/pipnn/src/core/rbc.cpp",
+        "/data/work/pipnn/src/search/greedy_beam.cpp"
+      ],
+      "killed": 40,
+      "mutants_total": 121,
+      "mutation_score": 33.1,
+      "other": 0,
+      "report": "test_pipnn_integration.json",
+      "survived": 81
+    },
+    {
+      "files": [
+        "/data/work/pipnn/src/core/distance.h",
+        "/data/work/pipnn/src/core/rbc.cpp"
+      ],
+      "killed": 12,
+      "mutants_total": 21,
+      "mutation_score": 57.1,
+      "other": 0,
+      "report": "test_rbc.json",
+      "survived": 9
+    }
+  ],
+  "totals": {
+    "by_status": {
+      "killed": 118,
+      "mutants_total": 354,
+      "survived": 236
+    },
+    "killed": 118,
+    "mutants_total": 354,
+    "mutation_score": 33.3,
+    "other": 0,
+    "survived": 236
+  }
+}

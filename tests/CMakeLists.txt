@@ -43,6 +43,10 @@ add_executable(test_remote_toolchain test_remote_toolchain.cpp)
 target_compile_definitions(test_remote_toolchain PRIVATE PIPNN_REPO_ROOT="${CMAKE_SOURCE_DIR}")
 add_test(NAME remote_toolchain COMMAND test_remote_toolchain)
 
+add_executable(test_mutation_report_aggregator test_mutation_report_aggregator.cpp)
+target_compile_definitions(test_mutation_report_aggregator PRIVATE PIPNN_REPO_ROOT="${CMAKE_SOURCE_DIR}")
+add_test(NAME mutation_report_aggregator COMMAND test_mutation_report_aggregator)
+
 add_executable(test_real_test_harness test_real_test_harness.cpp)
 target_compile_definitions(test_real_test_harness PRIVATE PIPNN_REPO_ROOT="${CMAKE_SOURCE_DIR}")
 add_test(NAME real_test_harness COMMAND test_real_test_harness)

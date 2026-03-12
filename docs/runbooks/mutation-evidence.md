@@ -54,6 +54,49 @@ Important runtime note:
 - `clang` / `clang++` come from the repo-local LLVM tarball
 - `mull-runner` does **not** use the tarball's `libclang-cpp.so.17`
 - the wrapper points Mull at the repo-local compat package so it matches Ubuntu's system `libLLVM-17.so.1`
+- the mutation build itself uses a separate repo-local compat compiler helper, because the
+  tarball `clang++` cannot load `mull-ir-frontend-17` without duplicate LLVM
+  `CommandLine` registration
+
+## Compat Build Compiler
+
+The build-mull compiler is provisioned separately:
+
+```bash
+bash scripts/quality/ensure_remote_mull_build_compiler.sh --print-paths
+```
+
+The helper writes into:
+
+- `.tools/llvm-build/current`
+
+It uses repo-local extracted Ubuntu 24.04 packages so the compiler,
+`libclang-cpp`, and `mull-ir-frontend-17` share the same LLVM 17 shared-library ABI.
+
+## Remote Mutation Pipeline
+
+Smoke mode:
+
+```bash
+bash scripts/quality/remote_mutation_run.sh --mode smoke --workers 1
+```
+
+Full targeted mode:
+
+```bash
+bash scripts/quality/remote_mutation_run.sh --mode full --workers 1
+```
+
+Expected fetched outputs:
+
+- `results/st/mutation/smoke/`
+- `results/st/mutation/full/`
+
+Each run must include:
+
+- `run_manifest.txt`
+- one raw `*.json` Elements report per executable
+- one `*.log` file per executable
 
 ## Local Fixture Mode
 
