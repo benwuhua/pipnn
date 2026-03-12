@@ -139,6 +139,25 @@ Feature 12 evidence logs:
 - `remote-logs/feature12-200k-beam384_20260312T014607Z.log`
 - `remote-logs/feature12-500k-beam384_20260312T013522Z.log`
 
+## Reproducibility Bundle
+
+Single audit entry point:
+- `results/repro_manifest.json`
+
+Manifest validation:
+
+```bash
+python3 scripts/validate_repro_manifest.py results/repro_manifest.json
+```
+
+The manifest records:
+- remote environment and sync/build/test/fetch commands
+- remote dataset and repo paths
+- one run entry per tracked benchmark
+- local and remote log paths
+- local and remote result paths
+- copied key metrics for direct audit
+
 ### 30k base / 200 query (full SIFT1M truth, not recommended for subset tuning)
 
 | mode | build_sec | recall_at_10 |

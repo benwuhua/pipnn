@@ -233,8 +233,10 @@
       "title": "NFR-003 复现性",
       "description": "实验命令、日志路径、结果文件可追溯",
       "priority": "high",
-      "status": "failing",
+      "status": "passing",
       "ui": false,
+      "st_case_path": "docs/test-cases/feature-13-reproducibility.md",
+      "st_case_count": 3,
       "verification_steps": [
         "Given 一次完整远端评测, when 检查报告与 remote-logs, then 包含完整命令、日志路径与关键指标。"
       ],

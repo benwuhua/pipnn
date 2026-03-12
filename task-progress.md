@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 12/13 passing · Last: Feature 12 complete (2026-03-12) · Next: Feature 13 (NFR-003 reproducibility)
+Progress: 13/13 passing · Last: Feature 13 complete (2026-03-12) · Next: System Testing Phase
 
 ---
 
@@ -47,3 +47,12 @@ Progress: 12/13 passing · Last: Feature 12 complete (2026-03-12) · Next: Featu
 - Added feature acceptance document: `docs/test-cases/feature-12-recall-threshold.md`.
 - Added runnable example: `examples/feature-12-recall-threshold.sh`.
 - Marked feature 12 as `passing`; feature 13 is now the next active item.
+
+### Session 4 — 2026-03-12
+- Started feature 13 (`NFR-003 复现性`) from the requirement gap that commands, logs, and result files were documented but not unified under one audit entry point.
+- Added `results/repro_manifest.json` as the single reproducibility manifest for the tracked benchmark runs.
+- Added `scripts/validate_repro_manifest.py` to verify manifest structure, local log existence, local result existence, and metric consistency.
+- Added feature acceptance document: `docs/test-cases/feature-13-reproducibility.md`.
+- Added runnable example: `examples/feature-13-reproducibility.sh`.
+- Updated the benchmark report to point to the reproducibility bundle and validator command.
+- Marked feature 13 as `passing`; all active features are now passing and the project is ready for system testing.
