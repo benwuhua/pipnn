@@ -341,3 +341,46 @@ Interpretation:
 - This direction is informative but not promotion-ready. Next iteration should co-optimize:
   - shortlist quality (to recover recall), and
   - `RBC` partition scaling (to control the dominant stage at larger `N`).
+
+## Shortlist Parameter Sweep (remote, quick follow-up)
+
+Artifacts:
+
+- `results/high_dim_validation/param_sweep_10k/pipnn_metrics_f2_10k.json`
+- `results/high_dim_validation/param_sweep_10k/pipnn_metrics_f2_l16_10k.json`
+- `results/high_dim_validation/param_sweep_10k/pipnn_metrics_f3_10k.json`
+- `results/high_dim_validation/param_sweep_10k/pipnn_metrics_f2_l16_20k.json`
+
+### 10k / 100 (PiPNN only)
+
+Baseline shortlist (`fanout=2`, `leaf_k=12`):
+
+- `build_sec = 98.2209`
+- `recall_at_10 = 0.938`
+- `qps = 67.1831`
+
+Increase `leaf_k` (`fanout=2`, `leaf_k=16`):
+
+- `build_sec = 101.647`
+- `recall_at_10 = 0.953`
+- `qps = 57.1248`
+
+Increase fanout (`fanout=3`, `leaf_k=12`):
+
+- `build_sec = 162.701`
+- `recall_at_10 = 0.966`
+- `qps = 65.3271`
+
+### 20k / 100 (PiPNN only)
+
+Increase `leaf_k` (`fanout=2`, `leaf_k=16`):
+
+- `build_sec = 281.981`
+- `recall_at_10 = 0.944`
+- `qps = 54.1159`
+
+Interpretation:
+
+- `leaf_k` increase helps recall with moderate build cost at `10k`, but the gain weakens at `20k` and still misses `0.95`.
+- `fanout=3` improves recall at `10k`, but build cost rises sharply; this is unlikely to be a good default for larger slices.
+- Current shortlist quality still does not scale to `20k/100` with acceptable speed/recall balance under this parameter family.

@@ -1,0 +1,7 @@
+{
+  "mode": "pipnn",
+  "build_sec": 98.2209,
+  "recall_at_10": 0.938,
+  "qps": 67.1831,
+  "edges": 160850
+}
