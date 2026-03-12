@@ -50,16 +50,20 @@ void WriteIvecs(const std::filesystem::path& path,
   }
 }
 
-CommandResult RunCli(const std::string& args,
-                     const std::string& env_prefix = "") {
+CommandResult RunCli(const std::string& args, const std::string& env_prefix = "",
+                     const std::filesystem::path& working_dir = {}) {
   auto dir = std::filesystem::temp_directory_path() /
              ("pipnn_cli_test_" + std::to_string(std::rand()));
   std::filesystem::create_directories(dir);
   auto stdout_path = dir / "stdout.txt";
   auto stderr_path = dir / "stderr.txt";
 
-  std::string command =
-      env_prefix + std::string(PIPNN_BIN_PATH) + " " + args + " >" + ShellQuote(stdout_path) + " 2>" + ShellQuote(stderr_path);
+  std::string command;
+  if (!working_dir.empty()) {
+    command += "cd " + ShellQuote(working_dir) + " && ";
+  }
+  command += env_prefix + std::string(PIPNN_BIN_PATH) + " " + args + " >" + ShellQuote(stdout_path) +
+             " 2>" + ShellQuote(stderr_path);
   int status = std::system(command.c_str());
 
   CommandResult result;
@@ -102,6 +106,11 @@ int main() {
       RunCli("--mode pipnn --dataset synthetic --metric cosine --output '/tmp/pipnn_invalid_metric.json'");
   assert(invalid_metric.exit_code == 1);
   assert(invalid_metric.err.find("only l2 metric supported") != std::string::npos);
+
+  auto invalid_beam =
+      RunCli("--mode pipnn --dataset synthetic --metric l2 --output '/tmp/pipnn_invalid_beam.json' --beam nope");
+  assert(invalid_beam.exit_code == 1);
+  assert(invalid_beam.err.find("invalid value for --beam: nope") != std::string::npos);
 
   auto unsupported =
       RunCli("--mode pipnn --dataset nope --metric l2 --output '/tmp/pipnn_unsupported.json'");
@@ -173,6 +182,17 @@ int main() {
   std::filesystem::remove(pipnn_json);
   std::filesystem::remove(hnsw_sift_json);
   std::filesystem::remove(dir);
+
+  auto basename_dir = std::filesystem::temp_directory_path() / "pipnn_cli_basename";
+  std::filesystem::create_directories(basename_dir);
+  auto basename_json = basename_dir / "metrics.json";
+  auto basename = RunCli("--mode pipnn --dataset synthetic --metric l2 --output metrics.json", "",
+                         basename_dir);
+  assert(basename.exit_code == 0);
+  std::string basename_metrics = ReadAll(basename_json);
+  assert(basename_metrics.find("\"mode\": \"pipnn\"") != std::string::npos);
+  std::filesystem::remove(basename_json);
+  std::filesystem::remove(basename_dir);
 
   return 0;
 }

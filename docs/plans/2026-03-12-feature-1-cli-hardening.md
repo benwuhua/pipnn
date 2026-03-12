@@ -2,7 +2,7 @@
 
 - Date: 2026-03-12
 - Feature: `#1 CLI 参数与模式路由`
-- Scope: keep CLI behavior aligned with `FR-003`, `FR-006`, and `IFR-001` while removing abort-style exits for loader failures and adding direct test coverage for the executable entry flow.
+- Scope: keep CLI behavior aligned with `FR-003`, `FR-006`, and `IFR-001` while removing abort-style exits for loader failures, hardening numeric option diagnostics, and allowing bare output filenames without a parent directory.
 
 ## Design Alignment
 
@@ -19,6 +19,11 @@
 2. Refactor `src/main.cpp` so the CLI logic is callable from tests without shelling out.
 3. Add a top-level exception boundary that converts loader/runtime failures into diagnosable stderr output and a stable non-zero exit code.
 4. Rebuild and rerun regression plus coverage to verify that `main.cpp` and HNSW mode are now exercised.
+5. Add failing tests for:
+   - invalid numeric values on typed CLI options returning option-specific diagnostics
+   - `--output metrics.json` succeeding without requiring a parent directory component
+6. Refactor option parsing to use shared typed parsers instead of leaking raw `stoi`/`stof`/`stoull` messages.
+7. Only call `create_directories()` when `cfg.output` has a non-empty parent path.
 
 ## Files
 

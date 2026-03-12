@@ -80,6 +80,38 @@ int main() {
   {
     std::ostringstream out;
     std::ostringstream err;
+    int rc = pipnn::cli::Run({"--beam", "nope"}, out, err);
+    assert(rc == 1);
+    assert(err.str().find("invalid value for --beam: nope") != std::string::npos);
+  }
+
+  {
+    std::ostringstream out;
+    std::ostringstream err;
+    int rc = pipnn::cli::Run({"--leader-frac", "bad"}, out, err);
+    assert(rc == 1);
+    assert(err.str().find("invalid value for --leader-frac: bad") != std::string::npos);
+  }
+
+  {
+    std::ostringstream out;
+    std::ostringstream err;
+    int rc = pipnn::cli::Run({"--max-base", "bad"}, out, err);
+    assert(rc == 1);
+    assert(err.str().find("invalid value for --max-base: bad") != std::string::npos);
+  }
+
+  {
+    std::ostringstream out;
+    std::ostringstream err;
+    int rc = pipnn::cli::Run({"--bidirected", "bad"}, out, err);
+    assert(rc == 1);
+    assert(err.str().find("invalid value for --bidirected: bad") != std::string::npos);
+  }
+
+  {
+    std::ostringstream out;
+    std::ostringstream err;
     int rc = pipnn::cli::Run({"--dataset", "bad"}, out, err);
     assert(rc == 1);
     assert(err.str().find("unsupported dataset: bad") != std::string::npos);

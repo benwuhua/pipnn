@@ -7,12 +7,12 @@ File                                       Lines     Exec  Cover   Missing
 src/baseline/hnsw_runner.cpp                  59       59   100%
 src/bench/runner.cpp                          67       67   100%
 src/bench/runner.h                             4        4   100%
-src/cli/app.cpp                              163      163   100%
+src/cli/app.cpp                              212      199    93%   155,158,161,164,167,170,173,176,179,182,185,188,191
 src/common/timer.h                             4        4   100%
 src/common/types.h                             6        6   100%
 src/core/distance.h                           10        8    80%   11,19
 src/core/graph.h                               8        8   100%
-src/core/hashprune.cpp                        63       61    96%   71-72
+src/core/hashprune.cpp                        63       63   100%
 src/core/hashprune.h                           4        4   100%
 src/core/leaf_knn.cpp                         35       35   100%
 src/core/pipnn_builder.cpp                    39       39   100%
@@ -24,5 +24,5 @@ src/main.cpp                                   6        6   100%
 src/search/greedy_beam.cpp                    23       23   100%
 src/search/greedy_beam.h                       4        4   100%
 ------------------------------------------------------------------------------
-TOTAL                                        599      594    99%
+TOTAL                                        648      632    97%
 ------------------------------------------------------------------------------

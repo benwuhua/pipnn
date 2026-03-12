@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 12/13 passing · Last: System Testing complete (2026-03-12, Conditional-Go) · Next: Feature 1 CLI 参数与模式路由 quality debt follow-up
+Progress: 12/13 passing · Last: Feature 1 CLI diagnostics hardening (2026-03-12, still failing) · Next: Feature 1 quality-gate follow-up / increment decision
 
 ---
 
@@ -86,3 +86,13 @@ Progress: 12/13 passing · Last: System Testing complete (2026-03-12, Conditiona
 - Confirmed clean local coverage on a fresh `build-cov`: source-only line `99%`, branch `64%`.
 - Confirmed the branch-gap is real on remote x86 GCC as well: source-only line `99%`, branch `65%`.
 - Updated long-task coverage commands to require a clean `build-cov` rebuild so stale `.gcda/.gcno` mismatches cannot silently deflate results.
+
+### Session 8 — 2026-03-12
+- Continued feature 1 from two reproducible CLI defects: `--output metrics.json` failed with `filesystem error` on an empty parent path, and invalid numeric options leaked raw `stoi`/`stof` diagnostics.
+- Extended the feature plan (`docs/plans/2026-03-12-feature-1-cli-hardening.md`) with explicit work items for typed-option diagnostics and basename output handling.
+- Added failing tests in `tests/test_cli_app.cpp` and `tests/test_cli.cpp` for invalid numeric values (`--beam`, `--leader-frac`, `--max-base`, `--bidirected`) and for successful execution with `--output metrics.json`.
+- Fixed `src/cli/app.cpp` by introducing typed parse helpers with option-specific error messages and by calling `create_directories()` only when `cfg.output` has a non-empty parent directory.
+- Revalidated regression: `ctest --test-dir build --output-on-failure` = `8/8` passing.
+- Rebuilt `build-cov` from scratch and refreshed `results/st/line_coverage.txt` + `results/st/branch_coverage.txt`: source-only line `97%`, branch `62%`.
+- Reconfirmed the remaining quality blocker is not feature behavior: local `mull-runner --help` and remote `generic-x86-remote ... mull-runner --help` both returned `command not found`.
+- Feature 1 remains `failing`; the remaining work is quality-gate policy/tooling resolution rather than CLI correctness.

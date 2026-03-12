@@ -4,10 +4,14 @@
 #include "data/sift_reader.h"
 
 #include <cstdlib>
+#include <cerrno>
 #include <filesystem>
 #include <fstream>
+#include <functional>
+#include <limits>
 #include <random>
 #include <string>
+#include <unordered_map>
 
 namespace pipnn::cli {
 namespace {
@@ -37,6 +41,58 @@ bool NeedValue(const std::vector<std::string>& args, std::size_t& i, const std::
   value = args[++i];
   return true;
 }
+
+bool FailInvalidValue(const std::string& option, const std::string& value, std::ostream& err) {
+  err << "invalid value for " << option << ": " << value << "\n";
+  return false;
+}
+
+bool ParseIntValue(const std::string& option, const std::string& value, int& out, std::ostream& err) {
+  if (value.empty()) return FailInvalidValue(option, value, err);
+  errno = 0;
+  char* end = nullptr;
+  const long parsed = std::strtol(value.c_str(), &end, 10);
+  if (errno == ERANGE || end != value.c_str() + value.size() ||
+      parsed < std::numeric_limits<int>::min() || parsed > std::numeric_limits<int>::max()) {
+    return FailInvalidValue(option, value, err);
+  }
+  out = static_cast<int>(parsed);
+  return true;
+}
+
+bool ParseSizeValue(const std::string& option, const std::string& value, std::size_t& out,
+                    std::ostream& err) {
+  if (value.empty() || value.front() == '-') return FailInvalidValue(option, value, err);
+  errno = 0;
+  char* end = nullptr;
+  const unsigned long long parsed = std::strtoull(value.c_str(), &end, 10);
+  if (errno == ERANGE || end != value.c_str() + value.size() ||
+      parsed > std::numeric_limits<std::size_t>::max()) {
+    return FailInvalidValue(option, value, err);
+  }
+  out = static_cast<std::size_t>(parsed);
+  return true;
+}
+
+bool ParseFloatValue(const std::string& option, const std::string& value, float& out, std::ostream& err) {
+  if (value.empty()) return FailInvalidValue(option, value, err);
+  errno = 0;
+  char* end = nullptr;
+  const float parsed = std::strtof(value.c_str(), &end);
+  if (errno == ERANGE || end != value.c_str() + value.size()) {
+    return FailInvalidValue(option, value, err);
+  }
+  out = parsed;
+  return true;
+}
+
+bool ParseBoolValue(const std::string& option, const std::string& value, bool& out, std::ostream& err) {
+  int parsed = 0;
+  if (!ParseIntValue(option, value, parsed, err)) return false;
+  if (parsed != 0 && parsed != 1) return FailInvalidValue(option, value, err);
+  out = (parsed != 0);
+  return true;
+}
 }  // namespace
 
 int Run(const std::vector<std::string>& args, std::ostream& out, std::ostream& err) {
@@ -61,6 +117,79 @@ int Run(const std::vector<std::string>& args, std::ostream& out, std::ostream& e
     int hash_bits = 12;
     int beam = 128;
     bool bidirected = true;
+    using Handler = std::function<bool(const std::string&)>;
+    const std::unordered_map<std::string, Handler> handlers = {
+        {"--mode", [&](const std::string& value) {
+           cfg.mode = value;
+           return true;
+         }},
+        {"--dataset", [&](const std::string& value) {
+           cfg.dataset = value;
+           return true;
+         }},
+        {"--metric", [&](const std::string& value) {
+           if (value != "l2") {
+             err << "only l2 metric supported\n";
+             return false;
+           }
+           return true;
+         }},
+        {"--output", [&](const std::string& value) {
+           cfg.output = value;
+           return true;
+         }},
+        {"--base", [&](const std::string& value) {
+           base_path = value;
+           return true;
+         }},
+        {"--query", [&](const std::string& value) {
+           query_path = value;
+           return true;
+         }},
+        {"--truth", [&](const std::string& value) {
+           truth_path = value;
+           return true;
+         }},
+        {"--max-base", [&](const std::string& value) {
+           return ParseSizeValue("--max-base", value, max_base, err);
+         }},
+        {"--max-query", [&](const std::string& value) {
+           return ParseSizeValue("--max-query", value, max_query, err);
+         }},
+        {"--rbc-cmax", [&](const std::string& value) {
+           return ParseIntValue("--rbc-cmax", value, rbc_cmax, err);
+         }},
+        {"--rbc-fanout", [&](const std::string& value) {
+           return ParseIntValue("--rbc-fanout", value, rbc_fanout, err);
+         }},
+        {"--leader-frac", [&](const std::string& value) {
+           return ParseFloatValue("--leader-frac", value, leader_frac, err);
+         }},
+        {"--max-leaders", [&](const std::string& value) {
+           return ParseIntValue("--max-leaders", value, max_leaders, err);
+         }},
+        {"--replicas", [&](const std::string& value) {
+           return ParseIntValue("--replicas", value, replicas, err);
+         }},
+        {"--leaf-k", [&](const std::string& value) {
+           return ParseIntValue("--leaf-k", value, leaf_k, err);
+         }},
+        {"--leaf-scan-cap", [&](const std::string& value) {
+           return ParseIntValue("--leaf-scan-cap", value, leaf_scan_cap, err);
+         }},
+        {"--max-degree", [&](const std::string& value) {
+           return ParseIntValue("--max-degree", value, max_degree, err);
+         }},
+        {"--hash-bits", [&](const std::string& value) {
+           return ParseIntValue("--hash-bits", value, hash_bits, err);
+         }},
+        {"--beam", [&](const std::string& value) {
+           return ParseIntValue("--beam", value, beam, err);
+         }},
+        {"--bidirected", [&](const std::string& value) {
+           return ParseBoolValue("--bidirected", value, bidirected, err);
+         }},
+    };
 
     for (std::size_t i = 0; i < args.size(); ++i) {
       const std::string& a = args[i];
@@ -69,73 +198,13 @@ int Run(const std::vector<std::string>& args, std::ostream& out, std::ostream& e
         PrintHelp(out);
         return 0;
       }
-      if (a == "--mode") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        cfg.mode = value;
-      } else if (a == "--dataset") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        cfg.dataset = value;
-      } else if (a == "--metric") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        if (value != "l2") {
-          err << "only l2 metric supported\n";
-          return 1;
-        }
-      } else if (a == "--output") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        cfg.output = value;
-      } else if (a == "--base") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        base_path = value;
-      } else if (a == "--query") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        query_path = value;
-      } else if (a == "--truth") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        truth_path = value;
-      } else if (a == "--max-base") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        max_base = static_cast<std::size_t>(std::stoull(value));
-      } else if (a == "--max-query") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        max_query = static_cast<std::size_t>(std::stoull(value));
-      } else if (a == "--rbc-cmax") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        rbc_cmax = std::stoi(value);
-      } else if (a == "--rbc-fanout") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        rbc_fanout = std::stoi(value);
-      } else if (a == "--leader-frac") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        leader_frac = std::stof(value);
-      } else if (a == "--max-leaders") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        max_leaders = std::stoi(value);
-      } else if (a == "--replicas") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        replicas = std::stoi(value);
-      } else if (a == "--leaf-k") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        leaf_k = std::stoi(value);
-      } else if (a == "--leaf-scan-cap") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        leaf_scan_cap = std::stoi(value);
-      } else if (a == "--max-degree") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        max_degree = std::stoi(value);
-      } else if (a == "--hash-bits") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        hash_bits = std::stoi(value);
-      } else if (a == "--beam") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        beam = std::stoi(value);
-      } else if (a == "--bidirected") {
-        if (!NeedValue(args, i, a, value, err)) return 1;
-        bidirected = (std::stoi(value) != 0);
-      } else {
+      const auto it = handlers.find(a);
+      if (it == handlers.end()) {
         err << "unknown argument: " << a << "\n";
         return 1;
       }
+      if (!NeedValue(args, i, a, value, err)) return 1;
+      if (!it->second(value)) return 1;
     }
 
     pipnn::Matrix base;
@@ -187,8 +256,10 @@ int Run(const std::vector<std::string>& args, std::ostream& out, std::ostream& e
     auto metrics = pipnn::RunBenchmark(cfg, base, queries, truth, bp, sp);
     auto json = pipnn::ToJson(metrics);
 
-    std::filesystem::create_directories(std::filesystem::path(cfg.output).parent_path());
-    std::ofstream file(cfg.output);
+    const std::filesystem::path output_path(cfg.output);
+    const auto parent = output_path.parent_path();
+    if (!parent.empty()) std::filesystem::create_directories(parent);
+    std::ofstream file(output_path);
     file << json;
     out << json;
     return 0;

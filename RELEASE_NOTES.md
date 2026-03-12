@@ -28,11 +28,14 @@
 - Reopened feature 1 for CLI hardening and corrected the long-task coverage command to measure project-owned source through `build-cov`
 - Refactored the CLI entry flow into a reusable helper (`src/cli/app.cpp`) and added direct CLI parser tests
 - Updated the coverage workflow to clean `build-cov` before recomputing gcovr results, preventing stale `.gcda/.gcno` mismatches
+- Extended the feature 1 CLI hardening plan with typed-option diagnostics and basename-output coverage; refreshed source-only coverage evidence to line `97%` / branch `62%`
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used
 - CLI missing-file failures now return a controlled non-zero exit instead of aborting the process
 - CLI now rejects unknown options and missing option values with explicit error messages
+- CLI now reports option-specific invalid numeric values instead of leaking raw `stoi`/`stof` text
+- CLI now accepts bare output filenames like `--output metrics.json` without requiring a parent directory component
 
 ---
 
