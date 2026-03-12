@@ -1,0 +1,4 @@
+$ mull-runner --help
+scripts/quality/remote_mutation_probe_inner.sh: line 8: mull-runner: command not found
+status=blocked
+exit_code=127

@@ -15,5 +15,5 @@ if lang != "cpp":
 print("env_activate: source .venv/bin/activate  # if python tooling env is used")
 print("build: cmake -S . -B build && cmake --build build -j")
 print("test: ctest --test-dir build --output-on-failure")
-print("coverage: rm -rf build-cov && cmake -S . -B build-cov -DCMAKE_CXX_FLAGS='--coverage -O0 -g' -DCMAKE_C_FLAGS='--coverage -O0 -g' && cmake --build build-cov -j && ctest --test-dir build-cov --output-on-failure && python3 -m gcovr build-cov -r . --merge-mode-functions=merge-use-line-max --exclude 'build-cov/_deps/' --exclude 'build-cov/CMakeFiles/.*/CompilerIdCXX/' --exclude 'tests/' --txt && python3 -m gcovr build-cov -r . --merge-mode-functions=merge-use-line-max --exclude 'build-cov/_deps/' --exclude 'build-cov/CMakeFiles/.*/CompilerIdCXX/' --exclude 'tests/' --txt --txt-metric branch")
-print("mutation: mull-runner --help")
+print("coverage: bash scripts/quality/remote_coverage.sh")
+print("mutation: bash scripts/quality/remote_mutation_probe.sh")

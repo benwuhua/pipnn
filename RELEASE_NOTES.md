@@ -17,6 +17,11 @@
 - Feature 13 runnable example: `examples/feature-13-reproducibility.sh`
 - Reproducibility manifest: `results/repro_manifest.json`
 - Manifest validator: `scripts/validate_repro_manifest.py`
+- Wave 2 quality wrappers:
+  - `scripts/quality/remote_coverage.sh`
+  - `scripts/quality/remote_coverage_inner.sh`
+  - `scripts/quality/remote_mutation_probe.sh`
+  - `scripts/quality/remote_mutation_probe_inner.sh`
 
 ### Changed
 - Updated the SIFT1M benchmark report with the completed `500k/100` subset-truth PiPNN/HNSW results and corrected remote command examples
@@ -29,6 +34,12 @@
 - Refactored the CLI entry flow into a reusable helper (`src/cli/app.cpp`) and added direct CLI parser tests
 - Updated the coverage workflow to clean `build-cov` before recomputing gcovr results, preventing stale `.gcda/.gcno` mismatches
 - Extended the feature 1 CLI hardening plan with typed-option diagnostics and basename-output coverage; refreshed source-only coverage evidence to line `97%` / branch `62%`
+- Applied increment wave 2 for quality-gate methodology:
+  - SRS now defines `NFR-005` authoritative remote x86 GCC coverage and `NFR-006` mutation score-or-blocked evidence
+  - design now includes a dedicated quality-evidence workflow
+  - `feature-list.json` now tracks waves and new features 14/15
+  - `long-task-guide.md` and `scripts/get_tool_commands.py` now route coverage/mutation through the remote quality wrappers
+- Refreshed authoritative coverage evidence from remote x86 GCC to line `95%` / branch `92%`
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used
@@ -36,6 +47,7 @@
 - CLI now rejects unknown options and missing option values with explicit error messages
 - CLI now reports option-specific invalid numeric values instead of leaking raw `stoi`/`stof` text
 - CLI now accepts bare output filenames like `--output metrics.json` without requiring a parent directory component
+- Mutation probe collection is now stable and auditable on both local and remote environments even when `mull-runner` is unavailable
 
 ---
 

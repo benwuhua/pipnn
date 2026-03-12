@@ -1,0 +1,12 @@
+{
+  "arch": "x86_64",
+  "avx2": "yes",
+  "avx512": "yes",
+  "clang": "missing",
+  "cmake": "cmake version 3.28.3",
+  "gcc": "gcc (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0",
+  "hostname": "ecs-knowledgebase-473c",
+  "kernel": "Linux 6.8.0-87-generic",
+  "make": "GNU Make 4.3",
+  "python": "Python 3.12.3"
+}

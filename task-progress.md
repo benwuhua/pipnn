@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 12/13 passing · Last: Feature 1 CLI diagnostics hardening (2026-03-12, still failing) · Next: Feature 1 quality-gate follow-up / increment decision
+Progress: 12/15 passing · Last: Increment Wave 2 approved and applied (2026-03-12) · Next: Feature 14 NFR-005 覆盖率口径固化
 
 ---
 
@@ -96,3 +96,20 @@ Progress: 12/13 passing · Last: Feature 1 CLI diagnostics hardening (2026-03-12
 - Rebuilt `build-cov` from scratch and refreshed `results/st/line_coverage.txt` + `results/st/branch_coverage.txt`: source-only line `97%`, branch `62%`.
 - Reconfirmed the remaining quality blocker is not feature behavior: local `mull-runner --help` and remote `generic-x86-remote ... mull-runner --help` both returned `command not found`.
 - Feature 1 remains `failing`; the remaining work is quality-gate policy/tooling resolution rather than CLI correctness.
+
+### Session 9 — 2026-03-12
+- Entered `long-task-increment` with scope `quality-gate methodology and mutation environment follow-up`.
+- Approved the impact matrix to add quality-methodology requirements instead of continuing to overload feature 1 with project-wide gate debt.
+- Updated the SRS with `NFR-005` (authoritative remote x86 GCC coverage workflow) and `NFR-006` (mutation score or blocked-state evidence).
+- Updated the design with a dedicated quality-evidence workflow section, revised testing strategy, and quality-related dependency chain notes.
+- Added remote quality wrappers under `scripts/quality/` and updated `scripts/get_tool_commands.py` plus `long-task-guide.md` to use them.
+- Re-ran authoritative coverage with `bash scripts/quality/remote_coverage.sh`; fetched remote x86 GCC evidence into `results/st/line_coverage.txt` and `results/st/branch_coverage.txt`:
+  - line coverage = `95%`
+  - branch coverage = `92%`
+- Re-ran mutation probes with `bash scripts/quality/remote_mutation_probe.sh`; captured blocked-state evidence in:
+  - `results/st/mutation_probe_local.txt`
+  - `results/st/remote/mutation_probe_remote.txt`
+- Extended `feature-list.json` with wave metadata and new failing features:
+  - feature 14: `NFR-005 覆盖率口径固化`
+  - feature 15: `NFR-006 mutation 证据与阻塞态审计`
+- Rebased feature 1 onto the new quality workflow by making it depend on features 14 and 15 before re-verification.
