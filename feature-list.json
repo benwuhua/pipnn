@@ -320,7 +320,7 @@
       "title": "NFR-005 覆盖率口径固化",
       "description": "固化远端 x86 GCC source-only coverage workflow，并排除 throw/unreachable 编译器分支",
       "priority": "high",
-      "status": "failing",
+      "status": "passing",
       "ui": false,
       "verification_steps": [
         "Given 远端 x86 GCC 环境, when 执行文档化 coverage 命令, then 生成 results/st/line_coverage.txt 与 results/st/branch_coverage.txt。",
@@ -328,7 +328,9 @@
       ],
       "dependencies": [
         9
-      ]
+      ],
+      "st_case_path": "docs/test-cases/feature-14-coverage-workflow.md",
+      "st_case_count": 2
     },
     {
       "id": 15,

@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 12/15 passing · Last: Increment Wave 2 approved and applied (2026-03-12) · Next: Feature 14 NFR-005 覆盖率口径固化
+Progress: 13/15 passing · Last: Feature 14 NFR-005 覆盖率口径固化 (2026-03-12) · Next: Feature 15 NFR-006 mutation 证据与阻塞态审计
 
 ---
 
@@ -113,3 +113,18 @@ Progress: 12/15 passing · Last: Increment Wave 2 approved and applied (2026-03-
   - feature 14: `NFR-005 覆盖率口径固化`
   - feature 15: `NFR-006 mutation 证据与阻塞态审计`
 - Rebased feature 1 onto the new quality workflow by making it depend on features 14 and 15 before re-verification.
+
+### Session 10 — 2026-03-12
+- Entered `long-task-work` and skipped feature 1 because its new dependencies (`14`, `15`) were still failing; selected feature 14 as the first eligible wave-2 item.
+- Wrote the feature plan: `docs/plans/2026-03-12-feature-14-coverage-workflow.md`.
+- Added a new harness test binary `quality_evidence` via `tests/test_quality_evidence.cpp` and `tests/CMakeLists.txt`.
+- Implemented `scripts/validate_quality_evidence.py` to parse gcovr `TOTAL` rows, read thresholds from `feature-list.json`, and fail deterministically on threshold violations.
+- Added the feature example `examples/feature-14-coverage-workflow.sh` and the runbook `docs/runbooks/quality-evidence.md`.
+- Added acceptance coverage documentation at `docs/test-cases/feature-14-coverage-workflow.md`.
+- Fixed a harness bug in the remote quality wrappers by excluding `results/st` from sync and clearing remote `results/st` before fetch, preventing recursive `results/st/remote/remote` artifact pollution.
+- Fresh verification evidence:
+  - `ctest --test-dir build --output-on-failure` -> `9/9` passing
+  - `bash scripts/quality/remote_coverage.sh` -> fetched fresh remote GCC coverage reports
+  - `python3 scripts/validate_quality_evidence.py` -> `line_coverage=95`, `branch_coverage=92`
+  - `bash scripts/quality/remote_mutation_probe.sh` -> blocked-state evidence preserved for feature 15
+- Review result: no feature-14-specific findings; residual risk remains remote-host availability, not workflow correctness.

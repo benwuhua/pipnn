@@ -22,6 +22,12 @@
   - `scripts/quality/remote_coverage_inner.sh`
   - `scripts/quality/remote_mutation_probe.sh`
   - `scripts/quality/remote_mutation_probe_inner.sh`
+- Feature 14 harness assets:
+  - `scripts/validate_quality_evidence.py`
+  - `tests/test_quality_evidence.cpp`
+  - `examples/feature-14-coverage-workflow.sh`
+  - `docs/runbooks/quality-evidence.md`
+  - `docs/test-cases/feature-14-coverage-workflow.md`
 
 ### Changed
 - Updated the SIFT1M benchmark report with the completed `500k/100` subset-truth PiPNN/HNSW results and corrected remote command examples
@@ -40,6 +46,8 @@
   - `feature-list.json` now tracks waves and new features 14/15
   - `long-task-guide.md` and `scripts/get_tool_commands.py` now route coverage/mutation through the remote quality wrappers
 - Refreshed authoritative coverage evidence from remote x86 GCC to line `95%` / branch `92%`
+- Feature 14 is now mechanically enforced through a validator plus ctest coverage-harness checks instead of documentation alone
+- Remote quality wrappers now exclude `results/st` during sync and reset remote `results/st` before fetch, preventing recursive artifact duplication
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used
