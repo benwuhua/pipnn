@@ -1,0 +1,14 @@
+# Build artifacts
+build/
+
+# Local/remote logs and temp outputs
+remote-logs/
+*.log
+
+# OS/editor
+.DS_Store
+.vscode/
+.idea/
+
+# Optional env overrides
+.env
