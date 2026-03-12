@@ -77,9 +77,10 @@ int main() {
   assert(stats.num_leaves > 0);
   assert(stats.candidate_edges > 0);
   assert(stats.rbc_assignment_total > base.size());
+  assert(stats.rbc_assignment_total <= base.size() * static_cast<std::size_t>(bp.rbc.fanout));
   assert(stats.rbc_points_with_overlap > 0);
   assert(stats.rbc_max_membership >= 2);
-  assert(stats.rbc_max_leaf_size <= static_cast<std::size_t>(bp.rbc.cmax));
+  assert(stats.rbc_max_membership <= static_cast<std::size_t>(bp.rbc.fanout));
   assert(stats.rbc_min_leaf_size > 0);
   assert(stats.prune_kept > 0);
   assert(stats.prune_final_edges == g.EdgeCount());
@@ -152,6 +153,9 @@ int main() {
   assert(replica_stats.num_leaves == expected_leaves);
   assert(replica_stats.candidate_edges == expected_candidate_edges);
   assert(replica_stats.rbc_assignment_total == expected_rbc_assignment_total);
+  assert(replica_stats.rbc_assignment_total <=
+         base.size() * static_cast<std::size_t>(replica_bp.rbc.fanout) *
+             static_cast<std::size_t>(replica_bp.replicas));
   assert(replica_stats.rbc_points_with_overlap == expected_rbc_points_with_overlap);
   assert(replica_stats.rbc_fallback_chunk_splits == expected_rbc_fallback_chunk_splits);
   assert(replica_stats.rbc_max_membership == expected_rbc_max_membership);

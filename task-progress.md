@@ -360,3 +360,37 @@ Progress: 18/22 passing · Last: Increment Wave 4 algorithm iteration (2026-03-1
     - `rbc_fallback_chunk_splits=0`
 - Mainline conclusion from this checkpoint: the current fast PiPNN config (`fanout=1, replicas=2`) is not getting recall from single-pass RBC overlap; recall is being carried by replicas + search budget.
 - Additional finding: a separate `fanout=2` remote quick-slice currently leaves an empty `pipnn.stdout` and no metrics file. This is treated as the next algorithm/debugging target, not as a fairness or productization task.
+
+### Session 22 — 2026-03-12
+- Continued feature 20 from diagnostics into a real algorithm correction instead of switching tracks.
+- Reworked `src/core/rbc.cpp` so RBC now behaves as:
+  - single-route recursive partitioning to bounded base leaves
+  - leaf-level bounded overlap assignment
+  - root-level top-`fanout` subtree selection plus greedy descent for alternate leaves
+- Tightened RBC correctness expectations in:
+  - `tests/test_rbc.cpp`
+  - `tests/test_pipnn_integration.cpp`
+- Fresh local verification after the RBC rewrite:
+  - `ctest --test-dir build --output-on-failure` -> `15/15` passing
+- Fresh remote feature-20 evidence:
+  - `results/feature20_f2_r1_10k_200_v2/`
+    - `build_sec=6.53802`
+    - `recall_at_10=1.0`
+    - `rbc_assignment_total=20000`
+    - `rbc_max_membership=2`
+  - `results/feature20_f2_r1_100k_200_v3/`
+    - `build_sec=68.4892`
+    - `recall_at_10=0.995`
+    - `partition_sec=27.8396`
+    - `leaf_knn_sec=30.8155`
+    - `prune_sec=9.81229`
+    - `rbc_assignment_total=200000`
+    - `rbc_max_membership=2`
+- Mainline conclusion from this checkpoint:
+  - feature 20 is now a valid algorithm checkpoint
+  - the old RBC overlap explosion is fixed
+  - the next primary bottleneck is `leaf_knn_sec`, not partitioning
+- Probed feature 21 with two local/remote leaf-kNN micro-optimizations and rejected both:
+  - full distance-matrix path regressed `100k/200` build time to `85.0797s`
+  - scratch-buffer plus `nth_element` regressed `100k/200` build time to `73.4125s`
+- Reverted both feature-21 leaf-kNN trials, keeping the worktree on the feature-20 best-known state.

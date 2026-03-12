@@ -95,6 +95,10 @@
 - Opened Wave 4 for algorithm iteration: the SRS/design now track `100k/200` fast iteration, `1M/100` authority benchmarking, and the staged order `HashPrune -> RBC -> leaf_kNN -> authority`
 - Started feature 19 algorithm work: `HashPrune` now emits kept/dropped/replaced/evicted diagnostics through build/profile stats, and `scripts/bench/run_feature19_hashprune_100k_200.sh` captures the quick-slice remote benchmark evidence
 - Started feature 20 algorithm work: `RBC` now emits overlap/membership diagnostics through build/profile stats, and `scripts/bench/run_feature20_rbc_100k_200.sh` captures the fast-config remote quick slice
+- Feature 20 is now a valid algorithm checkpoint: RBC uses bounded leaf-level overlap with root top-`fanout` routing, remote `100k/200` improved from `289.434s / 0.9895` to `68.4892s / 0.995`, and `rbc_max_membership` is now capped at `2`
+- Two feature-21 leaf-kNN micro-optimizations were evaluated and rejected:
+  - full distance-matrix leaf scan regressed `100k/200` build time to `85.0797s`
+  - scratch-buffer plus `nth_element` regressed `100k/200` build time to `73.4125s`
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used

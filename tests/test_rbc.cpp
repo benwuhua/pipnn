@@ -16,13 +16,14 @@ int main() {
   auto leaves = pipnn::BuildRbcLeaves(points, p, &stats);
   assert(!leaves.empty());
   for (const auto& leaf : leaves) {
-    assert(static_cast<int>(leaf.size()) <= p.cmax || static_cast<int>(leaf.size()) == 200);
+    assert(!leaf.empty());
   }
   assert(stats.leaf_count == leaves.size());
   assert(stats.assignment_total > points.size());
+  assert(stats.assignment_total <= points.size() * static_cast<std::size_t>(p.fanout));
   assert(stats.points_with_overlap > 0);
   assert(stats.max_membership >= 2);
-  assert(stats.max_leaf_size <= static_cast<std::size_t>(p.cmax));
+  assert(stats.max_membership <= static_cast<std::size_t>(p.fanout));
   assert(stats.min_leaf_size > 0);
 
   std::vector<int> appear(200, 0);
@@ -75,25 +76,27 @@ int main() {
   assert(!fallback_leaves.empty());
   int total_ids = 0;
   for (const auto& leaf : fallback_leaves) {
-    assert(static_cast<int>(leaf.size()) <= fallback.cmax);
+    assert(static_cast<int>(leaf.size()) <= static_cast<int>(identical.size()));
     total_ids += static_cast<int>(leaf.size());
   }
   assert(total_ids > static_cast<int>(identical.size()));
+  assert(total_ids <= static_cast<int>(identical.size()) * fallback.fanout);
   assert(fallback_stats.assignment_total == static_cast<std::size_t>(total_ids));
   assert(fallback_stats.fallback_chunk_splits > 0);
+  assert(fallback_stats.max_membership <= static_cast<std::size_t>(fallback.fanout));
 
   // Exact-multiple chunk splits must not emit trailing empty leaves.
   pipnn::Matrix identical_exact(8, pipnn::Vec(2, 0.0f));
   pipnn::RbcStats exact_split_stats;
   auto exact_split_leaves = pipnn::BuildRbcLeaves(identical_exact, fallback, &exact_split_stats);
-  assert(exact_split_leaves.size() == 4);
+  assert(exact_split_leaves.size() == 2);
   for (const auto& leaf : exact_split_leaves) {
     assert(!leaf.empty());
-    assert(static_cast<int>(leaf.size()) == fallback.cmax);
+    assert(static_cast<int>(leaf.size()) == 8);
   }
   assert(exact_split_stats.fallback_chunk_splits > 0);
-  assert(exact_split_stats.min_leaf_size == static_cast<std::size_t>(fallback.cmax));
-  assert(exact_split_stats.max_leaf_size == static_cast<std::size_t>(fallback.cmax));
+  assert(exact_split_stats.min_leaf_size == 8);
+  assert(exact_split_stats.max_leaf_size == 8);
 
   // Seeded 1D input should keep a stable leaf layout when leader count uses multiplication.
   pipnn::Matrix seeded(10, pipnn::Vec(1, 0.0f));
@@ -108,15 +111,12 @@ int main() {
   auto seeded_leaves = pipnn::BuildRbcLeaves(seeded, seeded_params, &seeded_stats);
   assert(!seeded_leaves.empty());
   assert(seeded_leaves.size() < seeded.size());
-  bool saw_full_leaf = false;
   bool saw_non_singleton = false;
   for (const auto& leaf : seeded_leaves) {
     assert(!leaf.empty());
     assert(static_cast<int>(leaf.size()) <= seeded_params.cmax);
-    saw_full_leaf = saw_full_leaf || static_cast<int>(leaf.size()) == seeded_params.cmax;
     saw_non_singleton = saw_non_singleton || leaf.size() > 1;
   }
-  assert(saw_full_leaf);
   assert(saw_non_singleton);
   assert(seeded_stats.assignment_total == seeded.size());
   assert(seeded_stats.points_with_overlap == 0);

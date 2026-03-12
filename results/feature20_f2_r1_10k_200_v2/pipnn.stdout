@@ -1,0 +1,9 @@
+pipnn_profile_build partition_sec=2.76123 leaf_knn_sec=2.81055 prune_sec=0.964445 leaves=187 candidate_edges=479940 rbc_assignment_total=20000 rbc_points_with_overlap=10000 rbc_max_membership=2 rbc_min_leaf_size=10 rbc_max_leaf_size=444 rbc_fallback_chunk_splits=0 prune_kept=300086 prune_dropped=27984 prune_replaced=14987 prune_evicted=23269 prune_final_edges=261830
+pipnn_profile partition_sec=2.76123 leaf_knn_sec=2.81055 prune_sec=0.964445 leaves=187 candidate_edges=479940 rbc_assignment_total=20000 rbc_points_with_overlap=10000 rbc_max_membership=2 rbc_min_leaf_size=10 rbc_max_leaf_size=444 rbc_fallback_chunk_splits=0 prune_kept=300086 prune_dropped=27984 prune_replaced=14987 prune_evicted=23269 prune_final_edges=261830
+{
+  "mode": "pipnn",
+  "build_sec": 6.53802,
+  "recall_at_10": 1,
+  "qps": 274.333,
+  "edges": 261830
+}
