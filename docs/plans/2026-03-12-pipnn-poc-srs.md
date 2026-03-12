@@ -154,6 +154,15 @@ flowchart TD
   - 需求: 所有本地单元测试应保持 100% 通过。
   - 验证: `ctest --test-dir build --output-on-failure`。
 
+<!-- Wave 2: Added 2026-03-12 — quality methodology and mutation environment follow-up -->
+- NFR-005 覆盖率度量（Must）
+  - 需求: 对外审计使用的覆盖率结果应以远端 x86 GCC 的 clean `build-cov` 结果为准；统计范围仅包含项目自有源文件，排除第三方 `_deps`、编译器识别目录以及编译器生成的 throw/unreachable branch。
+  - 验证: 在远端 x86 主机执行文档化 coverage 命令，生成 `results/st/line_coverage.txt` 与 `results/st/branch_coverage.txt`，并满足 `line >= 90%`、`branch >= 80%`。
+
+- NFR-006 Mutation 证据（Must）
+  - 需求: 系统应先对本地与远端 x86 环境执行 `mull-runner` 可用性探测；若工具可用，则执行 mutation campaign 并满足 `mutation_score >= 80%`；若工具不可用，则必须记录 blocked-state evidence，并在测试报告中给出处置结论与后续动作。
+  - 验证: 运行文档化 mutation probe/command，检查日志、报告、以及 `Go/Conditional-Go/No-Go` 结论。
+
 ## 6. 约束、假设、接口
 
 ### 6.1 约束（CON）
@@ -179,3 +188,5 @@ flowchart TD
 
 - CQ-001: 评测口径固定为 `100k/100`、`200k/100`、`500k/100`。
 - CQ-002: 质量阈值固定为 `recall_at_10 >= 0.95`。
+- CQ-003: 覆盖率权威口径固定为远端 x86 GCC clean `build-cov`，且 branch 排除 throw/unreachable 编译器分支。
+- CQ-004: mutation 证据允许两种终态：`score >= 80%`，或 `blocked-state evidence + 明确处置结论`。

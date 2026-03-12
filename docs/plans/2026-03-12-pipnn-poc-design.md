@@ -11,7 +11,7 @@ No UI features detected in SRS — skipping UCD phase.
 ## 1. 设计驱动输入
 
 - 功能驱动: FR-001..FR-010
-- NFR驱动: 三档口径（100k/100, 200k/100, 500k/100）、Recall@10 >= 0.95
+- NFR驱动: 三档口径（100k/100, 200k/100, 500k/100）、Recall@10 >= 0.95、远端 x86 GCC 权威 coverage、mutation score/block-state evidence
 - 约束: C++ + CMake；HNSW 必须用标准 hnswlib；远端 x86 主机评测
 - 关键已知瓶颈: leaf-kNN 阶段在构图时间中占主导
 
@@ -50,6 +50,7 @@ graph TB
   SEARCH[Search Layer: Best-first Beam]
   BASE[Baseline Layer: hnswlib Adapter]
   METRIC[Metric Layer: build/recall/qps]
+  QUALITY[Quality Evidence: coverage/mutation]
   REMOTE[Remote Orchestration: generic-x86-remote]
 
   CLI --> DATA
@@ -60,6 +61,7 @@ graph TB
   SEARCH --> METRIC
   BASE --> METRIC
   CLI --> REMOTE
+  REMOTE --> QUALITY
 ```
 
 ### 3.2 Component View
@@ -178,6 +180,45 @@ sequenceDiagram
   Metrics-->>Runner: JSON/MD
 ```
 
+### 4.3 特性C：质量证据工作流
+
+#### 时序图
+
+```mermaid
+sequenceDiagram
+  participant Engineer
+  participant Remote as Remote x86 GCC
+  participant Cov as gcovr
+  participant Mut as mull probe
+  participant Report
+
+  Engineer->>Remote: clean build-cov + ctest
+  Remote->>Cov: source-only coverage collection
+  Cov-->>Engineer: line_coverage.txt / branch_coverage.txt
+  Engineer->>Mut: probe mull-runner
+  alt mull available
+    Mut-->>Engineer: mutation command + score
+  else mull unavailable
+    Mut-->>Engineer: blocked-state evidence
+  end
+  Engineer->>Report: update ST/report/repro artifacts
+```
+
+#### 流程图
+
+```mermaid
+flowchart TD
+  A([Start]) --> B[远端 clean build-cov]
+  B --> C[ctest 全通过]
+  C --> D[gcovr 采集 line/branch]
+  D --> E{mull-runner 可用?}
+  E -- YES --> F[执行 mutation campaign]
+  E -- NO --> G[记录 blocked-state evidence]
+  F --> H[写入质量报告]
+  G --> H
+  H --> I([End])
+```
+
 ## 5. 数据模型
 
 PoC 采用内存结构，不引入持久化 DB。
@@ -231,12 +272,22 @@ graph LR
 - 关键验证:
   - `ctest --test-dir build --output-on-failure`
   - 远端重复运行结果 JSON 比对
+- Coverage 权威口径:
+  - 远端 x86 GCC
+  - clean `build-cov`
+  - source-only
+  - 排除 `_deps`、CompilerId、throw branch、unreachable branch
+- Mutation 权威口径:
+  - 先 probe `mull-runner`
+  - 可用时执行 campaign 并校验 `>= 80%`
+  - 不可用时产出 blocked-state evidence，并驱动 `Conditional-Go/No-Go`
 
 ## 9. 部署与基础设施
 
 - 本地: macOS 开发
 - 远端: x86 Linux 评测
 - 配置复用: `scripts/bench/reuse_knowhere_remote_env.sh`
+- 质量证据权威环境: 远端 x86 Linux + GCC
 
 ## 10. 风险与缓解
 
@@ -246,6 +297,8 @@ graph LR
   - 缓解: 子集调参使用子集内真值；全量报告明确口径
 - 风险-03: 参数空间过大导致调参成本高
   - 缓解: 固定推荐参数带，脚本化扫描
+- 风险-04: mutation 工具链在当前环境缺失
+  - 缓解: 先固定 probe + blocked-state 审计流程；可用后再执行 score gate
 
 ## 11. 开发计划
 
@@ -264,6 +317,7 @@ graph LR
 - P1: 远端 x86 自动化评测
 - P2: profile 驱动优化与 replicas 机制
 - P2: 参数扫描与报告自动汇总
+- P2: 远端 x86 GCC 质量证据固化（coverage / mutation probe）
 - P3: 可选高级优化（SIMD/GEMM/近似候选）
 
 ### 11.3 依赖链（关键路径）
@@ -274,7 +328,8 @@ graph LR
   P0 --> P1B[P1 HNSW Baseline]
   P1A --> P1C[P1 Remote Benchmark]
   P1B --> P1C
-  P1C --> P2A[P2 Profiling]
+  P1C --> P2Q[P2 Quality Evidence]
+  P2Q --> P2A[P2 Profiling]
   P2A --> P2B[P2 Optimization]
   P2B --> P2C[P2 Tuning Sweep]
   P2C --> P3[P3 Optional Advanced Optimizations]
@@ -286,4 +341,3 @@ graph LR
 - 核心质量门槛: recall@10 >= 0.95（100k/100, 200k/100, 500k/100）
 - 约束: 必须包含 hnswlib 标准基线；远端 x86 可复现
 - 优先路线: `fanout=1 + replicas=2 + max_leaders=128 + beam=256` 作为当前默认候选
-

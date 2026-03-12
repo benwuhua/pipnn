@@ -37,14 +37,10 @@ python3 scripts/check_configs.py feature-list.json --feature <id>
 ## Coverage Gate
 - Run coverage after green:
 ```bash
-rm -rf build-cov
-cmake -S . -B build-cov -DCMAKE_CXX_FLAGS='--coverage -O0 -g' -DCMAKE_C_FLAGS='--coverage -O0 -g'
-cmake --build build-cov -j
-ctest --test-dir build-cov --output-on-failure
-python3 -m gcovr build-cov -r . --merge-mode-functions=merge-use-line-max --exclude 'build-cov/_deps/' --exclude 'build-cov/CMakeFiles/.*/CompilerIdCXX/' --exclude 'tests/' --txt
-python3 -m gcovr build-cov -r . --merge-mode-functions=merge-use-line-max --exclude 'build-cov/_deps/' --exclude 'build-cov/CMakeFiles/.*/CompilerIdCXX/' --exclude 'tests/' --txt --txt-metric branch
+bash scripts/quality/remote_coverage.sh
 ```
 - Thresholds are in `feature-list.json` `quality_gates`.
+- Authoritative release evidence is collected on remote x86 GCC with the same source-only filters; local coverage is advisory unless the current feature explicitly states otherwise.
 
 ## TDD Refactor
 - Refactor only after green.
@@ -53,9 +49,10 @@ python3 -m gcovr build-cov -r . --merge-mode-functions=merge-use-line-max --excl
 ## Mutation Gate
 - Run mutation tooling check/execute when available:
 ```bash
-mull-runner --help
+bash scripts/quality/remote_mutation_probe.sh
 ```
 - For full mutation campaign, configure mull test command and target files.
+- If `mull-runner` is unavailable on both local and remote x86 environments, record the blocked-state command output and carry it into ST/repro artifacts instead of silently skipping the gate.
 
 ## Verification Enforcement
 - No completion claim without fresh command evidence.
@@ -76,11 +73,11 @@ ctest --test-dir build --output-on-failure
 ```
 - Direct mutation tooling command:
 ```bash
-mull-runner --help
+bash scripts/quality/remote_mutation_probe.sh
 ```
 - Direct coverage command:
 ```bash
-rm -rf build-cov && cmake -S . -B build-cov -DCMAKE_CXX_FLAGS='--coverage -O0 -g' -DCMAKE_C_FLAGS='--coverage -O0 -g' && cmake --build build-cov -j && ctest --test-dir build-cov --output-on-failure && python3 -m gcovr build-cov -r . --merge-mode-functions=merge-use-line-max --exclude 'build-cov/_deps/' --exclude 'build-cov/CMakeFiles/.*/CompilerIdCXX/' --exclude 'tests/' --txt
+bash scripts/quality/remote_coverage.sh
 ```
 
 ## Config Management
