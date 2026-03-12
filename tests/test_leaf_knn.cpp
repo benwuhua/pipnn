@@ -1,4 +1,5 @@
 #include "core/leaf_knn.h"
+#include "core/leaf_knn_blocked.h"
 
 #include <cassert>
 
@@ -43,6 +44,30 @@ int main() {
   assert(full_scan[1].first == 1 && full_scan[1].second == 3);
   assert(full_scan[2].first == 2 && full_scan[2].second == 0);
   assert(full_scan[3].first == 3 && full_scan[3].second == 2);
+
+  {
+    pipnn::Matrix exact_points = {{0.0f}, {1.0f}, {3.0f}, {10.0f}};
+    std::vector<int> exact_leaf = {0, 1, 2, 3};
+    auto naive = pipnn::BuildLeafKnnExactEdges(exact_points, exact_leaf, 2, false,
+                                               pipnn::LeafKnnMode::NaiveFull);
+    auto blocked = pipnn::BuildLeafKnnExactEdges(exact_points, exact_leaf, 2, false,
+                                                 pipnn::LeafKnnMode::BlockedFull);
+    assert(naive == blocked);
+    for (auto [u, v] : naive) {
+      assert(u != v);
+    }
+  }
+
+  {
+    pipnn::Matrix all_points = {{0.0f}, {2.0f}, {5.0f}};
+    std::vector<int> all_leaf = {0, 1, 2};
+    auto all_edges = pipnn::BuildLeafKnnExactEdges(all_points, all_leaf, 8, false,
+                                                   pipnn::LeafKnnMode::NaiveFull);
+    assert(all_edges.size() == 6);
+    for (auto [u, v] : all_edges) {
+      assert(u != v);
+    }
+  }
 
   assert(pipnn::BuildLeafKnnEdges(points, {}, 2, true).empty());
   assert(pipnn::BuildLeafKnnEdges(points, leaf, 0, true).empty());
