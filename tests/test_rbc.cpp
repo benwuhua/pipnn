@@ -168,5 +168,14 @@ int main() {
     assert(blocked == scalar);
   }
 
+  {
+    pipnn::RbcAssignConfig cfg;
+    cfg.min_points_for_blocked = 16;
+    cfg.min_leaders_for_blocked = 4;
+    assert(pipnn::SelectRbcAssignMode(15, 4, cfg) == pipnn::RbcAssignMode::Scalar);
+    assert(pipnn::SelectRbcAssignMode(16, 3, cfg) == pipnn::RbcAssignMode::Scalar);
+    assert(pipnn::SelectRbcAssignMode(16, 4, cfg) == pipnn::RbcAssignMode::Blocked);
+  }
+
   return 0;
 }

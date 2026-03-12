@@ -8,6 +8,7 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 option(PIPNN_ENABLE_OPENMP "Enable OpenMP" ON)
 
 include(FetchContent)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON)
 
 if(PIPNN_ENABLE_OPENMP)
   find_package(OpenMP)
@@ -19,6 +20,25 @@ FetchContent_Declare(
   GIT_TAG master
 )
 FetchContent_MakeAvailable(hnswlib)
+
+FetchContent_Declare(
+  eigen
+  GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+  GIT_TAG 3.4.0
+  GIT_SHALLOW TRUE
+)
+
+FetchContent_GetProperties(eigen)
+if(NOT eigen_POPULATED)
+  FetchContent_Populate(eigen)
+endif()
+
+if(NOT TARGET Eigen3::Eigen)
+  add_library(Eigen3::Eigen INTERFACE IMPORTED)
+  set_target_properties(Eigen3::Eigen PROPERTIES
+    INTERFACE_INCLUDE_DIRECTORIES "${eigen_SOURCE_DIR}"
+  )
+endif()
 
 add_library(pipnn_core
   src/cli/app.cpp
@@ -38,6 +58,7 @@ target_include_directories(pipnn_core PRIVATE ${hnswlib_SOURCE_DIR})
 if(OpenMP_CXX_FOUND)
   target_link_libraries(pipnn_core PUBLIC OpenMP::OpenMP_CXX)
 endif()
+target_link_libraries(pipnn_core PUBLIC Eigen3::Eigen)
 
 add_executable(pipnn src/main.cpp)
 target_link_libraries(pipnn PRIVATE pipnn_core)

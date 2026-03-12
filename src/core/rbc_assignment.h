@@ -13,6 +13,9 @@ struct RbcAssignConfig {
   int point_block_rows = 256;
 };
 
+RbcAssignMode SelectRbcAssignMode(std::size_t point_count, std::size_t leader_count,
+                                  const RbcAssignConfig& cfg = {});
+
 std::vector<int> AssignPointsToLeaders(const Matrix& points, const std::vector<int>& ids,
                                        const std::vector<int>& leaders, RbcAssignMode mode,
                                        const RbcAssignConfig& cfg = {});
