@@ -2,6 +2,7 @@
 
 #include "common/timer.h"
 #include "core/leaf_knn.h"
+#include "core/leaf_knn_blocked.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -39,8 +40,25 @@ Graph BuildPipnnGraph(const Matrix& points, const PipnnBuildParams& params, Pipn
     }
 
     Timer t_leaf;
+    LeafBatchConfig batch_cfg;
+    std::vector<LeafBatchJob> deferred_jobs;
     for (const auto& leaf : leaves) {
-      auto edges = BuildLeafKnnEdges(points, leaf, params.leaf_k, params.bidirected, params.leaf_scan_cap);
+      const bool capped = params.leaf_scan_cap > 0 &&
+                          params.leaf_scan_cap < static_cast<int>(leaf.size()) - 1;
+      const bool should_batch = !capped &&
+                                static_cast<int>(leaf.size()) >= batch_cfg.min_leaf_for_batch;
+      if (should_batch) {
+        deferred_jobs.push_back({leaf});
+        continue;
+      }
+      auto edges = BuildLeafKnnEdges(points, leaf, params.leaf_k, params.bidirected,
+                                     params.leaf_scan_cap);
+      if (stats != nullptr) stats->candidate_edges += edges.size();
+      for (const auto& [u, v] : edges) candidates[u].push_back(v);
+    }
+    if (!deferred_jobs.empty()) {
+      auto edges = BuildLeafKnnExactBatchedEdges(points, deferred_jobs, params.leaf_k,
+                                                 params.bidirected, batch_cfg);
       if (stats != nullptr) stats->candidate_edges += edges.size();
       for (const auto& [u, v] : edges) candidates[u].push_back(v);
     }

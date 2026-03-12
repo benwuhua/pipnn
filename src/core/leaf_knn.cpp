@@ -88,9 +88,6 @@ std::vector<Edge> BuildLeafKnnEdges(const Matrix& points, const std::vector<int>
   const int full = static_cast<int>(leaf.size()) - 1;
   const bool capped = scan_cap > 0 && scan_cap < full;
   if (capped) return BuildLeafKnnEdgesCapped(points, leaf, k, bidirected, scan_cap);
-
-  const LeafKnnConfig cfg;
-  const auto mode = SelectLeafKnnMode(leaf.size(), 0, cfg);
-  return BuildLeafKnnExactEdges(points, leaf, k, bidirected, mode, cfg);
+  return BuildLeafKnnExactEdgesNaive(points, leaf, k, bidirected);
 }
 }  // namespace pipnn
