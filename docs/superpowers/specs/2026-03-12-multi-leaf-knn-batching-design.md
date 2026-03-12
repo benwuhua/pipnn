@@ -99,7 +99,11 @@ For each leaf that would previously go through exact full-scan:
 - record its size
 - defer edge computation until batch execution
 
-The public `BuildLeafKnnEdges(...)` interface may remain unchanged by introducing an internal executor that processes one or more leaves before returning merged edges.
+This means batching cannot live entirely behind the current single-leaf `BuildLeafKnnEdges(...)` call site. The batching boundary must move up one level:
+
+- `pipnn_builder.cpp` becomes responsible for collecting exact full-scan leaf jobs
+- the existing single-leaf helper remains available for capped and scalar fallback paths
+- a new internal batch executor handles one or more leaf jobs and returns merged edges
 
 ### 5.2 Size Bucketing
 
@@ -185,18 +189,32 @@ This iteration optimizes only when the conditions suggest the optimization is li
 
 ## 8. Components
 
-### 8.1 `src/core/leaf_knn.cpp`
+### 8.1 `src/core/pipnn_builder.cpp`
 
-Primary orchestration site.
+Batch orchestration entry point.
+
+Expected refactor:
+
+- keep the existing leaf traversal loop
+- split leaves into:
+  - immediate capped/scalar work
+  - deferred exact full-scan jobs
+- dispatch deferred jobs into the multi-leaf executor
+- merge returned edges back into the existing `candidates[u]` flow
+
+### 8.2 `src/core/leaf_knn.cpp`
+
+Primary leaf-kernel site.
 
 Expected refactor:
 
 - keep capped path separate and unchanged
 - keep scalar exact path available
-- replace per-leaf blocked dispatch with multi-leaf job collection and batch execution
-- keep the public behavior of `BuildLeafKnnEdges(...)` intact
+- remove the per-leaf blocked dispatch path
+- keep the single-leaf exact helper as a correctness reference and fallback
+- add internal batch-execution helpers used by the builder-level orchestrator
 
-### 8.2 Small internal batching helper
+### 8.3 Small internal batching helper
 
 If needed, extract batching-only logic into a focused helper file, for example:
 
@@ -206,11 +224,11 @@ If needed, extract batching-only logic into a focused helper file, for example:
 
 Do not introduce a generic project-wide distance layer in this iteration.
 
-### 8.3 `tests/test_leaf_knn.cpp`
+### 8.4 `tests/test_leaf_knn.cpp`
 
 Extend tests so the batched path is forced on deterministic fixtures and compared directly against scalar exact behavior.
 
-### 8.4 `tests/test_pipnn_integration.cpp`
+### 8.5 `tests/test_pipnn_integration.cpp`
 
 Keep an integration check that the builder still produces sane graph behavior and does not change recall-oriented behavior on current fixtures.
 
@@ -251,15 +269,17 @@ Use the existing workload:
 - slice: `5k/50`
 - metric: `l2`
 
-Primary success metrics:
+Primary learning metrics:
 
 - `recall_at_10` remains `0.978` or within the same acceptable range
 - `leaf_knn_sec` is materially below the failed per-leaf blocked result of `16.1486`
 - total `build_sec` is materially below `38.6283`
 
-Stretch goal:
+Promotion threshold:
 
-- approach or beat the post-RBC baseline `leaf_knn_sec = 8.13263`
+- the new path is eligible to replace the current checkpoint only if it also approaches or beats the post-RBC baseline:
+  - `leaf_knn_sec = 8.13263`
+  - `build_sec = 30.4769`
 
 ## 11. Error Handling
 
@@ -293,7 +313,7 @@ Mitigation:
 
 ## 13. Success Criteria
 
-This iteration is successful if all of the following hold:
+This iteration is informative if all of the following hold:
 
 - local tests pass
 - deterministic tests show exact equality with the scalar path
@@ -301,7 +321,12 @@ This iteration is successful if all of the following hold:
 - `leaf_knn_sec` is materially lower than `16.1486`
 - total `build_sec` is materially lower than `38.6283`
 
-Beating the `8.13263` post-RBC baseline is desirable, but not the minimum condition for learning value. The minimum requirement is proving that batching granularity was the real problem.
+This iteration is promotion-ready only if all of the following also hold:
+
+- `leaf_knn_sec <= 8.13263`
+- `build_sec <= 30.4769`
+
+If the implementation is informative but not promotion-ready, it should be kept as evidence for the architecture decision and should not replace the current post-RBC baseline.
 
 ## 14. Next Decision After This Iteration
 
