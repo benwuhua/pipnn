@@ -62,6 +62,7 @@
 - Feature 15 now makes blocked mutation evidence auditable in the ST report and reproducibility manifest instead of treating missing `mull-runner` as an implicit skip
 - Feature 1 is now closed under the wave-2 quality workflow, with explicit real-test marker enforcement and ST traceability across the CLI tests
 - Refreshed the system-testing plan/report and current `results/st/` artifacts; project verdict is now `Go`
+- Opened Wave 3 for mutation scoring: SRS/design/feature inventory now track remote user-space `LLVM + Mull`, `build-mull`, and scored-state mutation evidence via features 16/17/18
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used

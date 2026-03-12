@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 15/15 passing · Last: System Testing refresh (`Go`, 2026-03-12) · Next: None
+Progress: 15/18 passing · Last: Increment Wave 3 mutation scoring upgrade (2026-03-12) · Next: Feature 16 NFR-006 远端 LLVM/Mull 用户态工具链
 
 ---
 
@@ -189,3 +189,17 @@ Progress: 15/15 passing · Last: System Testing refresh (`Go`, 2026-03-12) · Ne
   - `./examples/feature-13-reproducibility.sh` -> passed (`5` tracked runs)
   - `/Users/ryan/.codex/skills/generic-x86-remote/scripts/check-env.sh --json` -> `arch=x86_64`, `avx2=yes`, `avx512=yes`
 - System-testing verdict updated to `Go`; no open Critical/Major/Minor defects remain.
+
+### Session 14 — 2026-03-12
+- Entered `long-task-increment` for Wave 3 after approving the mutation-scoring impact matrix.
+- Added `increment-request.json` for the remote mutation-scoring scope, then consumed it into the long-task documents.
+- Updated the SRS so `NFR-006` now prioritizes remote scored-state mutation evidence and records legacy blocked-state as a fallback only when the new pipeline is not introduced.
+- Updated the design to add a dedicated remote scored mutation pipeline (`LLVM + Mull`, `build-mull/`, targeted test set, aggregated reports).
+- Extended the shared constraints/assumptions with:
+  - `CON-004`: remote user-space `LLVM + Mull` + `build-mull`
+  - `ASM-003`: remote host can download or reuse matching `LLVM/Mull` release assets
+- Added Wave 3 features to `feature-list.json`:
+  - Feature 16 `NFR-006 远端 LLVM/Mull 用户态工具链`
+  - Feature 17 `NFR-006 远端 targeted mutation pipeline`
+  - Feature 18 `NFR-006 scored mutation evidence`
+- Router next step is now `long-task-work`, starting from feature 16.
