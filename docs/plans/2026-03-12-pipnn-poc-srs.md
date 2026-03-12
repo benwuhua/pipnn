@@ -159,9 +159,10 @@ flowchart TD
   - 需求: 对外审计使用的覆盖率结果应以远端 x86 GCC 的 clean `build-cov` 结果为准；统计范围仅包含项目自有源文件，排除第三方 `_deps`、编译器识别目录以及编译器生成的 throw/unreachable branch。
   - 验证: 在远端 x86 主机执行文档化 coverage 命令，生成 `results/st/line_coverage.txt` 与 `results/st/branch_coverage.txt`，并满足 `line >= 90%`、`branch >= 80%`。
 
+<!-- Wave 3: Modified 2026-03-12 — remote scored-state mutation workflow -->
 - NFR-006 Mutation 证据（Must）
-  - 需求: 系统应先对本地与远端 x86 环境执行 `mull-runner` 可用性探测；若工具可用，则执行 mutation campaign 并满足 `mutation_score >= 80%`；若工具不可用，则必须记录 blocked-state evidence，并在测试报告中给出处置结论与后续动作。
-  - 验证: 运行文档化 mutation probe/command，检查日志、报告、以及 `Go/Conditional-Go/No-Go` 结论。
+  - 需求: 系统应优先在远端 x86 主机上使用用户态 `LLVM + Mull` 工具链执行 mutation campaign，并对批准的 `src/` 增量集满足 `mutation_score >= 80%`；仅当 scored-state pipeline 尚未引入到目标环境时，才允许记录 blocked-state evidence，并在测试报告中给出处置结论与后续动作。
+  - 验证: 运行文档化远端 mutation 命令或 probe/command，检查日志、报告、聚合分数、以及 `Go/Conditional-Go/No-Go` 结论。
 
 ## 6. 约束、假设、接口
 
@@ -169,10 +170,12 @@ flowchart TD
 - CON-001: 实现语言为 C++，构建系统为 CMake。
 - CON-002: 基线必须使用标准 `hnswlib`。
 - CON-003: 编译与评测优先在远端 x86 Linux 主机执行。
+- CON-004: mutation score 权威口径使用远端 x86 用户态 `LLVM + Mull` 与独立 `build-mull` 构建目录。
 
 ### 6.2 假设（ASM）
 - ASM-001: 远端主机可访问 SIFT 数据文件。
 - ASM-002: 远端主机具备 GCC/CMake/OpenMP 基础工具链。
+- ASM-003: 远端主机可下载或已缓存匹配版本的 `LLVM` 与 `Mull` 发布包。
 
 ### 6.3 接口（IFR）
 - IFR-001: CLI 接口通过 `./build/pipnn` 提供。
@@ -189,4 +192,4 @@ flowchart TD
 - CQ-001: 评测口径固定为 `100k/100`、`200k/100`、`500k/100`。
 - CQ-002: 质量阈值固定为 `recall_at_10 >= 0.95`。
 - CQ-003: 覆盖率权威口径固定为远端 x86 GCC clean `build-cov`，且 branch 排除 throw/unreachable 编译器分支。
-- CQ-004: mutation 证据允许两种终态：`score >= 80%`，或 `blocked-state evidence + 明确处置结论`。
+- CQ-004: mutation 证据允许两种终态：远端 scored-state `score >= 80%`（优先），或 legacy `blocked-state evidence + 明确处置结论`。

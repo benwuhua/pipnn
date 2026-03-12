@@ -22,11 +22,13 @@
   "constraints": [
     "CON-001: 实现语言为 C++，构建系统为 CMake。",
     "CON-002: 基线必须使用标准 hnswlib。",
-    "CON-003: 编译与评测优先在远端 x86 Linux 主机执行。"
+    "CON-003: 编译与评测优先在远端 x86 Linux 主机执行。",
+    "CON-004: mutation 评分权威口径使用远端 x86 用户态 LLVM + Mull 与独立 build-mull 构建目录。"
   ],
   "assumptions": [
     "ASM-001: 远端主机可访问 SIFT 数据文件。",
-    "ASM-002: 远端主机具备 GCC/CMake/OpenMP 基础工具链。"
+    "ASM-002: 远端主机具备 GCC/CMake/OpenMP 基础工具链。",
+    "ASM-003: 远端主机可下载或已缓存匹配版本的 LLVM 与 Mull 发布包。"
   ],
   "required_configs": [
     {
@@ -352,6 +354,59 @@
       ],
       "st_case_path": "docs/test-cases/feature-15-mutation-evidence.md",
       "st_case_count": 2
+    },
+    {
+      "id": 16,
+      "wave": 3,
+      "category": "non-functional",
+      "title": "NFR-006 远端 LLVM/Mull 用户态工具链",
+      "description": "在远端 x86 主机上安装并校验用户态 LLVM + Mull 工具链，供 mutation score 权威流程复用",
+      "priority": "high",
+      "status": "failing",
+      "ui": false,
+      "verification_steps": [
+        "Given 远端 x86 主机, when 执行 ensure_remote_mull_toolchain.sh, then 在 repo-local .tools 目录下得到可执行的 clang、clang++ 与 mull-runner。",
+        "Given 工具链已安装, when 执行版本校验命令, then LLVM 与 Mull 版本匹配且脚本返回稳定路径。"
+      ],
+      "dependencies": [
+        9
+      ]
+    },
+    {
+      "id": 17,
+      "wave": 3,
+      "category": "non-functional",
+      "title": "NFR-006 远端 targeted mutation pipeline",
+      "description": "通过 remote_mutation_run.sh 在远端 x86 上执行 build-mull 与 targeted mutation，并抓回原始报告",
+      "priority": "high",
+      "status": "failing",
+      "ui": false,
+      "verification_steps": [
+        "Given 远端 LLVM/Mull 工具链就绪, when 执行 remote_mutation_run.sh smoke 模式, then 为 test_hashprune 生成可解析的原始 mutation report。",
+        "Given targeted test set, when 执行 remote_mutation_run.sh full 模式, then 为每个目标 executable 生成原始 mutation report 并抓回 results/st/mutation/。"
+      ],
+      "dependencies": [
+        16
+      ]
+    },
+    {
+      "id": 18,
+      "wave": 3,
+      "category": "non-functional",
+      "title": "NFR-006 scored mutation evidence",
+      "description": "聚合远端 targeted mutation 结果并以 scored-state 更新 validator、ST report 与 repro manifest",
+      "priority": "high",
+      "status": "failing",
+      "ui": false,
+      "verification_steps": [
+        "Given 远端 mutation 原始报告, when 执行聚合与校验命令, then 生成 mutation_score.txt、mutation_report.json、mutation_survivors.txt 且 aggregate score >= 80。",
+        "Given scored mutation evidence, when 更新 ST report 与 repro manifest, then 文档记录 mutation score、工具版本、报告路径，并通过 validate_mutation_evidence.py。"
+      ],
+      "dependencies": [
+        13,
+        15,
+        17
+      ]
     }
   ],
   "waves": [
@@ -364,6 +419,11 @@
       "id": 2,
       "date": "2026-03-12",
       "description": "Quality-gate methodology clarification and mutation environment follow-up"
+    },
+    {
+      "id": 3,
+      "date": "2026-03-12",
+      "description": "Remote LLVM/Mull mutation scoring upgrade for NFR-006"
     }
   ]
 }

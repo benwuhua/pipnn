@@ -11,7 +11,7 @@ No UI features detected in SRS — skipping UCD phase.
 ## 1. 设计驱动输入
 
 - 功能驱动: FR-001..FR-010
-- NFR驱动: 三档口径（100k/100, 200k/100, 500k/100）、Recall@10 >= 0.95、远端 x86 GCC 权威 coverage、mutation score/block-state evidence
+- NFR驱动: 三档口径（100k/100, 200k/100, 500k/100）、Recall@10 >= 0.95、远端 x86 GCC 权威 coverage、远端 x86 Clang/Mull scored mutation evidence
 - 约束: C++ + CMake；HNSW 必须用标准 hnswlib；远端 x86 主机评测
 - 关键已知瓶颈: leaf-kNN 阶段在构图时间中占主导
 
@@ -189,15 +189,15 @@ sequenceDiagram
   participant Engineer
   participant Remote as Remote x86 GCC
   participant Cov as gcovr
-  participant Mut as mull probe
+  participant Mut as scored mutation / legacy probe
   participant Report
 
   Engineer->>Remote: clean build-cov + ctest
   Remote->>Cov: source-only coverage collection
   Cov-->>Engineer: line_coverage.txt / branch_coverage.txt
-  Engineer->>Mut: probe mull-runner
-  alt mull available
-    Mut-->>Engineer: mutation command + score
+  Engineer->>Mut: run remote scored mutation command
+  alt scored-state pipeline available
+    Mut-->>Engineer: mutation command + score + survivors
   else mull unavailable
     Mut-->>Engineer: blocked-state evidence
   end
@@ -211,12 +211,53 @@ flowchart TD
   A([Start]) --> B[远端 clean build-cov]
   B --> C[ctest 全通过]
   C --> D[gcovr 采集 line/branch]
-  D --> E{mull-runner 可用?}
-  E -- YES --> F[执行 mutation campaign]
-  E -- NO --> G[记录 blocked-state evidence]
+  D --> E{scored mutation pipeline 可用?}
+  E -- YES --> F[执行远端 LLVM/Mull mutation campaign]
+  E -- NO --> G[记录 legacy blocked-state evidence]
   F --> H[写入质量报告]
   G --> H
   H --> I([End])
+```
+
+### 4.4 特性D：远端 scored mutation pipeline
+
+#### 时序图
+
+```mermaid
+sequenceDiagram
+  participant Engineer
+  participant Wrapper as remote_mutation_run.sh
+  participant Remote as remote_mutation_run_inner.sh
+  participant Tool as ensure_remote_mull_toolchain.sh
+  participant Mull as mull-runner
+  participant Agg as aggregate_mutation_reports.py
+
+  Engineer->>Wrapper: 执行远端 mutation 命令
+  Wrapper->>Remote: sync + run
+  Remote->>Tool: 安装/校验 LLVM + Mull
+  Tool-->>Remote: clang / clang++ / mull-runner paths
+  Remote->>Remote: clean build-mull + targeted test build
+  Remote->>Mull: 按 executable 执行 mutation
+  Mull-->>Remote: raw JSON reports
+  Remote->>Agg: 聚合 raw reports
+  Agg-->>Remote: mutation_score.txt / report.json / survivors.txt
+  Remote-->>Wrapper: results/st/mutation*
+  Wrapper-->>Engineer: fetched scored-state artifacts
+```
+
+#### 流程图
+
+```mermaid
+flowchart TD
+  A([Start]) --> B[同步代码到远端]
+  B --> C[确保用户态 LLVM/Mull 工具链]
+  C --> D[clean build-mull]
+  D --> E[编译 targeted tests]
+  E --> F[按 executable 执行 mull-runner]
+  F --> G[聚合 raw reports]
+  G --> H[输出 score / survivors / json]
+  H --> I[抓回本地 results/st]
+  I --> J([End])
 ```
 
 ## 5. 数据模型
@@ -278,9 +319,9 @@ graph LR
   - source-only
   - 排除 `_deps`、CompilerId、throw branch、unreachable branch
 - Mutation 权威口径:
-  - 先 probe `mull-runner`
-  - 可用时执行 campaign 并校验 `>= 80%`
-  - 不可用时产出 blocked-state evidence，并驱动 `Conditional-Go/No-Go`
+  - 优先执行远端用户态 `LLVM + Mull` scored-state pipeline
+  - 对批准的 `src/` 增量集校验 `>= 80%`
+  - 仅在 pipeline 未引入的环境保留 legacy blocked-state evidence
 
 ## 9. 部署与基础设施
 
@@ -297,8 +338,8 @@ graph LR
   - 缓解: 子集调参使用子集内真值；全量报告明确口径
 - 风险-03: 参数空间过大导致调参成本高
   - 缓解: 固定推荐参数带，脚本化扫描
-- 风险-04: mutation 工具链在当前环境缺失
-  - 缓解: 先固定 probe + blocked-state 审计流程；可用后再执行 score gate
+- 风险-04: 远端 LLVM/Mull 版本与 clang 构建链不兼容
+  - 缓解: 固定版本对；独立 `build-mull/`；先 smoke 单目标再跑 full targeted set
 
 ## 11. 开发计划
 
@@ -318,6 +359,7 @@ graph LR
 - P2: profile 驱动优化与 replicas 机制
 - P2: 参数扫描与报告自动汇总
 - P2: 远端 x86 GCC 质量证据固化（coverage / mutation probe）
+- P2: 远端 x86 Clang/Mull scored mutation pipeline（user-space toolchain + build-mull）
 - P3: 可选高级优化（SIMD/GEMM/近似候选）
 
 ### 11.3 依赖链（关键路径）
@@ -329,7 +371,8 @@ graph LR
   P1A --> P1C[P1 Remote Benchmark]
   P1B --> P1C
   P1C --> P2Q[P2 Quality Evidence]
-  P2Q --> P2A[P2 Profiling]
+  P2Q --> P2M[P2 Mutation Scoring]
+  P2M --> P2A[P2 Profiling]
   P2A --> P2B[P2 Optimization]
   P2B --> P2C[P2 Tuning Sweep]
   P2C --> P3[P3 Optional Advanced Optimizations]
