@@ -1,0 +1,7 @@
+{
+  "mode": "hnsw",
+  "build_sec": 48.5198,
+  "recall_at_10": 0.998,
+  "qps": 145.651,
+  "edges": 160000
+}

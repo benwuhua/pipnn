@@ -1,0 +1,3 @@
+sync=ok
+src=/Users/ryan/Code/Paper/pipnn/.worktrees/high-dim-validation/results/openai_arxiv_probe/payload.XogZsX
+dest=/data/work/openai-arxiv-probe

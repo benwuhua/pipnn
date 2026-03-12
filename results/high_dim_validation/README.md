@@ -1,0 +1,84 @@
+# High-Dim Validation Notes
+
+## Remote Probe
+
+Probe artifacts:
+
+- `results/openai_arxiv_probe/candidates.txt`
+- `results/openai_arxiv_probe/files.txt`
+- `results/openai_arxiv_probe/headers.txt`
+
+Findings:
+
+- `/data/work/datasets/openai-arxiv` exists but has no directly usable `fbin/ibin/fvecs/ivecs` files.
+- `/data/work/datasets/simplewiki-openai/pipnn_public_small` contains:
+  - `base.fbin`: `20000 x 3072`
+  - `query.fbin`: `100 x 3072`
+  - `gt.ibin`: `100 x 10`
+- `/data/work/datasets/crisp/simplewiki-openai` contains:
+  - `base.fvecs`
+  - `query.fvecs`
+  - `groundtruth.ivecs`
+- `/data/work/datasets/wikipedia-cohere-1m` contains:
+  - `base.fbin`: `1000000 x 768`
+  - `query.fbin`: `5000 x 768`
+  - `gt.ibin`: `5000 x 100`
+
+Conclusion:
+
+- The original `openai-arxiv` reader plan is not the shortest path.
+- We can already validate a high-dimensional workload with the existing `fvecs/ivecs` reader by using `crisp/simplewiki-openai`.
+
+## High-Dim Smoke
+
+Dataset:
+
+- base: `/data/work/datasets/crisp/simplewiki-openai/base.fvecs`
+- query: `/data/work/datasets/crisp/simplewiki-openai/query.fvecs`
+- metric: `l2`
+- validation mode: subset-internal exact truth
+
+Wrapper:
+
+- `scripts/bench/run_simplewiki_openai_20k_100.sh`
+
+### 20k / 100
+
+- `pipnn` was still building after more than `3 minutes`
+- this run was stopped and treated as a negative signal
+
+### 5k / 50
+
+Artifacts:
+
+- `results/high_dim_validation/simplewiki_openai_5k_50/pipnn_metrics.json`
+- `results/high_dim_validation/simplewiki_openai_5k_50/pipnn.stdout`
+- `results/high_dim_validation/simplewiki_openai_5k_50/hnsw_metrics.json`
+- `remote-logs/high_dim_validation/simplewiki-openai-5k50_20260312T095046Z.log`
+
+PiPNN:
+
+- `build_sec = 39.0241`
+- `recall_at_10 = 0.978`
+- `qps = 36.912`
+
+PiPNN build profile:
+
+- `partition_sec = 18.4711`
+- `leaf_knn_sec = 9.34212`
+- `prune_sec = 11.2098`
+- `leaves = 103`
+- `rbc_max_membership = 2`
+
+HNSW:
+
+- `build_sec = 48.5198`
+- `recall_at_10 = 0.998`
+- `qps = 145.651`
+
+Interpretation:
+
+- High-dimensional data does not make the current PiPNN path naturally efficient.
+- PiPNN is still slightly faster to build than HNSW on this small slice, but query speed is much worse and recall is lower.
+- The main build bottleneck is no longer only `leaf_knn`; `partition` is already the largest phase on `3072d`.
+- This points to a broader distance-computation problem across both RBC assignment and leaf candidate generation, not just a leaf-local kernel problem.

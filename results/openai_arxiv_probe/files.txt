@@ -1,0 +1,19 @@
+ROOT /data/work/datasets/openai-arxiv
+  resolved=/data/work/datasets/openai-arxiv
+  no-matching-files
+ROOT /data/work/datasets/simplewiki-openai
+  resolved=/data/work/datasets/simplewiki-openai
+  FILE /data/work/datasets/simplewiki-openai/pipnn_public_small/base.fbin size=245760008
+  FILE /data/work/datasets/simplewiki-openai/pipnn_public_small/query.fbin size=1228808
+  FILE /data/work/datasets/simplewiki-openai/pipnn_public_small/gt.ibin size=4008
+  FILE /data/work/datasets/simplewiki-openai/simplewiki-openai-3072-normalized.hdf5 size=3213355328
+ROOT /data/work/datasets/crisp/simplewiki-openai
+  resolved=/data/work/datasets/crisp/simplewiki-openai
+  FILE /data/work/datasets/crisp/simplewiki-openai/base.fvecs size=3200492624
+  FILE /data/work/datasets/crisp/simplewiki-openai/query.fvecs size=12292000
+  FILE /data/work/datasets/crisp/simplewiki-openai/groundtruth.ivecs size=404000
+ROOT /data/work/datasets/wikipedia-cohere-1m
+  resolved=/data/work/datasets/wikipedia-cohere-1m
+  FILE /data/work/datasets/wikipedia-cohere-1m/base.fbin size=3072000008
+  FILE /data/work/datasets/wikipedia-cohere-1m/query.fbin size=15360008
+  FILE /data/work/datasets/wikipedia-cohere-1m/gt.ibin size=4000008
