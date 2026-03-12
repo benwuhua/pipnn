@@ -112,6 +112,33 @@ Notes:
   - `remote-logs/pipnn-500k100-subset_20260312T005341Z.log`
   - `remote-logs/hnsw-500k100-subset_20260312T010152Z.log`
 
+## Final quality config for NFR-002
+
+To satisfy the recall threshold across all three scales, keep the graph-build parameters unchanged and increase search beam from `256` to `384`.
+
+| scale | build_sec | recall_at_10 | qps | edges |
+|---|---:|---:|---:|---:|
+| 100k/100 | 74.6352 | 0.993 | 214.342 | 2657240 |
+| 200k/100 | 155.867 | 0.978 | 178.467 | 5345290 |
+| 500k/100 | 401.321 | 0.962 | 152.697 | 13219687 |
+
+Fixed config:
+- `cmax=128`
+- `fanout=1`
+- `leader_frac=0.02`
+- `max_leaders=128`
+- `replicas=2`
+- `leaf_k=12`
+- `max_degree=32`
+- `hash_bits=12`
+- `beam=384`
+- `bidirected=1`
+
+Feature 12 evidence logs:
+- `remote-logs/feature12-100k-beam384_20260312T014340Z.log`
+- `remote-logs/feature12-200k-beam384_20260312T014607Z.log`
+- `remote-logs/feature12-500k-beam384_20260312T013522Z.log`
+
 ### 30k base / 200 query (full SIFT1M truth, not recommended for subset tuning)
 
 | mode | build_sec | recall_at_10 |

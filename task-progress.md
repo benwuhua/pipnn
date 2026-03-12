@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 11/13 passing · Last: Feature 11 complete (2026-03-12) · Next: Feature 12 (NFR-002 recall threshold)
+Progress: 12/13 passing · Last: Feature 12 complete (2026-03-12) · Next: Feature 13 (NFR-003 reproducibility)
 
 ---
 
@@ -34,3 +34,16 @@ Progress: 11/13 passing · Last: Feature 11 complete (2026-03-12) · Next: Featu
 - Added feature acceptance document: `docs/test-cases/feature-11-benchmark-matrix.md`.
 - Added runnable example: `examples/feature-11-benchmark-matrix.sh`.
 - Marked feature 11 as `passing`; feature 12 remains the next active item because `500k/100` PiPNN recall is still `0.943 < 0.95`.
+
+### Session 3 — 2026-03-12
+- Started feature 12 (`NFR-002 召回阈值达标`) from the known failing point: `500k/100` with `beam=256` gave `recall_at_10=0.943`.
+- Formed and tested the search-budget hypothesis by increasing `beam` only, keeping graph-build parameters unchanged.
+- Verified the unified `beam=384` configuration at all required scales:
+  - `100k/100`: `recall_at_10=0.993`
+  - `200k/100`: `recall_at_10=0.978`
+  - `500k/100`: `recall_at_10=0.962`
+- Stored evidence in `results/feature12_*_beam384.json` and corresponding `remote-logs/feature12-*-beam384_*.log`.
+- Updated the benchmark report with the final feature 12 quality config and evidence log paths.
+- Added feature acceptance document: `docs/test-cases/feature-12-recall-threshold.md`.
+- Added runnable example: `examples/feature-12-recall-threshold.sh`.
+- Marked feature 12 as `passing`; feature 13 is now the next active item.

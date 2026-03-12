@@ -216,8 +216,10 @@
       "title": "NFR-002 召回阈值达标",
       "description": "三档口径下优化配置 recall@10 >= 0.95",
       "priority": "high",
-      "status": "failing",
+      "status": "passing",
       "ui": false,
+      "st_case_path": "docs/test-cases/feature-12-recall-threshold.md",
+      "st_case_count": 3,
       "verification_steps": [
         "Given 100k/100 子集内真值口径, when 使用优化参数运行, then recall_at_10 >= 0.95。",
         "Given 200k/100 子集内真值口径, when 使用优化参数运行, then recall_at_10 >= 0.95。",
