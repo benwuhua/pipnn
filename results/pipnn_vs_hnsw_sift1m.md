@@ -89,6 +89,27 @@ Profile for the 200k optimized run:
 - `leaf_knn_sec=106.18` (still dominant)
 - `prune_sec=21.73`
 
+### 500k base / 100 query (subset-internal truth, in progress)
+
+This run uses direct binary invocation without `--truth`, so recall is computed against exact top-k on the loaded 500k subset.
+
+| config | build_sec | recall_at_10 | qps | edges |
+|---|---:|---:|---:|---:|
+| fanout=1, replicas=2, max_leaders=128, beam=256 | 401.906 | 0.943 | 219.942 | 13219687 |
+| hnsw baseline | pending | pending | pending | pending |
+
+Profile for the 500k optimized run:
+- `partition_sec=110.784`
+- `leaf_knn_sec=245.780` (dominant)
+- `prune_sec=45.213`
+- `leaves=21325`
+- `candidate_edges=23826016`
+
+Notes:
+- The current optimized PiPNN config misses the `recall_at_10 >= 0.95` threshold at 500k by `0.007`.
+- Remote host had an unrelated long-running `knowhere` benchmark consuming CPU during this run, so absolute build times should be treated as noisy.
+- HNSW 500k subset-truth baseline is running under log `remote-logs/hnsw-500k100-subset_20260312T010152Z.log`.
+
 ### 30k base / 200 query (full SIFT1M truth, not recommended for subset tuning)
 
 | mode | build_sec | recall_at_10 |
@@ -110,7 +131,9 @@ cp remote.env.example ~/.config/generic-x86-remote/remote.env
 /Users/ryan/.codex/skills/generic-x86-remote/scripts/sync.sh --src /Users/ryan/Code/Paper/pipnn --dest /data/work/pipnn --delete --exclude .git --exclude build --exclude results
 
 # 3) remote build + test
-/Users/ryan/.codex/skills/generic-x86-remote/scripts/run.sh --repo /data/work/pipnn -- cmake -S . -B build && cmake --build build -j && ctest --test-dir build --output-on-failure
+/Users/ryan/.codex/skills/generic-x86-remote/scripts/run.sh --repo /data/work/pipnn -- cmake -S . -B build
+/Users/ryan/.codex/skills/generic-x86-remote/scripts/run.sh --repo /data/work/pipnn -- cmake --build build -j
+/Users/ryan/.codex/skills/generic-x86-remote/scripts/run.sh --repo /data/work/pipnn -- ctest --test-dir build --output-on-failure
 
 # 4) SIFT1M benchmark background job
 /Users/ryan/.codex/skills/generic-x86-remote/scripts/run-bg.sh --repo /data/work/pipnn --name pipnn-sift1m -- ./scripts/bench/remote_bench_sift1m.sh
@@ -131,4 +154,14 @@ Under `$SIFT1M_DIR` (default `/data/datasets/sift1m`):
 
 ```bash
 ./scripts/bench/reuse_knowhere_remote_env.sh
+```
+
+## 500k subset-truth direct commands
+
+```bash
+# PiPNN optimized config, omit --truth to compute exact top-k on the loaded subset
+/Users/ryan/.codex/skills/generic-x86-remote/scripts/run-bg.sh --repo /data/work/pipnn --name pipnn-500k100-subset -- env PIPNN_PROFILE=1 PIPNN_ECHO_CONFIG=1 ./build/pipnn --mode pipnn --dataset sift1m --metric l2 --base /data/work/knowhere-rs-src/data/sift/base.fvecs --query /data/work/knowhere-rs-src/data/sift/query.fvecs --max-base 500000 --max-query 100 --rbc-cmax 128 --rbc-fanout 1 --leader-frac 0.02 --max-leaders 128 --replicas 2 --leaf-k 12 --leaf-scan-cap 0 --max-degree 32 --hash-bits 12 --beam 256 --bidirected 1 --output results/bench_500k_100_subset/pipnn_metrics.json
+
+# HNSW baseline, also omit --truth for the same subset-internal recall definition
+/Users/ryan/.codex/skills/generic-x86-remote/scripts/run-bg.sh --repo /data/work/pipnn --name hnsw-500k100-subset -- ./build/pipnn --mode hnsw --dataset sift1m --metric l2 --base /data/work/knowhere-rs-src/data/sift/base.fvecs --query /data/work/knowhere-rs-src/data/sift/query.fvecs --max-base 500000 --max-query 100 --output results/bench_500k_100_subset/hnsw_metrics.json
 ```

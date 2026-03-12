@@ -1,0 +1,240 @@
+{
+  "project": "pipnn-poc",
+  "created": "2026-03-12",
+  "tech_stack": {
+    "language": "cpp",
+    "test_framework": "ctest",
+    "coverage_tool": "gcov",
+    "mutation_tool": "mull"
+  },
+  "quality_gates": {
+    "line_coverage_min": 90,
+    "branch_coverage_min": 80,
+    "mutation_score_min": 80
+  },
+  "constraints": [
+    "CON-001: 实现语言为 C++，构建系统为 CMake。",
+    "CON-002: 基线必须使用标准 hnswlib。",
+    "CON-003: 编译与评测优先在远端 x86 Linux 主机执行。"
+  ],
+  "assumptions": [
+    "ASM-001: 远端主机可访问 SIFT 数据文件。",
+    "ASM-002: 远端主机具备 GCC/CMake/OpenMP 基础工具链。"
+  ],
+  "required_configs": [
+    {
+      "name": "SIFT 数据目录",
+      "type": "env",
+      "key": "SIFT1M_DIR",
+      "description": "远端 SIFT 数据目录，包含 base.fvecs/query.fvecs/groundtruth.ivecs",
+      "required_by": [8, 9, 10, 11],
+      "check_hint": "设置 SIFT1M_DIR=/data/work/knowhere-rs-src/data/sift 或实际路径"
+    },
+    {
+      "name": "远端主机",
+      "type": "env",
+      "key": "REMOTE_HOST",
+      "description": "generic-x86-remote 连接主机",
+      "required_by": [8, 9, 10, 11],
+      "check_hint": "在 ~/.config/generic-x86-remote/remote.env 中配置 REMOTE_HOST"
+    },
+    {
+      "name": "远端用户",
+      "type": "env",
+      "key": "REMOTE_USER",
+      "description": "generic-x86-remote 连接用户",
+      "required_by": [8, 9, 10, 11],
+      "check_hint": "在 ~/.config/generic-x86-remote/remote.env 中配置 REMOTE_USER"
+    }
+  ],
+  "real_test": {
+    "marker_pattern": "^test_.*\\.cpp$",
+    "mock_patterns": ["mock", "stub", "fake"],
+    "test_dir": "tests"
+  },
+  "features": [
+    {
+      "id": 1,
+      "category": "functional",
+      "title": "CLI 参数与模式路由",
+      "description": "实现 mode/dataset/input/path 解析与错误处理",
+      "priority": "high",
+      "status": "passing",
+      "ui": false,
+      "verification_steps": [
+        "Given 可执行文件存在, when 运行 --help, then 输出 mode/dataset/metric/output 参数说明。",
+        "Given 错误 dataset 值, when 运行命令, then 返回非零并打印 unsupported dataset。"
+      ],
+      "dependencies": []
+    },
+    {
+      "id": 2,
+      "category": "functional",
+      "title": "SIFT fvecs/ivecs 加载",
+      "description": "实现有效输入读取与异常诊断",
+      "priority": "high",
+      "status": "passing",
+      "ui": false,
+      "verification_steps": [
+        "Given 合法 fvecs/ivecs, when 调用加载器, then 返回正确维度与样本数。",
+        "Given 截断或维度不一致文件, when 调用加载器, then 抛出可诊断异常并终止流程。"
+      ],
+      "dependencies": [1]
+    },
+    {
+      "id": 3,
+      "category": "functional",
+      "title": "RBC 分区",
+      "description": "按 cmax/fanout/leader 参数生成叶子分区",
+      "priority": "high",
+      "status": "passing",
+      "ui": false,
+      "verification_steps": [
+        "Given 点集与 cmax, when 执行分区, then 每个叶子尺寸不超过约束或按 fallback 切分。",
+        "Given fanout>1, when 执行分区, then 同一点可出现在多个叶子中。"
+      ],
+      "dependencies": [2]
+    },
+    {
+      "id": 4,
+      "category": "functional",
+      "title": "Leaf kNN 候选边生成",
+      "description": "在叶子内构建 top-k 候选边并支持 bidirected",
+      "priority": "high",
+      "status": "passing",
+      "ui": false,
+      "verification_steps": [
+        "Given 小规模二维点, when 构建 leaf-kNN, then 最近邻边与双向边符合预期且无自环。",
+        "Given 不同 leaf 参数, when 运行构图, then 候选边数与 profile 输出可观察变化。"
+      ],
+      "dependencies": [3]
+    },
+    {
+      "id": 5,
+      "category": "functional",
+      "title": "HashPrune 在线剪枝",
+      "description": "按 hash bucket 与 max_degree 执行有界邻接剪枝",
+      "priority": "high",
+      "status": "passing",
+      "ui": false,
+      "verification_steps": [
+        "Given 候选边集合, when 执行 HashPrune, then 每点度不超过 max_degree。",
+        "Given 打乱后的同一候选输入, when 重复运行, then 输出邻接结果一致（顺序无关性）。"
+      ],
+      "dependencies": [4]
+    },
+    {
+      "id": 6,
+      "category": "functional",
+      "title": "PiPNN 构图集成与阶段 profiling",
+      "description": "整合 RBC/leaf-kNN/HashPrune 并输出 partition/leaf/prune 耗时",
+      "priority": "high",
+      "status": "passing",
+      "ui": false,
+      "verification_steps": [
+        "Given PIPNN_PROFILE=1, when 运行 pipnn 模式, then stdout 输出 pipnn_profile_build 且含 partition_sec/leaf_knn_sec/prune_sec。",
+        "Given replicas/fanout/max_leaders 参数变化, when 重复执行, then profile 指标和最终 build_sec 出现可解释变化。"
+      ],
+      "dependencies": [5]
+    },
+    {
+      "id": 7,
+      "category": "functional",
+      "title": "best-first beam 查询",
+      "description": "实现图上 ANN 搜索并输出 top-k",
+      "priority": "high",
+      "status": "passing",
+      "ui": false,
+      "verification_steps": [
+        "Given 构建后的图与查询向量, when 执行 beam 搜索, then 返回 top-k 结果并可用于 recall 计算。",
+        "Given 退化图路径测试, when 运行搜索, then 能通过 best-first 策略命中目标节点。"
+      ],
+      "dependencies": [6]
+    },
+    {
+      "id": 8,
+      "category": "functional",
+      "title": "标准 hnswlib 基线",
+      "description": "统一输出与 PiPNN 同结构指标",
+      "priority": "high",
+      "status": "passing",
+      "ui": false,
+      "verification_steps": [
+        "Given mode=hnsw, when 运行评测, then 输出 JSON 含 build_sec/recall_at_10/qps/edges。",
+        "Given 与 pipnn 相同数据口径, when 对比结果, then 两者指标可直接横向比较。"
+      ],
+      "dependencies": [2]
+    },
+    {
+      "id": 9,
+      "category": "functional",
+      "title": "远端 x86 编译与单次评测脚本",
+      "description": "通过 generic-x86-remote 执行 check/sync/run/run-bg/fetch",
+      "priority": "high",
+      "status": "passing",
+      "ui": false,
+      "verification_steps": [
+        "Given remote.env 完整配置, when 执行 check-env/sync/run, then 远端构建与 ctest 全部通过。",
+        "Given run-bg 评测任务, when fetch 日志, then 本地可获取完整日志并解析结果 JSON。"
+      ],
+      "dependencies": [6, 8]
+    },
+    {
+      "id": 10,
+      "category": "functional",
+      "title": "参数扫描与汇总",
+      "description": "批量运行 PiPNN 配置并生成结果汇总",
+      "priority": "medium",
+      "status": "passing",
+      "ui": false,
+      "verification_steps": [
+        "Given 调参脚本与输出目录, when 执行扫描, then 每个配置生成独立 JSON。",
+        "Given 扫描完成, when 读取汇总文件, then 可按 build/recall/qps 对配置排序。"
+      ],
+      "dependencies": [9]
+    },
+    {
+      "id": 11,
+      "category": "functional",
+      "title": "100k/100、200k/100、500k/100 口径评测",
+      "description": "固定三档口径并产出 PiPNN/HNSW 对比结果",
+      "priority": "high",
+      "status": "failing",
+      "ui": false,
+      "verification_steps": [
+        "Given 100k/100 口径, when 运行 pipnn 与 hnsw, then 生成成对结果并写入报告。",
+        "Given 200k/100 口径, when 运行 pipnn 与 hnsw, then 生成成对结果并写入报告。",
+        "Given 500k/100 口径, when 运行 pipnn 与 hnsw, then 生成成对结果并写入报告。"
+      ],
+      "dependencies": [9, 10]
+    },
+    {
+      "id": 12,
+      "category": "non-functional",
+      "title": "NFR-002 召回阈值达标",
+      "description": "三档口径下优化配置 recall@10 >= 0.95",
+      "priority": "high",
+      "status": "failing",
+      "ui": false,
+      "verification_steps": [
+        "Given 100k/100 子集内真值口径, when 使用优化参数运行, then recall_at_10 >= 0.95。",
+        "Given 200k/100 子集内真值口径, when 使用优化参数运行, then recall_at_10 >= 0.95。",
+        "Given 500k/100 子集内真值口径, when 使用优化参数运行, then recall_at_10 >= 0.95。"
+      ],
+      "dependencies": [11]
+    },
+    {
+      "id": 13,
+      "category": "non-functional",
+      "title": "NFR-003 复现性",
+      "description": "实验命令、日志路径、结果文件可追溯",
+      "priority": "high",
+      "status": "failing",
+      "ui": false,
+      "verification_steps": [
+        "Given 一次完整远端评测, when 检查报告与 remote-logs, then 包含完整命令、日志路径与关键指标。"
+      ],
+      "dependencies": [9, 11]
+    }
+  ]
+}
