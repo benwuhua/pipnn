@@ -24,6 +24,7 @@
 - Updated the SIFT1M benchmark report with the final `beam=384` quality configuration that satisfies NFR-002 at `100k/100`, `200k/100`, and `500k/100`
 - Recorded long-task progress for the completed feature 12 threshold-validation cycle
 - Updated the SIFT1M benchmark report to reference the single reproducibility bundle and validator command
+- Added system-testing artifacts and recorded a `Conditional-Go` verdict with quality-gate follow-up recommendations
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used

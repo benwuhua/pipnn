@@ -1,0 +1,16 @@
+Internal ctest changing into directory: /data/work/pipnn/build
+Test project /data/work/pipnn/build
+    Start 1: hashprune
+1/5 Test #1: hashprune ........................   Passed    0.00 sec
+    Start 2: sift_reader
+2/5 Test #2: sift_reader ......................   Passed    0.00 sec
+    Start 3: rbc
+3/5 Test #3: rbc ..............................   Passed    0.00 sec
+    Start 4: leaf_knn
+4/5 Test #4: leaf_knn .........................   Passed    0.01 sec
+    Start 5: pipnn_integration
+5/5 Test #5: pipnn_integration ................   Passed    0.64 sec
+
+100% tests passed, 0 tests failed out of 5
+
+Total Test time (real) =   0.67 sec

@@ -1,0 +1,3 @@
+unsafe_primitives
+
+secrets_scan

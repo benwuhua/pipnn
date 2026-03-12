@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 13/13 passing · Last: Feature 13 complete (2026-03-12) · Next: System Testing Phase
+Progress: 13/13 passing · Last: System Testing complete (2026-03-12, Conditional-Go) · Next: Coverage/quality debt follow-up or release decision
 
 ---
 
@@ -56,3 +56,14 @@ Progress: 13/13 passing · Last: Feature 13 complete (2026-03-12) · Next: Syste
 - Added runnable example: `examples/feature-13-reproducibility.sh`.
 - Updated the benchmark report to point to the reproducibility bundle and validator command.
 - Marked feature 13 as `passing`; all active features are now passing and the project is ready for system testing.
+
+### Session 5 — 2026-03-12
+- Entered `long-task-st` after `python3 scripts/check_st_readiness.py feature-list.json` returned `READY`.
+- Wrote system test plan: `docs/plans/2026-03-12-st-plan.md`.
+- Executed local regression (`ctest`), remote x86 readiness (`check-env.sh --json`), remote x86 `ctest`, remote synthetic PiPNN smoke, local synthetic PiPNN/HNSW E2E runs, manifest validation, exploratory CLI error-path checks, and lightweight security grep review.
+- Built a dedicated coverage configuration in `build-cov/` and reran `ctest` there.
+- Measured line coverage with `gcovr`: `64%` against a `90%` threshold.
+- Measured branch coverage with `gcovr`: `29%` against an `80%` threshold.
+- Observed that mutation tooling is unavailable locally (`mull-runner: command not found`), so mutation score was not revalidated during ST.
+- Wrote system test report: `docs/plans/2026-03-12-st-report.md`.
+- Cleanup result: no services were started because the project is CLI-only; no service cleanup required.
