@@ -12,6 +12,22 @@
     "test_repo": "/Users/ryan/.codex/skills/generic-x86-remote/scripts/run.sh --repo /data/work/pipnn -- ctest --test-dir build --output-on-failure",
     "fetch_logs": "/Users/ryan/.codex/skills/generic-x86-remote/scripts/fetch.sh --src /data/work/logs --dest /Users/ryan/Code/Paper/pipnn/remote-logs"
   },
+  "quality_evidence": {
+    "coverage": {
+      "command": "bash scripts/quality/remote_coverage.sh",
+      "line_report": "results/st/line_coverage.txt",
+      "branch_report": "results/st/branch_coverage.txt",
+      "line_coverage": 95,
+      "branch_coverage": 92
+    },
+    "mutation_probe": {
+      "command": "bash scripts/quality/remote_mutation_probe.sh",
+      "status": "blocked",
+      "local_probe": "results/st/mutation_probe_local.txt",
+      "remote_probe": "results/st/remote/mutation_probe_remote.txt",
+      "follow_up": "Install mull-runner on the remote x86 host and rerun mutation plus system testing."
+    }
+  },
   "runs": [
     {
       "id": "feature11_pipnn_500k_beam256",

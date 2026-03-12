@@ -34,3 +34,7 @@ add_test(NAME cli COMMAND test_cli)
 add_executable(test_quality_evidence test_quality_evidence.cpp)
 target_compile_definitions(test_quality_evidence PRIVATE PIPNN_REPO_ROOT="${CMAKE_SOURCE_DIR}")
 add_test(NAME quality_evidence COMMAND test_quality_evidence)
+
+add_executable(test_mutation_evidence test_mutation_evidence.cpp)
+target_compile_definitions(test_mutation_evidence PRIVATE PIPNN_REPO_ROOT="${CMAKE_SOURCE_DIR}")
+add_test(NAME mutation_evidence COMMAND test_mutation_evidence)
