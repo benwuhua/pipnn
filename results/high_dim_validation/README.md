@@ -47,7 +47,7 @@ Wrapper:
 - `pipnn` was still building after more than `3 minutes`
 - this run was stopped and treated as a negative signal
 
-### 5k / 50
+### 5k / 50 Baseline
 
 Artifacts:
 
@@ -82,3 +82,56 @@ Interpretation:
 - PiPNN is still slightly faster to build than HNSW on this small slice, but query speed is much worse and recall is lower.
 - The main build bottleneck is no longer only `leaf_knn`; `partition` is already the largest phase on `3072d`.
 - This points to a broader distance-computation problem across both RBC assignment and leaf candidate generation, not just a leaf-local kernel problem.
+
+## RBC Partition Batching
+
+Scope:
+
+- change only the point-to-leader assignment kernel inside `RBC`
+- keep the `Feature 20` tree structure and overlap semantics unchanged
+
+Artifacts:
+
+- `results/high_dim_validation/simplewiki_openai_5k_50/pipnn_metrics.json`
+- `results/high_dim_validation/simplewiki_openai_5k_50/pipnn.stdout`
+- `results/high_dim_validation/simplewiki_openai_5k_50/hnsw_metrics.json`
+- `remote-logs/high_dim_validation/simplewiki-openai-5k50-rbc-batch_20260312T105053Z.log`
+
+### 5k / 50 After RBC batching
+
+PiPNN:
+
+- `build_sec = 30.4769`
+- `recall_at_10 = 0.978`
+- `qps = 36.2215`
+
+PiPNN build profile:
+
+- `partition_sec = 12.5956`
+- `leaf_knn_sec = 8.13263`
+- `prune_sec = 9.74774`
+- `leaves = 103`
+- `rbc_max_membership = 2`
+
+HNSW:
+
+- `build_sec = 51.6921`
+- `recall_at_10 = 0.998`
+- `qps = 136.034`
+
+### Delta vs baseline
+
+PiPNN deltas:
+
+- `build_sec: 39.0241 -> 30.4769` (`-8.5472s`, about `-21.9%`)
+- `partition_sec: 18.4711 -> 12.5956` (`-5.8755s`, about `-31.8%`)
+- `leaf_knn_sec: 9.34212 -> 8.13263`
+- `prune_sec: 11.2098 -> 9.74774`
+- `recall_at_10: 0.978 -> 0.978`
+
+Interpretation:
+
+- `RBC`-first batching is justified. The dominant hotspot dropped materially without any recall loss.
+- The optimization did not change graph quality on this smoke slice.
+- `partition` is still the largest stage, but it is no longer overwhelmingly dominant.
+- The next iteration should continue into `leaf_kNN` batching, not jump yet to a broader shared distance layer.
