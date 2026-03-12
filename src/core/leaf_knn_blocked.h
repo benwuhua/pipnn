@@ -13,6 +13,11 @@ struct LeafBatchConfig {
   int max_points_per_batch = 1024;
 };
 
+struct LeafBatchPlan {
+  std::vector<int> job_indices;
+  int total_points = 0;
+};
+
 enum class LeafKnnMode { NaiveFull, BlockedFull };
 
 struct LeafKnnConfig {
@@ -22,6 +27,9 @@ struct LeafKnnConfig {
 
 std::vector<Edge> BuildLeafKnnExactEdgesNaive(const Matrix& points, const std::vector<int>& leaf, int k,
                                               bool bidirected);
+
+std::vector<LeafBatchPlan> PlanLeafKnnBatches(const std::vector<LeafBatchJob>& jobs,
+                                              const LeafBatchConfig& cfg = {});
 
 std::vector<Edge> BuildLeafKnnExactBatchedEdges(const Matrix& points, const std::vector<LeafBatchJob>& jobs,
                                                 int k, bool bidirected,

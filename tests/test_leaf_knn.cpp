@@ -83,6 +83,30 @@ int main() {
   }
 
   {
+    std::vector<pipnn::LeafBatchJob> jobs = {
+        {.leaf = {0, 1, 2, 3}},
+        {.leaf = {4, 5, 6, 7}},
+        {.leaf = {8, 9, 10, 11}},
+    };
+    pipnn::LeafBatchConfig cfg;
+    cfg.min_leaf_for_batch = 4;
+    cfg.max_points_per_batch = 8;
+    auto plans = pipnn::PlanLeafKnnBatches(jobs, cfg);
+    assert(plans.size() == 2);
+    assert(plans[0].total_points == 8);
+    assert(plans[1].total_points == 4);
+    assert(plans[0].job_indices == std::vector<int>({0, 1}));
+    assert(plans[1].job_indices == std::vector<int>({2}));
+
+    cfg.max_points_per_batch = 4;
+    plans = pipnn::PlanLeafKnnBatches(jobs, cfg);
+    assert(plans.size() == 3);
+    for (const auto& plan : plans) {
+      assert(plan.total_points <= cfg.max_points_per_batch);
+    }
+  }
+
+  {
     pipnn::Matrix all_points = {{0.0f}, {2.0f}, {5.0f}};
     std::vector<int> all_leaf = {0, 1, 2};
     auto all_edges = pipnn::BuildLeafKnnExactEdgesNaive(all_points, all_leaf, 8, false);
