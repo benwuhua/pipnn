@@ -69,6 +69,14 @@ int main() {
     }
   }
 
+  {
+    pipnn::LeafKnnConfig cfg;
+    cfg.min_leaf_for_blocked = 4;
+    assert(pipnn::SelectLeafKnnMode(3, 0, cfg) == pipnn::LeafKnnMode::NaiveFull);
+    assert(pipnn::SelectLeafKnnMode(4, 1, cfg) == pipnn::LeafKnnMode::NaiveFull);
+    assert(pipnn::SelectLeafKnnMode(4, 0, cfg) == pipnn::LeafKnnMode::BlockedFull);
+  }
+
   assert(pipnn::BuildLeafKnnEdges(points, {}, 2, true).empty());
   assert(pipnn::BuildLeafKnnEdges(points, leaf, 0, true).empty());
   return 0;

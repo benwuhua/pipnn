@@ -10,6 +10,8 @@ struct LeafKnnConfig {
   int point_block_rows = 128;
 };
 
+LeafKnnMode SelectLeafKnnMode(std::size_t leaf_size, int scan_cap, const LeafKnnConfig& cfg = {});
+
 std::vector<Edge> BuildLeafKnnExactEdges(const Matrix& points, const std::vector<int>& leaf, int k,
                                          bool bidirected, LeafKnnMode mode,
                                          const LeafKnnConfig& cfg = {});
