@@ -76,6 +76,10 @@ int main() {
   assert(g.EdgeCount() > 0);
   assert(stats.num_leaves > 0);
   assert(stats.candidate_edges > 0);
+  assert(stats.prune_kept > 0);
+  assert(stats.prune_final_edges == g.EdgeCount());
+  assert(stats.prune_kept >= stats.prune_final_edges);
+  assert(stats.prune_dropped + stats.prune_kept >= stats.prune_final_edges);
   for (int i = 0; i < g.NumNodes(); ++i) {
     assert(static_cast<int>(g.Neighbors(i).size()) <= bp.hashprune.max_degree);
   }
@@ -92,9 +96,14 @@ int main() {
   {
     ScopedEnv enable_profile("PIPNN_PROFILE", "1");
     ScopedCoutCapture capture;
-    auto null_stats_graph = pipnn::BuildPipnnGraph(base, bp, nullptr);
-    assert(null_stats_graph.NumNodes() == static_cast<int>(base.size()));
-    assert(capture.stream.str().empty());
+    pipnn::PipnnBuildStats profile_stats;
+    auto profile_graph = pipnn::BuildPipnnGraph(base, bp, &profile_stats);
+    assert(profile_graph.NumNodes() == static_cast<int>(base.size()));
+    auto out = capture.stream.str();
+    assert(out.find("pipnn_profile_build partition_sec=") != std::string::npos);
+    assert(out.find("prune_kept=") != std::string::npos);
+    assert(out.find("prune_dropped=") != std::string::npos);
+    assert(profile_stats.prune_final_edges == profile_graph.EdgeCount());
   }
 
   pipnn::PipnnBuildParams replica_bp = bp;
@@ -119,6 +128,8 @@ int main() {
   assert(replica_graph.NumNodes() == static_cast<int>(base.size()));
   assert(replica_stats.num_leaves == expected_leaves);
   assert(replica_stats.candidate_edges == expected_candidate_edges);
+  assert(replica_stats.prune_kept > 0);
+  assert(replica_stats.prune_final_edges == replica_graph.EdgeCount());
 
   pipnn::RunnerConfig cfg;
   cfg.mode = "pipnn";

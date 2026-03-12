@@ -306,3 +306,29 @@ Progress: 18/22 passing · Last: Increment Wave 4 algorithm iteration (2026-03-1
 - Added the wave-4 design companion:
   - `docs/superpowers/specs/2026-03-12-wave4-algorithm-iteration-design.md`
 - The next router target is back to `long-task-work`, starting at feature 19.
+
+### Session 20 — 2026-03-12
+- Entered `long-task-work` for feature 19 (`Wave 4 HashPrune fidelity`).
+- Wrote the feature plan: `docs/plans/2026-03-12-feature-19-hashprune-fidelity.md`.
+- Added paper-oriented HashPrune diagnostics and test coverage:
+  - `HashPruneNodeStats` in `src/core/hashprune.*`
+  - prune aggregation fields in `src/core/pipnn_builder.h`
+  - profile output extension in `src/core/pipnn_builder.cpp` and `src/bench/runner.cpp`
+- Extended unit/integration coverage for:
+  - same-bucket replacement accounting
+  - cross-bucket eviction versus drop behavior
+  - tie-break accounting
+  - builder/runner profile diagnostics
+- Added a dedicated remote harness for the feature-19 quick slice:
+  - `scripts/bench/run_feature19_hashprune_100k_200.sh`
+- Fresh verification evidence:
+  - `ctest --test-dir build --output-on-failure -R '^(hashprune|pipnn_integration|runner_metrics)$'` -> passed
+  - `ctest --test-dir build --output-on-failure` -> `15/15` passing
+  - remote `100k/200` PiPNN result in `results/feature19_100k_200/`:
+    - `build_sec=84.8307`
+    - `recall_at_10=0.9885`
+    - `prune_kept=3036672`
+    - `prune_dropped=231924`
+    - `prune_replaced=150527`
+    - `prune_evicted=228905`
+- Feature 19 remains `failing` for now because I intentionally did not reopen the full coverage/mutation/ST closure loop in the same session; this checkpoint is for algorithm progress and evidence capture.

@@ -92,7 +92,10 @@ int main() {
     ScopedCoutCapture capture;
     auto metrics = pipnn::RunBenchmark(cfg, rb_base, rb_queries, {}, bp, sp);
     assert(metrics.edges > 0);
-    assert(capture.stream.str().find("pipnn_profile partition_sec=") != std::string::npos);
+    auto out = capture.stream.str();
+    assert(out.find("pipnn_profile partition_sec=") != std::string::npos);
+    assert(out.find("prune_kept=") != std::string::npos);
+    assert(out.find("prune_dropped=") != std::string::npos);
   }
   return 0;
 }

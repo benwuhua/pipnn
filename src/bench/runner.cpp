@@ -64,7 +64,12 @@ Metrics RunBenchmark(const RunnerConfig& cfg, const Matrix& base, const Matrix& 
     std::cout << "pipnn_profile partition_sec=" << build_stats.partition_sec
               << " leaf_knn_sec=" << build_stats.leaf_knn_sec
               << " prune_sec=" << build_stats.prune_sec << " leaves=" << build_stats.num_leaves
-              << " candidate_edges=" << build_stats.candidate_edges << "\n";
+              << " candidate_edges=" << build_stats.candidate_edges
+              << " prune_kept=" << build_stats.prune_kept
+              << " prune_dropped=" << build_stats.prune_dropped
+              << " prune_replaced=" << build_stats.prune_replaced
+              << " prune_evicted=" << build_stats.prune_evicted
+              << " prune_final_edges=" << build_stats.prune_final_edges << "\n";
   }
 
   Timer tquery;

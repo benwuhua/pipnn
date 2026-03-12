@@ -12,6 +12,11 @@ struct PipnnBuildStats {
   double prune_sec = 0.0;
   std::size_t num_leaves = 0;
   std::size_t candidate_edges = 0;
+  std::size_t prune_kept = 0;
+  std::size_t prune_dropped = 0;
+  std::size_t prune_replaced = 0;
+  std::size_t prune_evicted = 0;
+  std::size_t prune_final_edges = 0;
 };
 
 struct PipnnBuildParams {

@@ -46,13 +46,31 @@ Graph BuildPipnnGraph(const Matrix& points, const PipnnBuildParams& params, Pipn
     auto& c = candidates[i];
     std::sort(c.begin(), c.end());
     c.erase(std::unique(c.begin(), c.end()), c.end());
-    g.SetNeighbors(i, pruner.PruneNode(points, i, c));
+    HashPruneNodeStats node_stats;
+    auto pruned = pruner.PruneNode(points, i, c, stats != nullptr ? &node_stats : nullptr);
+    g.SetNeighbors(i, pruned);
+    if (stats != nullptr) {
+#if defined(_OPENMP)
+#pragma omp critical
+#endif
+      {
+        stats->prune_kept += node_stats.kept;
+        stats->prune_dropped += node_stats.dropped;
+        stats->prune_replaced += node_stats.replaced;
+        stats->prune_evicted += node_stats.evicted;
+        stats->prune_final_edges += pruned.size();
+      }
+    }
   }
   if (stats != nullptr) stats->prune_sec = t_prune.Sec();
   if (std::getenv("PIPNN_PROFILE") != nullptr && stats != nullptr) {
     std::cout << "pipnn_profile_build partition_sec=" << stats->partition_sec
               << " leaf_knn_sec=" << stats->leaf_knn_sec << " prune_sec=" << stats->prune_sec
               << " leaves=" << stats->num_leaves << " candidate_edges=" << stats->candidate_edges
+              << " prune_kept=" << stats->prune_kept << " prune_dropped=" << stats->prune_dropped
+              << " prune_replaced=" << stats->prune_replaced
+              << " prune_evicted=" << stats->prune_evicted
+              << " prune_final_edges=" << stats->prune_final_edges
               << "\n";
   }
 

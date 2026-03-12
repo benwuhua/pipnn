@@ -1,0 +1,9 @@
+pipnn_profile_build partition_sec=24.4367 leaf_knn_sec=51.5068 prune_sec=8.86492 leaves=4430 candidate_edges=4759892 prune_kept=3036672 prune_dropped=231924 prune_replaced=150527 prune_evicted=228905 prune_final_edges=2657240
+pipnn_profile partition_sec=24.4367 leaf_knn_sec=51.5068 prune_sec=8.86492 leaves=4430 candidate_edges=4759892 prune_kept=3036672 prune_dropped=231924 prune_replaced=150527 prune_evicted=228905 prune_final_edges=2657240
+{
+  "mode": "pipnn",
+  "build_sec": 84.8307,
+  "recall_at_10": 0.9885,
+  "qps": 156.014,
+  "edges": 2657240
+}

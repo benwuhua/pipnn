@@ -13,12 +13,22 @@ struct HashPruneParams {
   int seed = 7;
 };
 
+struct HashPruneNodeStats {
+  std::size_t self_skipped = 0;
+  std::size_t kept = 0;
+  std::size_t replaced = 0;
+  std::size_t evicted = 0;
+  std::size_t dropped = 0;
+  std::size_t final_degree = 0;
+};
+
 class HashPruner {
  public:
   explicit HashPruner(HashPruneParams params);
   HashPruner(HashPruneParams params, Matrix manual_hyperplanes);
 
-  std::vector<int> PruneNode(const Matrix& points, int p, const std::vector<int>& candidates) const;
+  std::vector<int> PruneNode(const Matrix& points, int p, const std::vector<int>& candidates,
+                             HashPruneNodeStats* stats = nullptr) const;
   std::uint64_t HashResidualForTest(const Vec& p, const Vec& c) const;
 
  private:

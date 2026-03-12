@@ -41,7 +41,9 @@ std::uint64_t HashPruner::HashResidualForTest(const Vec& p, const Vec& c) const 
   return HashResidual(p, c);
 }
 
-std::vector<int> HashPruner::PruneNode(const Matrix& points, int p, const std::vector<int>& candidates) const {
+std::vector<int> HashPruner::PruneNode(const Matrix& points, int p, const std::vector<int>& candidates,
+                                       HashPruneNodeStats* stats) const {
+  if (stats != nullptr) *stats = {};
   if (points.empty()) return {};
   EnsureHyperplanes(points[0].size());
 
@@ -50,11 +52,27 @@ std::vector<int> HashPruner::PruneNode(const Matrix& points, int p, const std::v
     float dist;
   };
 
+  if (params_.max_degree <= 0) {
+    if (stats != nullptr) {
+      for (int c : candidates) {
+        if (c == p) {
+          ++stats->self_skipped;
+        } else {
+          ++stats->dropped;
+        }
+      }
+    }
+    return {};
+  }
+
   std::unordered_map<std::uint64_t, Entry> buckets;
   buckets.reserve(candidates.size());
 
   for (int c : candidates) {
-    if (c == p) continue;
+    if (c == p) {
+      if (stats != nullptr) ++stats->self_skipped;
+      continue;
+    }
     float d = L2Squared(points[p], points[c]);
     auto h = HashResidual(points[p], points[c]);
 
@@ -63,12 +81,19 @@ std::vector<int> HashPruner::PruneNode(const Matrix& points, int p, const std::v
       const auto& cur = it->second;
       if (d < cur.dist || (d == cur.dist && c < cur.id)) {
         it->second = Entry{c, d};
+        if (stats != nullptr) {
+          ++stats->kept;
+          ++stats->replaced;
+        }
+      } else if (stats != nullptr) {
+        ++stats->dropped;
       }
       continue;
     }
 
     if (static_cast<int>(buckets.size()) < params_.max_degree) {
       buckets[h] = Entry{c, d};
+      if (stats != nullptr) ++stats->kept;
       continue;
     }
 
@@ -83,6 +108,12 @@ std::vector<int> HashPruner::PruneNode(const Matrix& points, int p, const std::v
     if (d < far_it->second.dist || (d == far_it->second.dist && c < far_it->second.id)) {
       buckets.erase(far_it);
       buckets[h] = Entry{c, d};
+      if (stats != nullptr) {
+        ++stats->kept;
+        ++stats->evicted;
+      }
+    } else if (stats != nullptr) {
+      ++stats->dropped;
     }
   }
 
@@ -97,6 +128,7 @@ std::vector<int> HashPruner::PruneNode(const Matrix& points, int p, const std::v
   std::vector<int> out;
   out.reserve(entries.size());
   for (const auto& e : entries) out.push_back(e.id);
+  if (stats != nullptr) stats->final_degree = out.size();
   return out;
 }
 }  // namespace pipnn
