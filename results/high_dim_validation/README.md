@@ -257,3 +257,87 @@ Interpretation:
 - The next design should stop investing in exact leaf batching and move either to:
   - a broader shared distance-batching layer with a different cost structure
   - or a different candidate-generation strategy that avoids exact full-scan leaf work
+
+## RBC-Overlap Shortlist Candidate Generation
+
+Scope:
+
+- replace leaf full-scan candidate generation with membership-based shortlist candidates
+- keep `RBC` tree structure, overlap semantics, `HashPrune`, and search unchanged
+- use deterministic shortlist cap: `candidate_cap = max_degree * 8`
+
+Artifacts:
+
+- `results/high_dim_validation/simplewiki_openai_5k_50/pipnn_metrics.json`
+- `results/high_dim_validation/simplewiki_openai_5k_50/pipnn.stdout`
+- `results/high_dim_validation/simplewiki_openai_5k_50/hnsw_metrics.json`
+- `results/high_dim_validation/simplewiki_openai_20k_100_shortlist/pipnn_metrics.json`
+- `results/high_dim_validation/simplewiki_openai_20k_100_shortlist/pipnn.stdout`
+- `results/high_dim_validation/simplewiki_openai_20k_100_shortlist/hnsw_metrics.json`
+
+### 5k / 50 with shortlist
+
+PiPNN:
+
+- `build_sec = 32.5795`
+- `recall_at_10 = 0.962`
+- `qps = 73.19`
+
+PiPNN build profile:
+
+- `partition_sec = 11.128`
+- `leaf_knn_sec = 16.231`
+- `prune_sec = 5.21938`
+- `candidate_edges = 120000`
+- `rbc_max_membership = 2`
+
+HNSW:
+
+- `build_sec = 51.3718`
+- `recall_at_10 = 0.998`
+- `qps = 145.535`
+
+Delta vs failed multi-leaf exact batching:
+
+- `build_sec: 66.6072 -> 32.5795` (`-34.0277s`, about `-51.1%`)
+- `leaf_knn_sec: 42.5382 -> 16.231` (`-26.3072s`, about `-61.8%`)
+- `recall_at_10: 0.978 -> 0.962`
+
+Delta vs post-RBC baseline:
+
+- `build_sec: 30.4769 -> 32.5795` (`+2.1026s`, about `+6.9%`)
+- `partition_sec: 12.5956 -> 11.128` (`-1.4676s`, about `-11.7%`)
+- `leaf_knn_sec: 8.13263 -> 16.231` (`+8.09837s`, about `+99.6%`)
+- `recall_at_10: 0.978 -> 0.962`
+
+### 20k / 100 with shortlist follow-up
+
+PiPNN:
+
+- `build_sec = 245.748`
+- `recall_at_10 = 0.939`
+- `qps = 62.9043`
+
+PiPNN build profile:
+
+- `partition_sec = 158.869`
+- `leaf_knn_sec = 65.9538`
+- `prune_sec = 20.922`
+- `candidate_edges = 480000`
+- `rbc_max_membership = 2`
+
+HNSW:
+
+- `build_sec = 329.473`
+- `recall_at_10 = 0.994`
+- `qps = 115.212`
+
+Interpretation:
+
+- Shortlist candidate generation is clearly better than both exact leaf-batching variants.
+- On `5k/50`, it removes the severe `leaf_knn` regression but still does not beat the post-RBC checkpoint.
+- On `20k/100`, PiPNN still builds faster than HNSW, but recall drops to `0.939`, below the current phase threshold.
+- At larger slice size, `partition` is again the dominant stage (`158.869s`), so candidate-path changes alone are not enough.
+- This direction is informative but not promotion-ready. Next iteration should co-optimize:
+  - shortlist quality (to recover recall), and
+  - `RBC` partition scaling (to control the dominant stage at larger `N`).
