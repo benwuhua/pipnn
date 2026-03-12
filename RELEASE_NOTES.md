@@ -72,6 +72,7 @@
 - Refreshed the system-testing plan/report and current `results/st/` artifacts; project verdict is now `Go`
 - Opened Wave 3 for mutation scoring: SRS/design/feature inventory now track remote user-space `LLVM + Mull`, `build-mull`, and scored-state mutation evidence via features 16/17/18
 - Feature 16 is now closed with a remote-smoke-verified repo-local LLVM/Mull toolchain, including a compat `libclang-cpp17t64` path that avoids mixing the official LLVM tarball with Ubuntu's system `libLLVM-17.so.1`
+- Added the execution plan for feature 17 targeted remote mutation orchestration: `docs/plans/2026-03-12-feature-17-remote-targeted-mutation-pipeline.md`
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used

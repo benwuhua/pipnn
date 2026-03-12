@@ -228,3 +228,10 @@ Progress: 16/18 passing · Last: Feature 16 NFR-006 远端 LLVM/Mull 用户态�
   - `bash scripts/quality/remote_mull_toolchain_smoke.sh` -> passed and fetched `results/st/remote/mull_toolchain_paths.txt`
   - `bash examples/feature-16-remote-mull-toolchain.sh` -> passed end-to-end
 - Review result: no feature-16-specific findings; residual risk remains the still-unimplemented build-mull and targeted mutation orchestration, which is the scope of feature 17.
+
+### Session 16 — 2026-03-12
+- Opened the next worker cycle for feature 17 (`NFR-006 远端 targeted mutation pipeline`).
+- Revalidated the config gate with `python3 scripts/check_configs.py feature-list.json --feature 17`.
+- Confirmed the design boundary remains raw-report orchestration only; scored-state aggregation is still reserved for feature 18.
+- Wrote the feature plan: `docs/plans/2026-03-12-feature-17-remote-targeted-mutation-pipeline.md`.
+- Next implementation step is the TDD red phase for the aggregator harness and remote mutation runner wrappers.
