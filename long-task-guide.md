@@ -37,7 +37,11 @@ python3 scripts/check_configs.py feature-list.json --feature <id>
 ## Coverage Gate
 - Run coverage after green:
 ```bash
-gcovr -r . --txt
+cmake -S . -B build-cov -DCMAKE_CXX_FLAGS='--coverage -O0 -g' -DCMAKE_C_FLAGS='--coverage -O0 -g'
+cmake --build build-cov -j
+ctest --test-dir build-cov --output-on-failure
+python3 -m gcovr build-cov -r . --merge-mode-functions=merge-use-line-max --exclude 'build-cov/_deps/' --exclude 'build-cov/CMakeFiles/.*/CompilerIdCXX/' --exclude 'tests/' --txt
+python3 -m gcovr build-cov -r . --merge-mode-functions=merge-use-line-max --exclude 'build-cov/_deps/' --exclude 'build-cov/CMakeFiles/.*/CompilerIdCXX/' --exclude 'tests/' --txt --txt-metric branch
 ```
 - Thresholds are in `feature-list.json` `quality_gates`.
 
@@ -75,7 +79,7 @@ mull-runner --help
 ```
 - Direct coverage command:
 ```bash
-gcovr -r . --txt
+python3 -m gcovr build-cov -r . --merge-mode-functions=merge-use-line-max --exclude 'build-cov/_deps/' --exclude 'build-cov/CMakeFiles/.*/CompilerIdCXX/' --exclude 'tests/' --txt
 ```
 
 ## Config Management

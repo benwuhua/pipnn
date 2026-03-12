@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 13/13 passing · Last: System Testing complete (2026-03-12, Conditional-Go) · Next: Coverage/quality debt follow-up or release decision
+Progress: 12/13 passing · Last: System Testing complete (2026-03-12, Conditional-Go) · Next: Feature 1 CLI 参数与模式路由 quality debt follow-up
 
 ---
 
@@ -67,3 +67,13 @@ Progress: 13/13 passing · Last: System Testing complete (2026-03-12, Conditiona
 - Observed that mutation tooling is unavailable locally (`mull-runner: command not found`), so mutation score was not revalidated during ST.
 - Wrote system test report: `docs/plans/2026-03-12-st-report.md`.
 - Cleanup result: no services were started because the project is CLI-only; no service cleanup required.
+
+### Session 6 — 2026-03-12
+- Reopened feature 1 (`CLI 参数与模式路由`) to address the exploratory abort-on-missing-file defect and the zero-coverage `main.cpp`/HNSW CLI path.
+- Wrote feature plan: `docs/plans/2026-03-12-feature-1-cli-hardening.md`.
+- Added CLI integration coverage for `--help`, invalid metric, unsupported dataset, missing SIFT query, missing files, HNSW synthetic routing, tiny-SIFT PiPNN config/profile flow, and tiny-SIFT HNSW truth flow.
+- Added direct HNSW baseline tests for empty input, truth-backed recall, and no-truth exact recall.
+- Expanded `sift_reader` tests to cover `max_rows`, ivecs loading, missing files, inconsistent dims, truncated records, and non-positive dims.
+- Wrapped `main()` with a top-level `std::exception` boundary so loader/runtime failures return exit code `1` instead of aborting.
+- Updated the worker coverage command to use `build-cov` and exclude third-party `_deps` artifacts.
+- Current source-only coverage after the new tests: line `95%`, branch `58%`; branch coverage and mutation tooling remain the blocking quality debts.

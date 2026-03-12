@@ -59,7 +59,7 @@
       "title": "CLI 参数与模式路由",
       "description": "实现 mode/dataset/input/path 解析与错误处理",
       "priority": "high",
-      "status": "passing",
+      "status": "failing",
       "ui": false,
       "verification_steps": [
         "Given 可执行文件存在, when 运行 --help, then 输出 mode/dataset/metric/output 参数说明。",

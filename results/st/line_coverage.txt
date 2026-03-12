@@ -4,8 +4,8 @@ Directory: .
 ------------------------------------------------------------------------------
 File                                       Lines     Exec  Cover   Missing
 ------------------------------------------------------------------------------
-src/baseline/hnsw_runner.cpp                  59        0     0%   13,15-17,19-20,22-24,26-31,33,35-44,46-48,50-58,62-76,78,80-81,83-84,86
-src/bench/runner.cpp                          67       49    73%   59-63,73-74,83-93
+src/baseline/hnsw_runner.cpp                  59       59   100%
+src/bench/runner.cpp                          67       67   100%
 src/bench/runner.h                             4        4   100%
 src/common/timer.h                             4        4   100%
 src/common/types.h                             6        6   100%
@@ -14,19 +14,14 @@ src/core/graph.h                               8        8   100%
 src/core/hashprune.cpp                        63       52    82%   67-73,75-78
 src/core/hashprune.h                           4        4   100%
 src/core/leaf_knn.cpp                         35       27    77%   76-83
-src/core/pipnn_builder.cpp                    39       34    87%   53-57
+src/core/pipnn_builder.cpp                    39       39   100%
 src/core/pipnn_builder.h                      11       11   100%
 src/core/rbc.cpp                              45       43    95%   22-23
 src/core/rbc.h                                 7        7   100%
-src/data/sift_reader.cpp                      41       23    56%   15,37-39,41-54
-src/main.cpp                                 112        0     0%   12-18,20-21,25,28-48,50-54,56-62,64-81,83-92,94-101,104-114,116-118,120-129,131-132,134-140
+src/data/sift_reader.cpp                      41       40    97%   15
+src/main.cpp                                 116      116   100%
 src/search/greedy_beam.cpp                    23       23   100%
 src/search/greedy_beam.h                       4        4   100%
-tests/test_hashprune.cpp                      18       18   100%
-tests/test_leaf_knn.cpp                       16       16   100%
-tests/test_pipnn_integration.cpp              45       45   100%
-tests/test_rbc.cpp                            17       17   100%
-tests/test_sift_reader.cpp                    18       18   100%
 ------------------------------------------------------------------------------
-TOTAL                                        656      421    64%
+TOTAL                                        546      522    95%
 ------------------------------------------------------------------------------
