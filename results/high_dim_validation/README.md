@@ -135,3 +135,57 @@ Interpretation:
 - The optimization did not change graph quality on this smoke slice.
 - `partition` is still the largest stage, but it is no longer overwhelmingly dominant.
 - The next iteration should continue into `leaf_kNN` batching, not jump yet to a broader shared distance layer.
+
+## Exact leaf_kNN Batching
+
+Scope:
+
+- change only the uncapped exact full-scan leaf kernel
+- keep `RBC`, `HashPrune`, and search semantics unchanged
+
+Artifacts:
+
+- `results/high_dim_validation/simplewiki_openai_5k_50/pipnn_metrics.json`
+- `results/high_dim_validation/simplewiki_openai_5k_50/pipnn.stdout`
+- `results/high_dim_validation/simplewiki_openai_5k_50/hnsw_metrics.json`
+- `remote-logs/high_dim_validation/simplewiki-openai-5k50-leaf-batch_20260312T112623Z.log`
+
+### 5k / 50 After exact leaf batching
+
+PiPNN:
+
+- `build_sec = 38.6283`
+- `recall_at_10 = 0.978`
+- `qps = 36.6683`
+
+PiPNN build profile:
+
+- `partition_sec = 12.6393`
+- `leaf_knn_sec = 16.1486`
+- `prune_sec = 9.83931`
+- `leaves = 103`
+- `rbc_max_membership = 2`
+
+HNSW:
+
+- `build_sec = 51.0015`
+- `recall_at_10 = 0.998`
+- `qps = 144.639`
+
+### Delta vs post-RBC baseline
+
+PiPNN deltas:
+
+- `build_sec: 30.4769 -> 38.6283` (`+8.1514s`, about `+26.7%`)
+- `partition_sec: 12.5956 -> 12.6393`
+- `leaf_knn_sec: 8.13263 -> 16.1486` (`+8.01597s`, about `+98.6%`)
+- `prune_sec: 9.74774 -> 9.83931`
+- `recall_at_10: 0.978 -> 0.978`
+
+Interpretation:
+
+- This exact per-leaf blocked kernel is a negative result on the current high-dimensional workload.
+- The regression is isolated almost entirely to `leaf_knn_sec`; `partition` and `prune` are effectively unchanged.
+- The current per-leaf matrix materialization strategy is not paying for itself at these leaf sizes.
+- The next step should not be another small per-leaf blocked-kernel tweak.
+- The next design should question the architecture and move to a broader shared distance-batching layer or a multi-leaf batching strategy.
