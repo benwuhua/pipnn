@@ -39,6 +39,10 @@ add_executable(test_mutation_evidence test_mutation_evidence.cpp)
 target_compile_definitions(test_mutation_evidence PRIVATE PIPNN_REPO_ROOT="${CMAKE_SOURCE_DIR}")
 add_test(NAME mutation_evidence COMMAND test_mutation_evidence)
 
+add_executable(test_remote_toolchain test_remote_toolchain.cpp)
+target_compile_definitions(test_remote_toolchain PRIVATE PIPNN_REPO_ROOT="${CMAKE_SOURCE_DIR}")
+add_test(NAME remote_toolchain COMMAND test_remote_toolchain)
+
 add_executable(test_real_test_harness test_real_test_harness.cpp)
 target_compile_definitions(test_real_test_harness PRIVATE PIPNN_REPO_ROOT="${CMAKE_SOURCE_DIR}")
 add_test(NAME real_test_harness COMMAND test_real_test_harness)

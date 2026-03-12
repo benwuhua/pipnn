@@ -368,8 +368,10 @@
       "title": "NFR-006 远端 LLVM/Mull 用户态工具链",
       "description": "在远端 x86 主机上安装并校验用户态 LLVM + Mull 工具链，供 mutation score 权威流程复用",
       "priority": "high",
-      "status": "failing",
+      "status": "passing",
       "ui": false,
+      "st_case_count": 2,
+      "st_case_path": "docs/test-cases/feature-16-remote-mull-toolchain.md",
       "verification_steps": [
         "Given 远端 x86 主机, when 执行 ensure_remote_mull_toolchain.sh, then 在 repo-local .tools 目录下得到可执行的 clang、clang++ 与 mull-runner。",
         "Given 工具链已安装, when 执行版本校验命令, then LLVM 与 Mull 版本匹配且脚本返回稳定路径。"

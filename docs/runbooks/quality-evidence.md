@@ -39,3 +39,7 @@ Expected outputs:
 - `results/st/remote/mutation_probe_remote.txt`
 
 If `mull-runner` is unavailable, the probe remains valid evidence and should be referenced by the current feature or ST report instead of being silently skipped.
+
+For the remote LLVM + Mull scored-state toolchain workflow, use:
+
+- `docs/runbooks/mutation-evidence.md`

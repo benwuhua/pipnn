@@ -39,6 +39,14 @@
   - `examples/feature-1-cli-parameter-routing.sh`
   - `docs/test-cases/feature-1-cli-parameter-routing.md`
   - `docs/plans/2026-03-12-feature-1-cli-closure.md`
+- Feature 16 toolchain assets:
+  - `tests/test_remote_toolchain.cpp`
+  - `scripts/quality/ensure_remote_mull_toolchain.sh`
+  - `scripts/quality/remote_mull_toolchain_smoke.sh`
+  - `scripts/quality/remote_mull_toolchain_smoke_inner.sh`
+  - `docs/runbooks/mutation-evidence.md`
+  - `docs/test-cases/feature-16-remote-mull-toolchain.md`
+  - `examples/feature-16-remote-mull-toolchain.sh`
 
 ### Changed
 - Updated the SIFT1M benchmark report with the completed `500k/100` subset-truth PiPNN/HNSW results and corrected remote command examples
@@ -63,6 +71,7 @@
 - Feature 1 is now closed under the wave-2 quality workflow, with explicit real-test marker enforcement and ST traceability across the CLI tests
 - Refreshed the system-testing plan/report and current `results/st/` artifacts; project verdict is now `Go`
 - Opened Wave 3 for mutation scoring: SRS/design/feature inventory now track remote user-space `LLVM + Mull`, `build-mull`, and scored-state mutation evidence via features 16/17/18
+- Feature 16 is now closed with a remote-smoke-verified repo-local LLVM/Mull toolchain, including a compat `libclang-cpp17t64` path that avoids mixing the official LLVM tarball with Ubuntu's system `libLLVM-17.so.1`
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used
@@ -72,6 +81,7 @@
 - CLI now accepts bare output filenames like `--output metrics.json` without requiring a parent directory component
 - Mutation probe collection is now stable and auditable on both local and remote environments even when `mull-runner` is unavailable
 - Coverage-harness ctests are now self-contained and no longer depend on pre-existing `results/st/*` artifacts during remote `build-cov` runs
+- Remote Mull smoke now preserves `.tools/` across syncs and fetches the remote `results/st/` directory correctly after toolchain verification
 
 ---
 

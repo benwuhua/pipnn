@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 15/18 passing · Last: Increment Wave 3 mutation scoring upgrade (2026-03-12) · Next: Feature 16 NFR-006 远端 LLVM/Mull 用户态工具链
+Progress: 16/18 passing · Last: Feature 16 NFR-006 远端 LLVM/Mull 用户态工具链 (2026-03-12) · Next: Feature 17 NFR-006 远端 targeted mutation pipeline
 
 ---
 
@@ -203,3 +203,28 @@ Progress: 15/18 passing · Last: Increment Wave 3 mutation scoring upgrade (2026
   - Feature 17 `NFR-006 远端 targeted mutation pipeline`
   - Feature 18 `NFR-006 scored mutation evidence`
 - Router next step is now `long-task-work`, starting from feature 16.
+
+### Session 15 — 2026-03-12
+- Continued `long-task-work` with feature 16 (`NFR-006 远端 LLVM/Mull 用户态工具链`).
+- Wrote the feature plan: `docs/plans/2026-03-12-feature-16-remote-mull-toolchain.md`.
+- Added a new harness test `tests/test_remote_toolchain.cpp` and registered the `remote_toolchain` ctest target.
+- Extended `tests/test_mutation_evidence.cpp` so the mutation evidence validator now supports the scored-state harness path as well as blocked-state.
+- Implemented the remote toolchain installer and smoke harness:
+  - `scripts/quality/ensure_remote_mull_toolchain.sh`
+  - `scripts/quality/remote_mull_toolchain_smoke.sh`
+  - `scripts/quality/remote_mull_toolchain_smoke_inner.sh`
+- Added feature documentation and usage assets:
+  - `docs/runbooks/mutation-evidence.md`
+  - `docs/test-cases/feature-16-remote-mull-toolchain.md`
+  - `examples/feature-16-remote-mull-toolchain.sh`
+- Root-caused a real remote runtime bug: Mull failed with duplicated LLVM `CommandLine` registration when the wrapper mixed the official LLVM tarball `libclang-cpp.so.17` with Ubuntu's system `libLLVM-17.so.1`.
+- Fixed the runtime mismatch by keeping repo-local LLVM binaries from the tarball while supplying Mull with a repo-local compat package `libclang-cpp17t64=1:17.0.6-9ubuntu1` that matches Ubuntu 24.04's `libLLVM-17.so.1`.
+- Hardened the remote smoke harness:
+  - preserved `.tools/` across remote syncs so the first cold install is cached
+  - switched remote smoke execution to a repo-local inner script instead of nested inline shell
+  - corrected fetch behavior to pull the remote `results/st/` directory rather than treating a file as a directory
+- Fresh verification evidence:
+  - `ctest --test-dir build --output-on-failure` -> `12/12` passing
+  - `bash scripts/quality/remote_mull_toolchain_smoke.sh` -> passed and fetched `results/st/remote/mull_toolchain_paths.txt`
+  - `bash examples/feature-16-remote-mull-toolchain.sh` -> passed end-to-end
+- Review result: no feature-16-specific findings; residual risk remains the still-unimplemented build-mull and targeted mutation orchestration, which is the scope of feature 17.

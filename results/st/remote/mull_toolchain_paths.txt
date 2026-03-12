@@ -1,0 +1,10 @@
+toolchain_root=/data/work/pipnn/.tools
+llvm_root=/data/work/pipnn/.tools/llvm/current
+mull_root=/data/work/pipnn/.tools/mull/current
+clang=/data/work/pipnn/.tools/llvm/current/bin/clang
+clangxx=/data/work/pipnn/.tools/llvm/current/bin/clang++
+llvm_config=/data/work/pipnn/.tools/llvm/current/bin/llvm-config
+mull_runner=/data/work/pipnn/.tools/mull/current/bin/mull-runner
+llvm_version=17.0.6
+mull_version=0.29.0
+mull_llvm_major=17
