@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 13/15 passing · Last: Feature 14 NFR-005 覆盖率口径固化 (2026-03-12) · Next: Feature 15 NFR-006 mutation 证据与阻塞态审计
+Progress: 14/15 passing · Last: Feature 15 NFR-006 mutation 证据与阻塞态审计 (2026-03-12) · Next: Feature 1 CLI 参数与模式路由
 
 ---
 
@@ -128,3 +128,18 @@ Progress: 13/15 passing · Last: Feature 14 NFR-005 覆盖率口径固化 (2026-
   - `python3 scripts/validate_quality_evidence.py` -> `line_coverage=95`, `branch_coverage=92`
   - `bash scripts/quality/remote_mutation_probe.sh` -> blocked-state evidence preserved for feature 15
 - Review result: no feature-14-specific findings; residual risk remains remote-host availability, not workflow correctness.
+
+### Session 11 — 2026-03-12
+- Continued `long-task-work` with feature 15 after feature 14 passed.
+- Wrote the feature plan: `docs/plans/2026-03-12-feature-15-mutation-evidence.md`.
+- Added `tests/test_mutation_evidence.cpp` and registered the `mutation_evidence` ctest target.
+- Implemented `scripts/validate_mutation_evidence.py` to parse local/remote probe logs and enforce documentation requirements for blocked-state evidence.
+- Updated `docs/plans/2026-03-12-st-report.md` so the quality section now reflects remote coverage pass (`95%` / `92%`) and mutation blocked-state evidence with follow-up action.
+- Updated `results/repro_manifest.json` with a `quality_evidence.mutation_probe` section.
+- Added the feature example `examples/feature-15-mutation-evidence.sh` and acceptance document `docs/test-cases/feature-15-mutation-evidence.md`.
+- Fresh verification evidence:
+  - `ctest --test-dir build --output-on-failure` -> `10/10` passing
+  - `bash scripts/quality/remote_mutation_probe.sh` -> refreshed `results/st/mutation_probe_local.txt` and `results/st/remote/mutation_probe_remote.txt`
+  - `python3 scripts/validate_mutation_evidence.py` -> `mutation_status=blocked`
+  - `./examples/feature-15-mutation-evidence.sh` -> passed end-to-end
+- Review result: no feature-15-specific findings; residual risk remains missing `mull-runner` tooling, which is now explicitly recorded rather than hidden.

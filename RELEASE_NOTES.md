@@ -28,6 +28,11 @@
   - `examples/feature-14-coverage-workflow.sh`
   - `docs/runbooks/quality-evidence.md`
   - `docs/test-cases/feature-14-coverage-workflow.md`
+- Feature 15 harness assets:
+  - `scripts/validate_mutation_evidence.py`
+  - `tests/test_mutation_evidence.cpp`
+  - `examples/feature-15-mutation-evidence.sh`
+  - `docs/test-cases/feature-15-mutation-evidence.md`
 
 ### Changed
 - Updated the SIFT1M benchmark report with the completed `500k/100` subset-truth PiPNN/HNSW results and corrected remote command examples
@@ -48,6 +53,7 @@
 - Refreshed authoritative coverage evidence from remote x86 GCC to line `95%` / branch `92%`
 - Feature 14 is now mechanically enforced through a validator plus ctest coverage-harness checks instead of documentation alone
 - Remote quality wrappers now exclude `results/st` during sync and reset remote `results/st` before fetch, preventing recursive artifact duplication
+- Feature 15 now makes blocked mutation evidence auditable in the ST report and reproducibility manifest instead of treating missing `mull-runner` as an implicit skip
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used

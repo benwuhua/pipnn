@@ -339,7 +339,7 @@
       "title": "NFR-006 mutation 证据与阻塞态审计",
       "description": "固化 mull probe、available/blocked 证据、以及 ST/复现文档中的处置结论",
       "priority": "high",
-      "status": "failing",
+      "status": "passing",
       "ui": false,
       "verification_steps": [
         "Given 本地与远端 x86 环境, when 执行 mutation probe, then 明确记录 mull-runner 可用或 blocked 的命令输出。",
@@ -347,7 +347,9 @@
       ],
       "dependencies": [
         9
-      ]
+      ],
+      "st_case_path": "docs/test-cases/feature-15-mutation-evidence.md",
+      "st_case_count": 2
     }
   ],
   "waves": [
