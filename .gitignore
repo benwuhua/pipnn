@@ -1,6 +1,7 @@
 # Build artifacts
 build/
 build-cov/
+.worktrees/
 
 # Local/remote logs and temp outputs
 remote-logs/
