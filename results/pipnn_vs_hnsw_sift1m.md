@@ -5,7 +5,7 @@
 - PoC pipeline implemented in C++: `RBC + leaf-kNN + HashPrune + best-first beam search`.
 - Baseline is standard `hnswlib` C++ (`HierarchicalNSW`).
 - Local tests all pass.
-- Remote x86 benchmark is running and repeatable via `generic-x86-remote`.
+- Remote x86 benchmark is repeatable via `generic-x86-remote`.
 
 ## Local sanity run (synthetic, latest)
 
@@ -89,14 +89,14 @@ Profile for the 200k optimized run:
 - `leaf_knn_sec=106.18` (still dominant)
 - `prune_sec=21.73`
 
-### 500k base / 100 query (subset-internal truth, in progress)
+### 500k base / 100 query (subset-internal truth)
 
 This run uses direct binary invocation without `--truth`, so recall is computed against exact top-k on the loaded 500k subset.
 
 | config | build_sec | recall_at_10 | qps | edges |
 |---|---:|---:|---:|---:|
 | fanout=1, replicas=2, max_leaders=128, beam=256 | 401.906 | 0.943 | 219.942 | 13219687 |
-| hnsw baseline | pending | pending | pending | pending |
+| hnsw baseline | 1031.69 | 0.988 | 983.734 | 16000000 |
 
 Profile for the 500k optimized run:
 - `partition_sec=110.784`
@@ -108,7 +108,9 @@ Profile for the 500k optimized run:
 Notes:
 - The current optimized PiPNN config misses the `recall_at_10 >= 0.95` threshold at 500k by `0.007`.
 - Remote host had an unrelated long-running `knowhere` benchmark consuming CPU during this run, so absolute build times should be treated as noisy.
-- HNSW 500k subset-truth baseline is running under log `remote-logs/hnsw-500k100-subset_20260312T010152Z.log`.
+- 500k log files:
+  - `remote-logs/pipnn-500k100-subset_20260312T005341Z.log`
+  - `remote-logs/hnsw-500k100-subset_20260312T010152Z.log`
 
 ### 30k base / 200 query (full SIFT1M truth, not recommended for subset tuning)
 

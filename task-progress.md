@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 10/13 passing · Last: Feature 10 complete · Next: Feature 11 (500k/100 benchmark matrix)
+Progress: 11/13 passing · Last: Feature 11 complete (2026-03-12) · Next: Feature 12 (NFR-002 recall threshold)
 
 ---
 
@@ -27,3 +27,10 @@ Progress: 10/13 passing · Last: Feature 10 complete · Next: Feature 11 (500k/1
 - Captured PiPNN profile: `partition_sec=110.784`, `leaf_knn_sec=245.780`, `prune_sec=45.213`.
 - Started HNSW `500k/100` subset-truth baseline under remote log `remote-logs/hnsw-500k100-subset_20260312T010152Z.log`; result pending.
 - Updated `results/pipnn_vs_hnsw_sift1m.md` with the 500k partial finding and remote command corrections.
+
+### Session 2 — 2026-03-12
+- Fetched the completed HNSW `500k/100` subset-truth result: `build_sec=1031.69`, `recall_at_10=0.988`, `qps=983.734`, `edges=16000000`.
+- Finalized the `500k/100` section in `results/pipnn_vs_hnsw_sift1m.md`, including PiPNN and HNSW log paths.
+- Added feature acceptance document: `docs/test-cases/feature-11-benchmark-matrix.md`.
+- Added runnable example: `examples/feature-11-benchmark-matrix.sh`.
+- Marked feature 11 as `passing`; feature 12 remains the next active item because `500k/100` PiPNN recall is still `0.943 < 0.95`.

@@ -6,7 +6,7 @@ Runnable examples demonstrating completed features. Each example corresponds to 
 
 | # | Feature | File | How to run |
 |---|---------|------|------------|
-| — | *(examples will be added as features are completed)* | — | — |
+| 11 | Fixed SIFT1M benchmark matrix | `examples/feature-11-benchmark-matrix.sh` | `./examples/feature-11-benchmark-matrix.sh` |
 
 ---
 

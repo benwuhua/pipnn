@@ -199,8 +199,10 @@
       "title": "100k/100、200k/100、500k/100 口径评测",
       "description": "固定三档口径并产出 PiPNN/HNSW 对比结果",
       "priority": "high",
-      "status": "failing",
+      "status": "passing",
       "ui": false,
+      "st_case_path": "docs/test-cases/feature-11-benchmark-matrix.md",
+      "st_case_count": 3,
       "verification_steps": [
         "Given 100k/100 口径, when 运行 pipnn 与 hnsw, then 生成成对结果并写入报告。",
         "Given 200k/100 口径, when 运行 pipnn 与 hnsw, then 生成成对结果并写入报告。",
