@@ -26,10 +26,13 @@
 - Updated the SIFT1M benchmark report to reference the single reproducibility bundle and validator command
 - Added system-testing artifacts and recorded a `Conditional-Go` verdict with quality-gate follow-up recommendations
 - Reopened feature 1 for CLI hardening and corrected the long-task coverage command to measure project-owned source through `build-cov`
+- Refactored the CLI entry flow into a reusable helper (`src/cli/app.cpp`) and added direct CLI parser tests
+- Updated the coverage workflow to clean `build-cov` before recomputing gcovr results, preventing stale `.gcda/.gcno` mismatches
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used
 - CLI missing-file failures now return a controlled non-zero exit instead of aborting the process
+- CLI now rejects unknown options and missing option values with explicit error messages
 
 ---
 

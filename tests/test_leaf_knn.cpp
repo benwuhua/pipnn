@@ -18,5 +18,17 @@ int main() {
   assert(has01);
   assert(has10);
   assert(!self);
+
+  auto directed = pipnn::BuildLeafKnnEdges(points, leaf, 1, false);
+  assert(directed.size() == leaf.size());
+
+  auto capped = pipnn::BuildLeafKnnEdges(points, leaf, 4, true, 1);
+  assert(!capped.empty());
+  for (auto [u, v] : capped) {
+    assert(u != v);
+  }
+
+  assert(pipnn::BuildLeafKnnEdges(points, {}, 2, true).empty());
+  assert(pipnn::BuildLeafKnnEdges(points, leaf, 0, true).empty());
   return 0;
 }

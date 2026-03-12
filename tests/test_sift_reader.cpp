@@ -118,10 +118,38 @@ int main() {
   }
   assert(non_positive_dim);
 
+  auto inconsistent_ivecs = std::filesystem::temp_directory_path() / "test_sift_inconsistent.ivecs";
+  WriteIvecs(inconsistent_ivecs, {{1, 2}, {3}});
+  bool inconsistent_ivec_dim = false;
+  try {
+    (void)pipnn::data::LoadIvecs(inconsistent_ivecs);
+  } catch (const std::runtime_error& ex) {
+    inconsistent_ivec_dim = std::string(ex.what()).find("inconsistent ivec dim") != std::string::npos;
+  }
+  assert(inconsistent_ivec_dim);
+
+  auto truncated_ivecs = std::filesystem::temp_directory_path() / "test_sift_truncated.ivecs";
+  {
+    std::ofstream out(truncated_ivecs, std::ios::binary);
+    std::int32_t d = 2;
+    std::int32_t only_one = 7;
+    out.write(reinterpret_cast<const char*>(&d), 4);
+    out.write(reinterpret_cast<const char*>(&only_one), sizeof(std::int32_t));
+  }
+  bool truncated_ivec_record = false;
+  try {
+    (void)pipnn::data::LoadIvecs(truncated_ivecs);
+  } catch (const std::runtime_error& ex) {
+    truncated_ivec_record = std::string(ex.what()).find("truncated ivec record") != std::string::npos;
+  }
+  assert(truncated_ivec_record);
+
   std::filesystem::remove(path);
   std::filesystem::remove(ivecs_path);
   std::filesystem::remove(inconsistent);
   std::filesystem::remove(truncated);
   std::filesystem::remove(bad_dim);
+  std::filesystem::remove(inconsistent_ivecs);
+  std::filesystem::remove(truncated_ivecs);
   return 0;
 }

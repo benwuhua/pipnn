@@ -24,5 +24,30 @@ int main() {
   std::shuffle(shuffled.begin(), shuffled.end(), gen);
   auto b = pruner.PruneNode(points, 0, shuffled);
   assert(a == b);
+
+  // Empty point-set is a no-op.
+  assert(pruner.PruneNode({}, 0, candidates).empty());
+
+  // hash_bits=0 forces all candidates into the same bucket so the closest one wins.
+  pipnn::HashPruneParams same_bucket_params;
+  same_bucket_params.hash_bits = 0;
+  same_bucket_params.max_degree = 2;
+  pipnn::HashPruner same_bucket_pruner(same_bucket_params);
+  auto same_bucket = same_bucket_pruner.PruneNode(points, 0, {0, 5, 1, 3});
+  assert(same_bucket.size() == 1);
+  assert(same_bucket[0] == 1);
+
+  // With one bit and one slot, a closer candidate from a different bucket should replace a farther one.
+  pipnn::Matrix line = {
+      {-2.0f}, {-1.0f}, {0.0f}, {1.0f}, {2.0f},
+  };
+  pipnn::HashPruneParams replace_params;
+  replace_params.hash_bits = 1;
+  replace_params.max_degree = 1;
+  replace_params.seed = 7;
+  pipnn::HashPruner replace_pruner(replace_params);
+  auto replaced = replace_pruner.PruneNode(line, 2, {4, 1});
+  assert(replaced.size() == 1);
+  assert(replaced[0] == 1);
   return 0;
 }

@@ -1,0 +1,200 @@
+#include "cli/app.h"
+
+#include "bench/runner.h"
+#include "data/sift_reader.h"
+
+#include <cstdlib>
+#include <filesystem>
+#include <fstream>
+#include <random>
+#include <string>
+
+namespace pipnn::cli {
+namespace {
+pipnn::Matrix MakeSynthetic(int n, int dim, int seed) {
+  std::mt19937 gen(seed);
+  std::normal_distribution<float> nd(0.0f, 1.0f);
+  pipnn::Matrix m(n, pipnn::Vec(dim));
+  for (auto& v : m) {
+    for (auto& x : v) x = nd(gen);
+  }
+  return m;
+}
+
+void PrintHelp(std::ostream& out) {
+  out << "Usage: pipnn --mode <pipnn|hnsw> --dataset <synthetic|sift1m> --metric l2 "
+         "--output <path> [--base <base.fvecs> --query <query.fvecs> --truth <gt.ivecs> "
+         "--max-base N --max-query N --rbc-cmax N --rbc-fanout N --leader-frac F "
+         "--max-leaders N --replicas N --leaf-k N --leaf-scan-cap N --max-degree N --hash-bits N --beam N --bidirected 0|1]\n";
+}
+
+bool NeedValue(const std::vector<std::string>& args, std::size_t& i, const std::string& option,
+               std::string& value, std::ostream& err) {
+  if (i + 1 >= args.size()) {
+    err << "missing value for " << option << "\n";
+    return false;
+  }
+  value = args[++i];
+  return true;
+}
+}  // namespace
+
+int Run(const std::vector<std::string>& args, std::ostream& out, std::ostream& err) {
+  try {
+    pipnn::RunnerConfig cfg;
+    cfg.mode = "pipnn";
+    cfg.dataset = "synthetic";
+    cfg.output = "results/metrics.json";
+    std::string base_path;
+    std::string query_path;
+    std::string truth_path;
+    std::size_t max_base = 0;
+    std::size_t max_query = 0;
+    int rbc_cmax = 128;
+    int rbc_fanout = 2;
+    float leader_frac = 0.02f;
+    int max_leaders = 1000;
+    int replicas = 1;
+    int leaf_k = 12;
+    int leaf_scan_cap = 0;
+    int max_degree = 32;
+    int hash_bits = 12;
+    int beam = 128;
+    bool bidirected = true;
+
+    for (std::size_t i = 0; i < args.size(); ++i) {
+      const std::string& a = args[i];
+      std::string value;
+      if (a == "--help") {
+        PrintHelp(out);
+        return 0;
+      }
+      if (a == "--mode") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        cfg.mode = value;
+      } else if (a == "--dataset") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        cfg.dataset = value;
+      } else if (a == "--metric") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        if (value != "l2") {
+          err << "only l2 metric supported\n";
+          return 1;
+        }
+      } else if (a == "--output") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        cfg.output = value;
+      } else if (a == "--base") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        base_path = value;
+      } else if (a == "--query") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        query_path = value;
+      } else if (a == "--truth") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        truth_path = value;
+      } else if (a == "--max-base") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        max_base = static_cast<std::size_t>(std::stoull(value));
+      } else if (a == "--max-query") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        max_query = static_cast<std::size_t>(std::stoull(value));
+      } else if (a == "--rbc-cmax") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        rbc_cmax = std::stoi(value);
+      } else if (a == "--rbc-fanout") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        rbc_fanout = std::stoi(value);
+      } else if (a == "--leader-frac") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        leader_frac = std::stof(value);
+      } else if (a == "--max-leaders") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        max_leaders = std::stoi(value);
+      } else if (a == "--replicas") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        replicas = std::stoi(value);
+      } else if (a == "--leaf-k") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        leaf_k = std::stoi(value);
+      } else if (a == "--leaf-scan-cap") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        leaf_scan_cap = std::stoi(value);
+      } else if (a == "--max-degree") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        max_degree = std::stoi(value);
+      } else if (a == "--hash-bits") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        hash_bits = std::stoi(value);
+      } else if (a == "--beam") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        beam = std::stoi(value);
+      } else if (a == "--bidirected") {
+        if (!NeedValue(args, i, a, value, err)) return 1;
+        bidirected = (std::stoi(value) != 0);
+      } else {
+        err << "unknown argument: " << a << "\n";
+        return 1;
+      }
+    }
+
+    pipnn::Matrix base;
+    pipnn::Matrix queries;
+    std::vector<std::vector<int>> truth;
+    if (cfg.dataset == "synthetic") {
+      base = MakeSynthetic(2000, 32, 42);
+      queries = MakeSynthetic(100, 32, 4242);
+    } else if (cfg.dataset == "sift1m") {
+      if (base_path.empty() || query_path.empty()) {
+        err << "sift1m requires --base <base.fvecs> and --query <query.fvecs>\n";
+        return 1;
+      }
+      base = pipnn::data::LoadFvecs(base_path, max_base);
+      queries = pipnn::data::LoadFvecs(query_path, max_query);
+      if (!truth_path.empty()) truth = pipnn::data::LoadIvecs(truth_path, queries.size());
+    } else {
+      err << "unsupported dataset: " << cfg.dataset << "\n";
+      return 1;
+    }
+
+    pipnn::PipnnBuildParams bp;
+    bp.rbc.cmax = rbc_cmax;
+    bp.rbc.fanout = rbc_fanout;
+    bp.rbc.leader_frac = leader_frac;
+    bp.rbc.max_leaders = max_leaders;
+    bp.replicas = replicas;
+    bp.leaf_k = leaf_k;
+    bp.leaf_scan_cap = leaf_scan_cap;
+    bp.bidirected = bidirected;
+    bp.hashprune.max_degree = max_degree;
+    bp.hashprune.hash_bits = hash_bits;
+
+    pipnn::SearchParams sp;
+    sp.beam = beam;
+    sp.topk = 10;
+
+    if (std::getenv("PIPNN_ECHO_CONFIG") != nullptr) {
+      out << "cfg mode=" << cfg.mode << " dataset=" << cfg.dataset << " max_base=" << max_base
+          << " max_query=" << max_query << " cmax=" << bp.rbc.cmax << " fanout=" << bp.rbc.fanout
+          << " leader_frac=" << bp.rbc.leader_frac << " max_leaders=" << bp.rbc.max_leaders
+          << " replicas=" << bp.replicas
+          << " leaf_k=" << bp.leaf_k << " leaf_scan_cap=" << bp.leaf_scan_cap
+          << " max_degree=" << bp.hashprune.max_degree
+          << " hash_bits=" << bp.hashprune.hash_bits << " beam=" << sp.beam
+          << " bidirected=" << bp.bidirected << "\n";
+    }
+
+    auto metrics = pipnn::RunBenchmark(cfg, base, queries, truth, bp, sp);
+    auto json = pipnn::ToJson(metrics);
+
+    std::filesystem::create_directories(std::filesystem::path(cfg.output).parent_path());
+    std::ofstream file(cfg.output);
+    file << json;
+    out << json;
+    return 0;
+  } catch (const std::exception& ex) {
+    err << ex.what() << "\n";
+    return 1;
+  }
+}
+}  // namespace pipnn::cli

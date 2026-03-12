@@ -5,6 +5,7 @@ build-cov/
 # Local/remote logs and temp outputs
 remote-logs/
 *.log
+*.gcov
 
 # OS/editor
 .DS_Store

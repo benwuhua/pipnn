@@ -77,3 +77,12 @@ Progress: 12/13 passing · Last: System Testing complete (2026-03-12, Conditiona
 - Wrapped `main()` with a top-level `std::exception` boundary so loader/runtime failures return exit code `1` instead of aborting.
 - Updated the worker coverage command to use `build-cov` and exclude third-party `_deps` artifacts.
 - Current source-only coverage after the new tests: line `95%`, branch `58%`; branch coverage and mutation tooling remain the blocking quality debts.
+
+### Session 7 — 2026-03-12
+- Continued feature 1 quality work with branch-focused tests for `hashprune`, `leaf_knn`, `rbc`, `pipnn_builder`, `search`, and `sift_reader`.
+- Added direct CLI helper tests (`tests/test_cli_app.cpp`) and refactored the CLI entry flow into `src/cli/app.cpp` + `src/cli/app.h`, leaving `main.cpp` as a thin wrapper.
+- Hardened CLI parsing to reject unknown arguments and missing option values with diagnosable errors.
+- Confirmed local regression after the refactor: `ctest --test-dir build --output-on-failure` = `8/8` passing.
+- Confirmed clean local coverage on a fresh `build-cov`: source-only line `99%`, branch `64%`.
+- Confirmed the branch-gap is real on remote x86 GCC as well: source-only line `99%`, branch `65%`.
+- Updated long-task coverage commands to require a clean `build-cov` rebuild so stale `.gcda/.gcno` mismatches cannot silently deflate results.

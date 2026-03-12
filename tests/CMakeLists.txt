@@ -22,6 +22,10 @@ add_executable(test_hnsw_runner test_hnsw_runner.cpp)
 target_link_libraries(test_hnsw_runner PRIVATE pipnn_core)
 add_test(NAME hnsw_runner COMMAND test_hnsw_runner)
 
+add_executable(test_cli_app test_cli_app.cpp)
+target_link_libraries(test_cli_app PRIVATE pipnn_core)
+add_test(NAME cli_app COMMAND test_cli_app)
+
 add_executable(test_cli test_cli.cpp)
 target_compile_definitions(test_cli PRIVATE PIPNN_BIN_PATH="$<TARGET_FILE:pipnn>")
 add_dependencies(test_cli pipnn)

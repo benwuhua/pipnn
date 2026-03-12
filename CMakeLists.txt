@@ -21,6 +21,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(hnswlib)
 
 add_library(pipnn_core
+  src/cli/app.cpp
   src/data/sift_reader.cpp
   src/core/hashprune.cpp
   src/core/rbc.cpp
