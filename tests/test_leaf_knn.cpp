@@ -2,6 +2,14 @@
 #include "core/leaf_knn_blocked.h"
 
 #include <cassert>
+#include <algorithm>
+
+namespace {
+std::vector<pipnn::Edge> SortedEdges(std::vector<pipnn::Edge> edges) {
+  std::sort(edges.begin(), edges.end());
+  return edges;
+}
+}  // namespace
 
 int main() {
   pipnn::Matrix points = {{0, 0}, {1, 0}, {5, 0}};
@@ -46,35 +54,42 @@ int main() {
   assert(full_scan[3].first == 3 && full_scan[3].second == 2);
 
   {
-    pipnn::Matrix exact_points = {{0.0f}, {1.0f}, {3.0f}, {10.0f}};
-    std::vector<int> exact_leaf = {0, 1, 2, 3};
-    auto naive = pipnn::BuildLeafKnnExactEdges(exact_points, exact_leaf, 2, false,
-                                               pipnn::LeafKnnMode::NaiveFull);
-    auto blocked = pipnn::BuildLeafKnnExactEdges(exact_points, exact_leaf, 2, false,
-                                                 pipnn::LeafKnnMode::BlockedFull);
-    assert(naive == blocked);
-    for (auto [u, v] : naive) {
+    pipnn::Matrix exact_points = {
+        {0.0f}, {1.0f}, {3.0f}, {10.0f}, {20.0f}, {21.0f}, {22.5f}, {30.0f},
+    };
+    std::vector<int> first_leaf = {0, 1, 2, 3};
+    std::vector<int> second_leaf = {4, 5, 6, 7};
+    std::vector<pipnn::LeafBatchJob> jobs = {
+        {.leaf = first_leaf},
+        {.leaf = second_leaf},
+    };
+    pipnn::LeafBatchConfig cfg;
+    cfg.min_leaf_for_batch = 4;
+    cfg.point_block_rows = 2;
+    cfg.max_points_per_batch = 8;
+
+    auto expected = pipnn::BuildLeafKnnExactEdgesNaive(exact_points, first_leaf, 2, false);
+    auto second_expected = pipnn::BuildLeafKnnExactEdgesNaive(exact_points, second_leaf, 2, false);
+    expected.insert(expected.end(), second_expected.begin(), second_expected.end());
+
+    auto batched = pipnn::BuildLeafKnnExactBatchedEdges(exact_points, jobs, 2, false, cfg);
+    assert(SortedEdges(expected) == SortedEdges(batched));
+    for (auto [u, v] : batched) {
       assert(u != v);
+      const bool same_first = u < 4 && v < 4;
+      const bool same_second = u >= 4 && v >= 4;
+      assert(same_first || same_second);
     }
   }
 
   {
     pipnn::Matrix all_points = {{0.0f}, {2.0f}, {5.0f}};
     std::vector<int> all_leaf = {0, 1, 2};
-    auto all_edges = pipnn::BuildLeafKnnExactEdges(all_points, all_leaf, 8, false,
-                                                   pipnn::LeafKnnMode::NaiveFull);
+    auto all_edges = pipnn::BuildLeafKnnExactEdgesNaive(all_points, all_leaf, 8, false);
     assert(all_edges.size() == 6);
     for (auto [u, v] : all_edges) {
       assert(u != v);
     }
-  }
-
-  {
-    pipnn::LeafKnnConfig cfg;
-    cfg.min_leaf_for_blocked = 4;
-    assert(pipnn::SelectLeafKnnMode(3, 0, cfg) == pipnn::LeafKnnMode::NaiveFull);
-    assert(pipnn::SelectLeafKnnMode(4, 1, cfg) == pipnn::LeafKnnMode::NaiveFull);
-    assert(pipnn::SelectLeafKnnMode(4, 0, cfg) == pipnn::LeafKnnMode::BlockedFull);
   }
 
   assert(pipnn::BuildLeafKnnEdges(points, {}, 2, true).empty());

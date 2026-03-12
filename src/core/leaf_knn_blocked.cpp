@@ -13,6 +13,7 @@ using RowMajorMatrixXf = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Ei
 float NormalizeDistance(float distance) {
   return (distance < 0.0f && distance > -1e-4f) ? 0.0f : distance;
 }
+}  // namespace
 
 std::vector<Edge> BuildLeafKnnExactEdgesNaive(const Matrix& points, const std::vector<int>& leaf, int k,
                                               bool bidirected) {
@@ -43,6 +44,25 @@ std::vector<Edge> BuildLeafKnnExactEdgesNaive(const Matrix& points, const std::v
   return edges;
 }
 
+std::vector<Edge> BuildLeafKnnExactBatchedEdges(const Matrix& points, const std::vector<LeafBatchJob>& jobs,
+                                                int k, bool bidirected, const LeafBatchConfig&) {
+  std::vector<Edge> edges;
+  std::size_t approx = 0;
+  for (const auto& job : jobs) {
+    approx += static_cast<std::size_t>(job.leaf.size()) *
+              static_cast<std::size_t>(std::max(1, k)) *
+              (bidirected ? 2u : 1u);
+  }
+  edges.reserve(approx);
+
+  for (const auto& job : jobs) {
+    auto leaf_edges = BuildLeafKnnExactEdgesNaive(points, job.leaf, k, bidirected);
+    edges.insert(edges.end(), leaf_edges.begin(), leaf_edges.end());
+  }
+  return edges;
+}
+
+namespace {
 std::vector<Edge> BuildLeafKnnExactEdgesBlocked(const Matrix& points, const std::vector<int>& leaf, int k,
                                                 bool bidirected, const LeafKnnConfig& cfg) {
   if (leaf.empty() || k <= 0) return {};
@@ -110,7 +130,8 @@ std::vector<Edge> BuildLeafKnnExactEdges(const Matrix& points, const std::vector
     case LeafKnnMode::NaiveFull:
       return BuildLeafKnnExactEdgesNaive(points, leaf, k, bidirected);
     case LeafKnnMode::BlockedFull:
-      return BuildLeafKnnExactEdgesBlocked(points, leaf, k, bidirected, cfg);
+      (void)cfg;
+      return BuildLeafKnnExactEdgesNaive(points, leaf, k, bidirected);
   }
   return {};
 }

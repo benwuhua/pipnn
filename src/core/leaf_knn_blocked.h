@@ -3,12 +3,29 @@
 #include "core/leaf_knn.h"
 
 namespace pipnn {
+struct LeafBatchJob {
+  std::vector<int> leaf;
+};
+
+struct LeafBatchConfig {
+  int min_leaf_for_batch = 64;
+  int point_block_rows = 128;
+  int max_points_per_batch = 1024;
+};
+
 enum class LeafKnnMode { NaiveFull, BlockedFull };
 
 struct LeafKnnConfig {
   int min_leaf_for_blocked = 128;
   int point_block_rows = 128;
 };
+
+std::vector<Edge> BuildLeafKnnExactEdgesNaive(const Matrix& points, const std::vector<int>& leaf, int k,
+                                              bool bidirected);
+
+std::vector<Edge> BuildLeafKnnExactBatchedEdges(const Matrix& points, const std::vector<LeafBatchJob>& jobs,
+                                                int k, bool bidirected,
+                                                const LeafBatchConfig& cfg = {});
 
 LeafKnnMode SelectLeafKnnMode(std::size_t leaf_size, int scan_cap, const LeafKnnConfig& cfg = {});
 
