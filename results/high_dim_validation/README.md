@@ -189,3 +189,71 @@ Interpretation:
 - The current per-leaf matrix materialization strategy is not paying for itself at these leaf sizes.
 - The next step should not be another small per-leaf blocked-kernel tweak.
 - The next design should question the architecture and move to a broader shared distance-batching layer or a multi-leaf batching strategy.
+
+## Multi-Leaf leaf_kNN Batching
+
+Scope:
+
+- move the batching boundary up to `pipnn_builder.cpp`
+- collect uncapped large leaves as jobs
+- batch multiple leaves together while preserving exact leaf-local top-k semantics
+- keep `RBC`, `HashPrune`, and search semantics unchanged
+
+Artifacts:
+
+- `results/high_dim_validation/simplewiki_openai_5k_50/pipnn_metrics.json`
+- `results/high_dim_validation/simplewiki_openai_5k_50/pipnn.stdout`
+- `results/high_dim_validation/simplewiki_openai_5k_50/hnsw_metrics.json`
+- `remote-logs/high_dim_validation/simplewiki-openai-5k50-multi-leaf-batch_20260312T120534Z.log`
+
+### 5k / 50 After multi-leaf batching
+
+PiPNN:
+
+- `build_sec = 66.6072`
+- `recall_at_10 = 0.978`
+- `qps = 36.4256`
+
+PiPNN build profile:
+
+- `partition_sec = 12.9174`
+- `leaf_knn_sec = 42.5382`
+- `prune_sec = 11.1506`
+- `leaves = 103`
+- `rbc_max_membership = 2`
+
+HNSW:
+
+- `build_sec = 50.3638`
+- `recall_at_10 = 0.998`
+- `qps = 146.764`
+
+### Delta vs per-leaf blocked result
+
+PiPNN deltas:
+
+- `build_sec: 38.6283 -> 66.6072` (`+27.9789s`, about `+72.4%`)
+- `partition_sec: 12.6393 -> 12.9174`
+- `leaf_knn_sec: 16.1486 -> 42.5382` (`+26.3896s`, about `+163.4%`)
+- `prune_sec: 9.83931 -> 11.1506`
+- `recall_at_10: 0.978 -> 0.978`
+
+### Delta vs post-RBC baseline
+
+PiPNN deltas:
+
+- `build_sec: 30.4769 -> 66.6072` (`+36.1303s`, about `+118.6%`)
+- `partition_sec: 12.5956 -> 12.9174`
+- `leaf_knn_sec: 8.13263 -> 42.5382` (`+34.40557s`, about `+423.1%`)
+- `prune_sec: 9.74774 -> 11.1506`
+- `recall_at_10: 0.978 -> 0.978`
+
+Interpretation:
+
+- This multi-leaf exact batching path is also a negative result on the current high-dimensional workload.
+- The regression remains concentrated in `leaf_knn_sec`; moving the batching boundary up did not recover performance.
+- The result is not promotion-ready and not even informative in the narrow sense defined by the spec, because it is worse than the already-failing per-leaf blocked result.
+- The evidence now points away from exact leaf batching as a productive direction for this implementation.
+- The next design should stop investing in exact leaf batching and move either to:
+  - a broader shared distance-batching layer with a different cost structure
+  - or a different candidate-generation strategy that avoids exact full-scan leaf work
