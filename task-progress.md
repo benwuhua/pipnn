@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 18/22 passing · Last: PiPNN-on-Vamana file dataset bridge (2026-03-13) · Next: Feature 19 Wave 4 HashPrune fidelity
+Progress: 18/22 passing · Last: PiPNN-on-Vamana authority harness entry (2026-03-13) · Next: Feature 19 Wave 4 HashPrune fidelity
 
 ---
 
@@ -491,3 +491,26 @@ Progress: 18/22 passing · Last: PiPNN-on-Vamana file dataset bridge (2026-03-13
     - `qps=163.338`
     - `edges=88454`
   - note: this smoke used subset base/query with full-dataset `gt.ibin`, so `recall_at_10=0` is only a truth-mismatch artifact and not a quality conclusion
+
+### Session 28 — 2026-03-13
+- Continued the `PiPNN-on-Vamana` authority mainline on remote x86.
+- Confirmed the `5k/10` remote smoke completed for both local-seam modes on `wikipedia-cohere-1m`:
+  - `pipnn_vamana`: `build_sec=7.45575`, `qps=163.338`, `edges=88454`
+  - `vamana`: `build_sec=98.8325`, `qps=240.007`, `edges=160000`
+- Root-cause conclusion for authority planning:
+  - the current repository-local `vamana` seam uses an exact native candidate build and is not suitable for `1M` scale
+- Added a dedicated reproducible authority entrypoint:
+  - `scripts/bench/run_wikipedia_cohere_1m_100_pipnn_vamana.sh`
+- Updated docs:
+  - `docs/runbooks/pipnn-on-vamana.md`
+  - `results/high_dim_validation/README.md`
+- Started the remote `1M/100` authority job for `pipnn_vamana`:
+  - pid: `2100924`
+  - log: `/data/work/logs/wikipedia-cohere-pipnn-vamana-1m100_20260313T050840Z.log`
+- Current process evidence while running:
+  - `State=R`
+  - `RSS≈3.09 GB`
+  - `Threads=8`
+  - `CPU≈337%` to `531%`
+  - `read_bytes≈3.06 GB`
+  - output JSON has not been flushed yet

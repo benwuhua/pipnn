@@ -55,6 +55,23 @@ Default scope:
 
 - full dataset when `MAX_BASE=0` and `MAX_QUERY=0`
 
+## Authority 1M/100 Entry
+
+For the current authority checkpoint, the reproducible `PiPNN-on-Vamana` entry is:
+
+- `scripts/bench/run_wikipedia_cohere_1m_100_pipnn_vamana.sh`
+
+Default scope:
+
+- full base (`MAX_BASE=0`)
+- first `100` official queries (`MAX_QUERY=100`)
+- mode: `pipnn_vamana`
+
+Rationale:
+
+- the current repository-local `vamana` seam still uses an exact native candidate path
+- that baseline path is not suitable for `1M` scale, so the authority run is currently tracked on the `pipnn_vamana` side first
+
 ## High-Dim Smoke
 
 Dataset:

@@ -121,3 +121,24 @@ Default behavior:
   - `pipnn_vamana`
   - `vamana`
 - uses full dataset when `MAX_BASE=0` and `MAX_QUERY=0`
+
+## Authority Entry Point
+
+For the current authority checkpoint, the reproducible `PiPNN-on-Vamana` command is:
+
+```bash
+bash scripts/bench/run_wikipedia_cohere_1m_100_pipnn_vamana.sh
+```
+
+Default behavior:
+
+- runs `ctest`
+- benchmarks:
+  - `pipnn_vamana`
+- uses full base when `MAX_BASE=0`
+- uses the first `100` official queries when `MAX_QUERY=100`
+
+Why this entry exists separately:
+
+- the current repository-local `vamana` seam still uses an exact native candidate build
+- that seam is not suitable for `1M` scale, so the authority `PiPNN-on-Vamana` run needs a dedicated reproducible path

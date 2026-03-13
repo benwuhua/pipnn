@@ -75,6 +75,8 @@
   - `results/high_dim_validation/hnsw_sweep_20k_100_match_v1/hnsw_m16_efc100_efs32.json`
 - PiPNN-on-Vamana full-dataset entry:
   - `scripts/bench/run_wikipedia_cohere_1m_full.sh`
+- PiPNN-on-Vamana authority entry:
+  - `scripts/bench/run_wikipedia_cohere_1m_100_pipnn_vamana.sh`
 
 ### Changed
 - Updated the SIFT1M benchmark report with the completed `500k/100` subset-truth PiPNN/HNSW results and corrected remote command examples
@@ -131,6 +133,7 @@
 - CLI now supports a generic file-backed dataset path (`--dataset file`) over `.fvecs/.ivecs` and `.fbin/.ibin`
 - Added coverage for the new file-backed dataset path in `tests/test_sift_reader.cpp`, `tests/test_cli_app.cpp`, and `tests/test_cli.cpp`
 - Updated `results/high_dim_validation/README.md` and `docs/runbooks/pipnn-on-vamana.md` with the new `wikipedia-cohere-1m` full-dataset entrypoint
+- Added a dedicated reproducible `1M/100` `pipnn_vamana` authority entry because the current repository-local `vamana` seam does not scale to `1M`
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used
