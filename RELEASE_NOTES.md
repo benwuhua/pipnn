@@ -139,6 +139,10 @@
 - Added a repo-local `/proc` snapshot wrapper for long-running benchmarks whose stdout remains silent until final JSON flush
 - `BuildPipnnCandidates(...)` now parallelizes per-point shortlist scoring while preserving the existing bidirected candidate semantics
 - Added coverage that locks both symmetric (`bidirected=true`) and asymmetric (`bidirected=false`) candidate-generation behavior
+- Captured authority-scale `wikipedia-cohere-1m` results before and after shortlist parallelization:
+  - `build_sec 8267.43 -> 7604.74`
+  - `qps 26.5268 -> 28.7718`
+  - `recall_at_10` remains `0`
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used

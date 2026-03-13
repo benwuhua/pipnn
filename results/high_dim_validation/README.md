@@ -72,6 +72,47 @@ Rationale:
 - the current repository-local `vamana` seam still uses an exact native candidate path
 - that baseline path is not suitable for `1M` scale, so the authority run is currently tracked on the `pipnn_vamana` side first
 
+### Authority results on `wikipedia-cohere-1m`
+
+Artifacts:
+
+- old run:
+  - remote repo: `/data/work/pipnn`
+  - `results/wikipedia_cohere_1m_100/pipnn_vamana_metrics.json`
+- parallel shortlist run:
+  - remote repo: `/data/work/pipnn-cand-par`
+  - `results/wikipedia_cohere_1m_100/pipnn_vamana_metrics.json`
+  - `results/wikipedia_cohere_1m_100/proc_snapshot.txt`
+
+Metrics:
+
+- before candidate parallelization:
+  - `build_sec = 8267.43`
+  - `recall_at_10 = 0`
+  - `qps = 26.5268`
+  - `edges = 17789346`
+- after candidate parallelization:
+  - `build_sec = 7604.74`
+  - `recall_at_10 = 0`
+  - `qps = 28.7718`
+  - `edges = 17789346`
+
+Delta:
+
+- `build_sec`: `8267.43 -> 7604.74` (`-662.69s`, about `-8.0%`)
+- `qps`: `26.5268 -> 28.7718` (`+2.245`, about `+8.5%`)
+- `edges`: unchanged
+
+Interpretation:
+
+- the candidate-path parallelization materially improved authority-scale build time
+- the optimization also improved thread utilization during the long run:
+  - before: only a small subset of threads stayed busy
+  - after: all `8` worker threads were simultaneously active during the main compute phase
+- however, `recall_at_10` remained `0`
+- because this run uses the full base (`1M`) and the official query subset (`100`), this is not a subset-truth artifact
+- the current blocker has shifted from build throughput to graph/search correctness on `wikipedia-cohere-1m`
+
 ## High-Dim Smoke
 
 Dataset:

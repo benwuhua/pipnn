@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 18/22 passing · Last: PiPNN candidate parallel shortlist scoring (2026-03-13) · Next: Feature 19 Wave 4 HashPrune fidelity
+Progress: 18/22 passing · Last: PiPNN-on-Vamana authority rerun result capture (2026-03-13) · Next: Feature 19 Wave 4 HashPrune fidelity
 
 ---
 
@@ -547,3 +547,23 @@ Progress: 18/22 passing · Last: PiPNN candidate parallel shortlist scoring (202
   - `pipnn_vamana build_sec=5.34864`
   - previous comparable smoke on the same dataset path was `7.45575`
   - note: `qps` on this run is not comparable because the host was concurrently occupied by the older `1M/100` authority job
+
+### Session 31 — 2026-03-13
+- Collected the completed `1M/100` authority result from the older pre-parallelization run in `/data/work/pipnn`:
+  - `build_sec=8267.43`
+  - `recall_at_10=0`
+  - `qps=26.5268`
+  - `edges=17789346`
+- Launched and completed the post-parallelization `1M/100` authority rerun on isolated repo `/data/work/pipnn-cand-par` with `/proc` sidecar monitoring.
+- Post-parallelization authority result:
+  - `build_sec=7604.74`
+  - `recall_at_10=0`
+  - `qps=28.7718`
+  - `edges=17789346`
+- Authority delta after the shortlist-scoring parallelization:
+  - build time improved by about `8.0%`
+  - qps improved by about `8.5%`
+  - edge count stayed unchanged
+- Important conclusion:
+  - build throughput improved as intended
+  - `recall_at_10` remained `0` even with full base + official query subset, so the next blocker is graph/search correctness rather than build throughput
