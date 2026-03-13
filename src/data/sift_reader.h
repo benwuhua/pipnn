@@ -10,4 +10,8 @@ std::vector<std::vector<float>> LoadFvecs(const std::filesystem::path& path,
                                           std::size_t max_rows = 0);
 std::vector<std::vector<int>> LoadIvecs(const std::filesystem::path& path,
                                         std::size_t max_rows = 0);
+std::vector<std::vector<float>> LoadFloatVectors(const std::filesystem::path& path,
+                                                 std::size_t max_rows = 0);
+std::vector<std::vector<int>> LoadIntVectors(const std::filesystem::path& path,
+                                             std::size_t max_rows = 0);
 }  // namespace pipnn::data

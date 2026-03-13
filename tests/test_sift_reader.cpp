@@ -29,6 +29,34 @@ void WriteIvecs(const std::filesystem::path& path,
               sizeof(std::int32_t) * row.size());
   }
 }
+
+void WriteFbin(const std::filesystem::path& path,
+               const std::vector<std::vector<float>>& rows) {
+  std::ofstream out(path, std::ios::binary);
+  const std::uint32_t count = static_cast<std::uint32_t>(rows.size());
+  const std::uint32_t dim =
+      rows.empty() ? 0u : static_cast<std::uint32_t>(rows.front().size());
+  out.write(reinterpret_cast<const char*>(&count), sizeof(std::uint32_t));
+  out.write(reinterpret_cast<const char*>(&dim), sizeof(std::uint32_t));
+  for (const auto& row : rows) {
+    out.write(reinterpret_cast<const char*>(row.data()),
+              sizeof(float) * row.size());
+  }
+}
+
+void WriteIbin(const std::filesystem::path& path,
+               const std::vector<std::vector<int>>& rows) {
+  std::ofstream out(path, std::ios::binary);
+  const std::uint32_t count = static_cast<std::uint32_t>(rows.size());
+  const std::uint32_t dim =
+      rows.empty() ? 0u : static_cast<std::uint32_t>(rows.front().size());
+  out.write(reinterpret_cast<const char*>(&count), sizeof(std::uint32_t));
+  out.write(reinterpret_cast<const char*>(&dim), sizeof(std::uint32_t));
+  for (const auto& row : rows) {
+    out.write(reinterpret_cast<const char*>(row.data()),
+              sizeof(std::int32_t) * row.size());
+  }
+}
 }  // namespace
 
 int main() {
@@ -61,6 +89,25 @@ int main() {
   auto ivecs_limited = pipnn::data::LoadIvecs(ivecs_path, 1);
   assert(ivecs_limited.size() == 1);
   assert(ivecs_limited[0][1] == 11);
+
+  auto fbin_path = std::filesystem::temp_directory_path() / "test_sift_reader.fbin";
+  WriteFbin(fbin_path, {{1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}});
+  auto fbin_vecs = pipnn::data::LoadFloatVectors(fbin_path);
+  assert(fbin_vecs.size() == 2);
+  assert(fbin_vecs[0].size() == 3);
+  assert(fbin_vecs[1][2] == 6.0f);
+  auto limited_fbin = pipnn::data::LoadFloatVectors(fbin_path, 1);
+  assert(limited_fbin.size() == 1);
+  assert(limited_fbin[0][1] == 2.0f);
+
+  auto ibin_path = std::filesystem::temp_directory_path() / "test_sift_reader.ibin";
+  WriteIbin(ibin_path, {{10, 11}, {20, 21}});
+  auto ibin_vecs = pipnn::data::LoadIntVectors(ibin_path);
+  assert(ibin_vecs.size() == 2);
+  assert(ibin_vecs[1][1] == 21);
+  auto limited_ibin = pipnn::data::LoadIntVectors(ibin_path, 1);
+  assert(limited_ibin.size() == 1);
+  assert(limited_ibin[0][0] == 10);
 
   bool missing_fvecs = false;
   try {
@@ -144,12 +191,50 @@ int main() {
   }
   assert(truncated_ivec_record);
 
+  auto truncated_fbin = std::filesystem::temp_directory_path() / "test_sift_truncated.fbin";
+  {
+    std::ofstream out(truncated_fbin, std::ios::binary);
+    std::uint32_t count = 2;
+    std::uint32_t dim = 3;
+    float values[4] = {1.0f, 2.0f, 3.0f, 4.0f};
+    out.write(reinterpret_cast<const char*>(&count), sizeof(std::uint32_t));
+    out.write(reinterpret_cast<const char*>(&dim), sizeof(std::uint32_t));
+    out.write(reinterpret_cast<const char*>(values), sizeof(values));
+  }
+  bool truncated_fbin_record = false;
+  try {
+    (void)pipnn::data::LoadFloatVectors(truncated_fbin);
+  } catch (const std::runtime_error& ex) {
+    truncated_fbin_record =
+        std::string(ex.what()).find("truncated fbin payload") != std::string::npos;
+  }
+  assert(truncated_fbin_record);
+
+  auto bad_ext = std::filesystem::temp_directory_path() / "test_sift_reader.txt";
+  {
+    std::ofstream out(bad_ext);
+    out << "bad";
+  }
+  bool unsupported_ext = false;
+  try {
+    (void)pipnn::data::LoadFloatVectors(bad_ext);
+  } catch (const std::runtime_error& ex) {
+    unsupported_ext =
+        std::string(ex.what()).find("unsupported float vector file extension") !=
+        std::string::npos;
+  }
+  assert(unsupported_ext);
+
   std::filesystem::remove(path);
   std::filesystem::remove(ivecs_path);
+  std::filesystem::remove(fbin_path);
+  std::filesystem::remove(ibin_path);
   std::filesystem::remove(inconsistent);
   std::filesystem::remove(truncated);
   std::filesystem::remove(bad_dim);
   std::filesystem::remove(inconsistent_ivecs);
   std::filesystem::remove(truncated_ivecs);
+  std::filesystem::remove(truncated_fbin);
+  std::filesystem::remove(bad_ext);
   return 0;
 }

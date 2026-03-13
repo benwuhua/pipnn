@@ -17,6 +17,15 @@ The repository now has local seams for:
 
 These seams are local transition layers. They are not yet wired to upstream `DiskANN cpp_main`.
 
+The repository also now has a generic file-backed dataset path:
+
+- CLI dataset mode: `--dataset file`
+- supported vector formats:
+  - floats: `.fvecs`, `.fbin`
+  - truth/int vectors: `.ivecs`, `.ibin`
+
+This is the bridge needed to run `PiPNN-on-Vamana` against `wikipedia-cohere-1m` without hard-coding dataset-specific readers.
+
 ## Upstream Target
 
 Preferred upstream base:
@@ -78,3 +87,37 @@ Choose one path and keep the decision explicit:
 - Path A: provision the remote x86 host with Intel OpenMP + MKL, then retry the upstream probe
 - Path B: continue implementation against the local Vamana seams until a suitable `DiskANN cpp_main` environment is available
 - Path C: run a separate Rust-based `DiskANN` spike, but keep it outside the current C++ mainline
+
+## Full-Dataset Entry Point
+
+For the current local-seam mainline, the full `wikipedia-cohere-1m` benchmark entry is:
+
+```bash
+bash scripts/bench/run_wikipedia_cohere_1m_full.sh
+```
+
+Environment knobs:
+
+- `WIKIPEDIA_COHERE_DIR`
+- `OUT_DIR`
+- `MAX_BASE`
+- `MAX_QUERY`
+- `RBC_CMAX`
+- `RBC_FANOUT`
+- `LEADER_FRAC`
+- `MAX_LEADERS`
+- `REPLICAS`
+- `LEAF_K`
+- `LEAF_SCAN_CAP`
+- `MAX_DEGREE`
+- `HASH_BITS`
+- `BEAM`
+- `BIDIRECTED`
+
+Default behavior:
+
+- runs `ctest`
+- benchmarks:
+  - `pipnn_vamana`
+  - `vamana`
+- uses full dataset when `MAX_BASE=0` and `MAX_QUERY=0`

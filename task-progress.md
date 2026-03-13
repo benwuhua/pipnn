@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 18/22 passing · Last: Increment Wave 4 algorithm iteration (2026-03-12) · Next: Feature 19 Wave 4 HashPrune fidelity
+Progress: 18/22 passing · Last: PiPNN-on-Vamana file dataset bridge (2026-03-13) · Next: Feature 19 Wave 4 HashPrune fidelity
 
 ---
 
@@ -461,3 +461,33 @@ Progress: 18/22 passing · Last: Increment Wave 4 algorithm iteration (2026-03-1
   - no `MKL` packages are installed on the host
 - Mainline conclusion from this probe:
   - replacing the local Vamana seams with upstream `DiskANN cpp_main` is currently environment-blocked, not code-blocked
+
+### Session 27 — 2026-03-13
+- Continued the `PiPNN-on-Vamana` mainline by adding a generic file-backed dataset path to the CLI and loaders.
+- Loader changes:
+  - `src/data/sift_reader.*` now supports extension-based dispatch:
+    - float vectors: `.fvecs`, `.fbin`
+    - int/truth vectors: `.ivecs`, `.ibin`
+- CLI changes:
+  - `src/cli/app.cpp` now accepts `--dataset file`
+  - both `sift1m` and `file` now use the extension-aware loaders
+- Test coverage added for the new path:
+  - `tests/test_sift_reader.cpp`
+  - `tests/test_cli_app.cpp`
+  - `tests/test_cli.cpp`
+- Added a full-dataset benchmark entrypoint for `wikipedia-cohere-1m`:
+  - `scripts/bench/run_wikipedia_cohere_1m_full.sh`
+- Updated docs:
+  - `docs/runbooks/pipnn-on-vamana.md`
+  - `results/high_dim_validation/README.md`
+- Fresh local verification evidence:
+  - `ctest --test-dir build --output-on-failure` -> `19/19` passing
+  - `bash -n scripts/bench/run_wikipedia_cohere_1m_full.sh` -> passed
+- Fresh remote x86 smoke evidence:
+  - synced repo to `/data/work/pipnn` via generic-x86-remote `sync.sh`
+  - `env MAX_BASE=5000 MAX_QUERY=10 OUT_DIR=results/wikipedia_cohere_5k_10_smoke bash scripts/bench/run_wikipedia_cohere_1m_full.sh`
+  - confirmed `results/wikipedia_cohere_5k_10_smoke/pipnn_vamana_metrics.json` on remote:
+    - `build_sec=7.45575`
+    - `qps=163.338`
+    - `edges=88454`
+  - note: this smoke used subset base/query with full-dataset `gt.ibin`, so `recall_at_10=0` is only a truth-mismatch artifact and not a quality conclusion

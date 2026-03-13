@@ -26,7 +26,7 @@ pipnn::Matrix MakeSynthetic(int n, int dim, int seed) {
 }
 
 void PrintHelp(std::ostream& out) {
-  out << "Usage: pipnn --mode <pipnn|hnsw|vamana|pipnn_vamana> --dataset <synthetic|sift1m> --metric l2 "
+  out << "Usage: pipnn --mode <pipnn|hnsw|vamana|pipnn_vamana> --dataset <synthetic|sift1m|file> --metric l2 "
          "--output <path> [--base <base.fvecs> --query <query.fvecs> --truth <gt.ivecs> "
          "--max-base N --max-query N --rbc-cmax N --rbc-fanout N --leader-frac F "
          "--max-leaders N --replicas N --leaf-k N --leaf-scan-cap N --max-degree N --hash-bits N --beam N "
@@ -250,9 +250,17 @@ int Run(const std::vector<std::string>& args, std::ostream& out, std::ostream& e
         err << "sift1m requires --base <base.fvecs> and --query <query.fvecs>\n";
         return 1;
       }
-      base = pipnn::data::LoadFvecs(base_path, max_base);
-      queries = pipnn::data::LoadFvecs(query_path, max_query);
-      if (!truth_path.empty()) truth = pipnn::data::LoadIvecs(truth_path, queries.size());
+      base = pipnn::data::LoadFloatVectors(base_path, max_base);
+      queries = pipnn::data::LoadFloatVectors(query_path, max_query);
+      if (!truth_path.empty()) truth = pipnn::data::LoadIntVectors(truth_path, queries.size());
+    } else if (cfg.dataset == "file") {
+      if (base_path.empty() || query_path.empty()) {
+        err << "file requires --base <vectors> and --query <vectors>\n";
+        return 1;
+      }
+      base = pipnn::data::LoadFloatVectors(base_path, max_base);
+      queries = pipnn::data::LoadFloatVectors(query_path, max_query);
+      if (!truth_path.empty()) truth = pipnn::data::LoadIntVectors(truth_path, queries.size());
     } else {
       err << "unsupported dataset: " << cfg.dataset << "\n";
       return 1;

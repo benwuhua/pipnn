@@ -30,6 +30,32 @@ void WriteIvecs(const std::filesystem::path& path,
     out.write(reinterpret_cast<const char*>(row.data()), sizeof(std::int32_t) * row.size());
   }
 }
+
+void WriteFbin(const std::filesystem::path& path,
+               const std::vector<std::vector<float>>& rows) {
+  std::ofstream out(path, std::ios::binary);
+  const std::uint32_t count = static_cast<std::uint32_t>(rows.size());
+  const std::uint32_t dim =
+      rows.empty() ? 0u : static_cast<std::uint32_t>(rows.front().size());
+  out.write(reinterpret_cast<const char*>(&count), sizeof(std::uint32_t));
+  out.write(reinterpret_cast<const char*>(&dim), sizeof(std::uint32_t));
+  for (const auto& row : rows) {
+    out.write(reinterpret_cast<const char*>(row.data()), sizeof(float) * row.size());
+  }
+}
+
+void WriteIbin(const std::filesystem::path& path,
+               const std::vector<std::vector<int>>& rows) {
+  std::ofstream out(path, std::ios::binary);
+  const std::uint32_t count = static_cast<std::uint32_t>(rows.size());
+  const std::uint32_t dim =
+      rows.empty() ? 0u : static_cast<std::uint32_t>(rows.front().size());
+  out.write(reinterpret_cast<const char*>(&count), sizeof(std::uint32_t));
+  out.write(reinterpret_cast<const char*>(&dim), sizeof(std::uint32_t));
+  for (const auto& row : rows) {
+    out.write(reinterpret_cast<const char*>(row.data()), sizeof(std::int32_t) * row.size());
+  }
+}
 }  // namespace
 
 int main() {
@@ -40,6 +66,7 @@ int main() {
     int rc = pipnn::cli::Run({"--help"}, out, err);
     assert(rc == 0);
     assert(out.str().find("Usage: pipnn") != std::string::npos);
+    assert(out.str().find("--dataset <synthetic|sift1m|file>") != std::string::npos);
     assert(err.str().empty());
   }
 
@@ -260,6 +287,15 @@ int main() {
   {
     std::ostringstream out;
     std::ostringstream err;
+    int rc = pipnn::cli::Run({"--mode", "pipnn", "--dataset", "file", "--metric", "l2"}, out, err);
+    assert(rc == 1);
+    assert(err.str().find("file requires --base <vectors> and --query <vectors>") !=
+           std::string::npos);
+  }
+
+  {
+    std::ostringstream out;
+    std::ostringstream err;
     // ST-FUNC-001-003
     int rc = pipnn::cli::Run({"--mode", "pipnn",
                               "--dataset", "sift1m",
@@ -312,6 +348,43 @@ int main() {
     metrics << in.rdbuf();
     assert(metrics.str().find("\"mode\": \"pipnn\"") != std::string::npos);
     assert(metrics.str().find("\"edges\": ") != std::string::npos);
+    std::filesystem::remove(base);
+    std::filesystem::remove(query);
+    std::filesystem::remove(truth);
+    std::filesystem::remove(output);
+    std::filesystem::remove(dir);
+  }
+
+  {
+    auto dir = std::filesystem::temp_directory_path() / "pipnn_cli_app_file_data";
+    std::filesystem::create_directories(dir);
+    auto base = dir / "base.fbin";
+    auto query = dir / "query.fbin";
+    auto truth = dir / "truth.ibin";
+    auto output = dir / "pipnn_vamana.json";
+    WriteFbin(base, {{0.0f, 0.0f}, {1.0f, 0.0f}, {2.0f, 0.0f}, {3.0f, 0.0f}});
+    WriteFbin(query, {{0.1f, 0.0f}, {2.9f, 0.0f}});
+    WriteIbin(truth, {{0, 1, 2, 3}, {3, 2, 1, 0}});
+
+    std::ostringstream out;
+    std::ostringstream err;
+    int rc = pipnn::cli::Run({"--mode", "pipnn_vamana",
+                              "--dataset", "file",
+                              "--metric", "l2",
+                              "--base", base.string(),
+                              "--query", query.string(),
+                              "--truth", truth.string(),
+                              "--output", output.string(),
+                              "--max-base", "3",
+                              "--max-query", "1"},
+                             out, err);
+    assert(rc == 0);
+    assert(err.str().empty());
+    std::ifstream in(output);
+    std::stringstream metrics;
+    metrics << in.rdbuf();
+    assert(metrics.str().find("\"mode\": \"pipnn_vamana\"") != std::string::npos);
+
     std::filesystem::remove(base);
     std::filesystem::remove(query);
     std::filesystem::remove(truth);

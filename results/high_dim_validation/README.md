@@ -28,6 +28,32 @@ Conclusion:
 
 - The original `openai-arxiv` reader plan is not the shortest path.
 - We can already validate a high-dimensional workload with the existing `fvecs/ivecs` reader by using `crisp/simplewiki-openai`.
+- The CLI now also supports a generic file-backed dataset mode:
+  - `--dataset file`
+  - float vectors: `.fvecs`, `.fbin`
+  - truth/int vectors: `.ivecs`, `.ibin`
+- This unlocks direct use of `wikipedia-cohere-1m` without adding a dataset-specific parser.
+
+## Full-Dataset Entry
+
+Primary high-dimensional full-dataset entry:
+
+- `scripts/bench/run_wikipedia_cohere_1m_full.sh`
+
+Default dataset binding:
+
+- base: `/data/work/datasets/wikipedia-cohere-1m/base.fbin`
+- query: `/data/work/datasets/wikipedia-cohere-1m/query.fbin`
+- truth: `/data/work/datasets/wikipedia-cohere-1m/gt.ibin`
+
+Default compared modes:
+
+- `pipnn_vamana`
+- `vamana`
+
+Default scope:
+
+- full dataset when `MAX_BASE=0` and `MAX_QUERY=0`
 
 ## High-Dim Smoke
 

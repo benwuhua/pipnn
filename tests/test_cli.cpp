@@ -50,6 +50,32 @@ void WriteIvecs(const std::filesystem::path& path,
   }
 }
 
+void WriteFbin(const std::filesystem::path& path,
+               const std::vector<std::vector<float>>& rows) {
+  std::ofstream out(path, std::ios::binary);
+  const std::uint32_t count = static_cast<std::uint32_t>(rows.size());
+  const std::uint32_t dim =
+      rows.empty() ? 0u : static_cast<std::uint32_t>(rows.front().size());
+  out.write(reinterpret_cast<const char*>(&count), sizeof(std::uint32_t));
+  out.write(reinterpret_cast<const char*>(&dim), sizeof(std::uint32_t));
+  for (const auto& row : rows) {
+    out.write(reinterpret_cast<const char*>(row.data()), sizeof(float) * row.size());
+  }
+}
+
+void WriteIbin(const std::filesystem::path& path,
+               const std::vector<std::vector<int>>& rows) {
+  std::ofstream out(path, std::ios::binary);
+  const std::uint32_t count = static_cast<std::uint32_t>(rows.size());
+  const std::uint32_t dim =
+      rows.empty() ? 0u : static_cast<std::uint32_t>(rows.front().size());
+  out.write(reinterpret_cast<const char*>(&count), sizeof(std::uint32_t));
+  out.write(reinterpret_cast<const char*>(&dim), sizeof(std::uint32_t));
+  for (const auto& row : rows) {
+    out.write(reinterpret_cast<const char*>(row.data()), sizeof(std::int32_t) * row.size());
+  }
+}
+
 CommandResult RunCli(const std::string& args, const std::string& env_prefix = "",
                      const std::filesystem::path& working_dir = {}) {
   auto dir = std::filesystem::temp_directory_path() /
@@ -91,6 +117,7 @@ int main() {
   assert(help.exit_code == 0);
   assert(help.out.find("Usage: pipnn") != std::string::npos);
   assert(help.out.find("--mode <pipnn|hnsw|vamana|pipnn_vamana>") != std::string::npos);
+  assert(help.out.find("--dataset <synthetic|sift1m|file>") != std::string::npos);
   assert(help.out.find("--hnsw-m N") != std::string::npos);
 
   // [integration] HNSW mode should route through the standard baseline and emit the shared JSON schema.
@@ -154,6 +181,12 @@ int main() {
                               "--output '/tmp/pipnn_missing_query.json'");
   assert(missing_query.exit_code == 1);
   assert(missing_query.err.find("sift1m requires --base <base.fvecs> and --query <query.fvecs>") !=
+         std::string::npos);
+
+  auto missing_file_query = RunCli("--mode pipnn --dataset file --metric l2 --base '/tmp/base_only.fbin' "
+                                   "--output '/tmp/pipnn_missing_file_query.json'");
+  assert(missing_file_query.exit_code == 1);
+  assert(missing_file_query.err.find("file requires --base <vectors> and --query <vectors>") !=
          std::string::npos);
 
   // [integration] Missing SIFT files should be reported as a controlled CLI error, not an abort.
@@ -221,6 +254,38 @@ int main() {
   std::filesystem::remove(pipnn_json);
   std::filesystem::remove(hnsw_sift_json);
   std::filesystem::remove(dir);
+
+  auto fbin_dir = std::filesystem::temp_directory_path() / "pipnn_cli_file_dataset";
+  std::filesystem::create_directories(fbin_dir);
+  auto fbin_base_path = fbin_dir / "base.fbin";
+  auto fbin_query_path = fbin_dir / "query.fbin";
+  auto ibin_truth_path = fbin_dir / "truth.ibin";
+  auto file_json = fbin_dir / "pipnn_vamana_file_metrics.json";
+  WriteFbin(fbin_base_path, {
+                                {0.0f, 0.0f},
+                                {1.0f, 0.0f},
+                                {0.0f, 1.0f},
+                                {1.0f, 1.0f},
+                            });
+  WriteFbin(fbin_query_path, {{0.1f, 0.1f}, {0.9f, 0.8f}});
+  WriteIbin(ibin_truth_path, {{0, 1, 2, 3}, {3, 1, 2, 0}});
+
+  auto file_dataset = RunCli("--mode pipnn_vamana --dataset file --metric l2 --base " +
+                                 ShellQuote(fbin_base_path) + " --query " + ShellQuote(fbin_query_path) +
+                                 " --truth " + ShellQuote(ibin_truth_path) +
+                                 " --output " + ShellQuote(file_json) +
+                                 " --max-base 4 --max-query 2",
+                             "PIPNN_ECHO_CONFIG=1 ");
+  assert(file_dataset.exit_code == 0);
+  assert(file_dataset.out.find("cfg mode=pipnn_vamana dataset=file max_base=4 max_query=2") !=
+         std::string::npos);
+  std::string file_metrics = ReadAll(file_json);
+  assert(file_metrics.find("\"mode\": \"pipnn_vamana\"") != std::string::npos);
+  std::filesystem::remove(fbin_base_path);
+  std::filesystem::remove(fbin_query_path);
+  std::filesystem::remove(ibin_truth_path);
+  std::filesystem::remove(file_json);
+  std::filesystem::remove(fbin_dir);
 
   auto basename_dir = std::filesystem::temp_directory_path() / "pipnn_cli_basename";
   std::filesystem::create_directories(basename_dir);
