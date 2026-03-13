@@ -411,3 +411,43 @@ Interpretation:
   - `build_sec: 281.981 -> 287.254` (`+5.273`)
   - `recall_at_10: 0.944 -> 0.952` (`+0.008`)
   - `qps: 54.1159 -> 47.7327` (`-6.3832`)
+
+## HNSW Reference (remote, 20k/100)
+
+Artifacts:
+
+- `results/high_dim_validation/param_sweep_20k/hnsw_metrics_20k_ref.json`
+- `results/high_dim_validation/param_sweep_20k/pipnn_metrics_f2_l20_d32_20k.json`
+- `scripts/bench/sweep_hnsw_20k_100.sh`
+
+Reference command:
+
+```bash
+./build/pipnn \
+  --mode hnsw --dataset sift1m --metric l2 \
+  --base /data/work/datasets/crisp/simplewiki-openai/base.fvecs \
+  --query /data/work/datasets/crisp/simplewiki-openai/query.fvecs \
+  --max-base 20000 --max-query 100 \
+  --output results/high_dim_validation/param_sweep_20k/hnsw_metrics_20k_ref.json
+```
+
+Observed metrics:
+
+- HNSW (default `M=32`, `ef_construction=200`, `ef_search=auto`):
+  - `build_sec = 359.943`
+  - `recall_at_10 = 0.994`
+  - `qps = 103.305`
+- PiPNN (`fanout=2`, `leaf_k=20`, `max_degree=32`):
+  - `build_sec = 287.254`
+  - `recall_at_10 = 0.952`
+  - `qps = 47.7327`
+
+20k fairness snapshot (same dataset slice, same machine):
+
+- Build: PiPNN is faster (`287.254s` vs `359.943s`, about `1.25x` faster)
+- Recall: PiPNN is lower (`0.952` vs `0.994`, `-0.042`)
+- Query speed: PiPNN is lower (`47.7327` vs `103.305`, about `0.46x`)
+
+Next step for stricter fairness:
+
+- Use `scripts/bench/sweep_hnsw_20k_100.sh` to generate recall-matched HNSW points under the same `20k/100` slice, then compare both methods at matched recall.

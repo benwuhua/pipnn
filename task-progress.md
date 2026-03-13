@@ -394,3 +394,23 @@ Progress: 18/22 passing · Last: Increment Wave 4 algorithm iteration (2026-03-1
   - full distance-matrix path regressed `100k/200` build time to `85.0797s`
   - scratch-buffer plus `nth_element` regressed `100k/200` build time to `73.4125s`
 - Reverted both feature-21 leaf-kNN trials, keeping the worktree on the feature-20 best-known state.
+
+### Session 23 — 2026-03-13
+- Continued the mainline with a fairness-capability fix rather than a new algorithm branch.
+- Added configurable HNSW baseline parameters end-to-end:
+  - CLI: `--hnsw-m`, `--hnsw-ef-construction`, `--hnsw-ef-search`
+  - config flow: `src/cli/app.cpp` -> `RunnerConfig.hnsw` -> `RunHnswBaseline(...)`
+- Kept default behavior stable (`M=32`, `ef_construction=200`, `ef_search=auto`) so existing reports remain comparable.
+- Added test coverage for the new path:
+  - `tests/test_cli.cpp`
+  - `tests/test_cli_app.cpp`
+  - `tests/test_hnsw_runner.cpp`
+  - `tests/test_pipnn_integration.cpp`
+- Added HNSW sweep helper for `20k/100`:
+  - `scripts/bench/sweep_hnsw_20k_100.sh`
+- Collected fresh remote HNSW reference on simplewiki-openai `20k/100`:
+  - `results/high_dim_validation/param_sweep_20k/hnsw_metrics_20k_ref.json`
+  - `build_sec=359.943`, `recall_at_10=0.994`, `qps=103.305`
+- Updated `results/high_dim_validation/README.md` with an explicit fairness snapshot versus current passing PiPNN config (`f2,l20,d32`).
+- Fresh verification evidence:
+  - `ctest --test-dir build --output-on-failure` -> `16/16` passing

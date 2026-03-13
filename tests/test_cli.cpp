@@ -91,6 +91,7 @@ int main() {
   assert(help.exit_code == 0);
   assert(help.out.find("Usage: pipnn") != std::string::npos);
   assert(help.out.find("--mode <pipnn|hnsw>") != std::string::npos);
+  assert(help.out.find("--hnsw-m N") != std::string::npos);
 
   // [integration] HNSW mode should route through the standard baseline and emit the shared JSON schema.
   // ST-FUNC-001-002
@@ -114,6 +115,17 @@ int main() {
   assert(invalid_beam.exit_code == 1);
   // ST-BNDRY-001-002
   assert(invalid_beam.err.find("invalid value for --beam: nope") != std::string::npos);
+
+  auto invalid_hnsw_m =
+      RunCli("--mode hnsw --dataset synthetic --metric l2 --output '/tmp/pipnn_invalid_hnsw_m.json' --hnsw-m 0");
+  assert(invalid_hnsw_m.exit_code == 1);
+  assert(invalid_hnsw_m.err.find("invalid value for --hnsw-m: 0") != std::string::npos);
+
+  auto invalid_hnsw_ef_search = RunCli(
+      "--mode hnsw --dataset synthetic --metric l2 --output '/tmp/pipnn_invalid_hnsw_ef_search.json' "
+      "--hnsw-ef-search -1");
+  assert(invalid_hnsw_ef_search.exit_code == 1);
+  assert(invalid_hnsw_ef_search.err.find("invalid value for --hnsw-ef-search: -1") != std::string::npos);
 
   // ST-BNDRY-001-001
   auto unsupported =
@@ -176,8 +188,13 @@ int main() {
   auto hnsw_sift =
       RunCli("--mode hnsw --dataset sift1m --metric l2 --base " + ShellQuote(base_path) +
              " --query " + ShellQuote(query_path) + " --truth " + ShellQuote(truth_path) +
-             " --output " + ShellQuote(hnsw_sift_json) + " --max-base 8 --max-query 2");
+             " --output " + ShellQuote(hnsw_sift_json) +
+             " --max-base 8 --max-query 2 --hnsw-m 24 --hnsw-ef-construction 400 --hnsw-ef-search 160",
+             "PIPNN_ECHO_CONFIG=1 ");
   assert(hnsw_sift.exit_code == 0);
+  assert(hnsw_sift.out.find("hnsw_m=24") != std::string::npos);
+  assert(hnsw_sift.out.find("hnsw_ef_construction=400") != std::string::npos);
+  assert(hnsw_sift.out.find("hnsw_ef_search=160") != std::string::npos);
   std::string hnsw_sift_metrics = ReadAll(hnsw_sift_json);
   assert(hnsw_sift_metrics.find("\"mode\": \"hnsw\"") != std::string::npos);
 

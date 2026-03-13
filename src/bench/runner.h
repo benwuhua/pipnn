@@ -1,5 +1,6 @@
 #pragma once
 
+#include "baseline/hnsw_runner.h"
 #include "common/types.h"
 #include "core/pipnn_builder.h"
 #include "search/greedy_beam.h"
@@ -12,6 +13,7 @@ struct RunnerConfig {
   std::string mode = "pipnn";
   std::string dataset = "synthetic";
   std::string output = "results/metrics.json";
+  HnswParams hnsw;
 };
 
 std::vector<int> ExactTopK(const Matrix& base, const Vec& query, int k);

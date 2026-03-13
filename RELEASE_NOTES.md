@@ -61,6 +61,10 @@
   - `examples/feature-18-scored-mutation-evidence.sh`
 - Wave 4 planning assets:
   - `docs/superpowers/specs/2026-03-12-wave4-algorithm-iteration-design.md`
+- HNSW 20k sweep helper:
+  - `scripts/bench/sweep_hnsw_20k_100.sh`
+- High-dim reference artifact:
+  - `results/high_dim_validation/param_sweep_20k/hnsw_metrics_20k_ref.json`
 
 ### Changed
 - Updated the SIFT1M benchmark report with the completed `500k/100` subset-truth PiPNN/HNSW results and corrected remote command examples
@@ -99,6 +103,9 @@
 - Two feature-21 leaf-kNN micro-optimizations were evaluated and rejected:
   - full distance-matrix leaf scan regressed `100k/200` build time to `85.0797s`
   - scratch-buffer plus `nth_element` regressed `100k/200` build time to `73.4125s`
+- HNSW baseline is now parameterized from CLI (`--hnsw-m`, `--hnsw-ef-construction`, `--hnsw-ef-search`) and threaded through `RunnerConfig` into the `hnswlib` runner
+- Added coverage for the new HNSW parameter path in CLI and runner tests
+- Updated `results/high_dim_validation/README.md` with a fresh `20k/100` HNSW reference snapshot and explicit fairness delta versus the current passing PiPNN config
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used

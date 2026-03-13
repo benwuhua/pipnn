@@ -55,7 +55,7 @@ int main() {
            "--dataset", "--metric", "--output", "--base", "--query", "--truth", "--max-base",
            "--max-query", "--rbc-cmax", "--rbc-fanout", "--leader-frac", "--max-leaders",
            "--replicas", "--leaf-k", "--leaf-scan-cap", "--max-degree", "--hash-bits", "--beam",
-           "--bidirected"}) {
+           "--bidirected", "--hnsw-m", "--hnsw-ef-construction", "--hnsw-ef-search"}) {
     std::ostringstream out;
     std::ostringstream err;
     int rc = pipnn::cli::Run({option}, out, err);
@@ -86,6 +86,30 @@ int main() {
     int rc = pipnn::cli::Run({"--beam", "nope"}, out, err);
     assert(rc == 1);
     assert(err.str().find("invalid value for --beam: nope") != std::string::npos);
+  }
+
+  {
+    std::ostringstream out;
+    std::ostringstream err;
+    int rc = pipnn::cli::Run({"--hnsw-m", "0"}, out, err);
+    assert(rc == 1);
+    assert(err.str().find("invalid value for --hnsw-m: 0") != std::string::npos);
+  }
+
+  {
+    std::ostringstream out;
+    std::ostringstream err;
+    int rc = pipnn::cli::Run({"--hnsw-ef-construction", "-1"}, out, err);
+    assert(rc == 1);
+    assert(err.str().find("invalid value for --hnsw-ef-construction: -1") != std::string::npos);
+  }
+
+  {
+    std::ostringstream out;
+    std::ostringstream err;
+    int rc = pipnn::cli::Run({"--hnsw-ef-search", "-1"}, out, err);
+    assert(rc == 1);
+    assert(err.str().find("invalid value for --hnsw-ef-search: -1") != std::string::npos);
   }
 
   {
@@ -153,7 +177,13 @@ int main() {
                               "--beam",
                               std::to_string(std::numeric_limits<int>::max()),
                               "--max-base",
-                              std::to_string(std::numeric_limits<std::size_t>::max())},
+                              std::to_string(std::numeric_limits<std::size_t>::max()),
+                              "--hnsw-m",
+                              std::to_string(std::numeric_limits<int>::max()),
+                              "--hnsw-ef-construction",
+                              std::to_string(std::numeric_limits<int>::max()),
+                              "--hnsw-ef-search",
+                              std::to_string(std::numeric_limits<int>::max())},
                              out, err);
     assert(rc == 0);
     assert(err.str().empty());
@@ -306,6 +336,35 @@ int main() {
     assert(err1.str().empty());
     assert(out1.str().find("bidirected=1") != std::string::npos);
 
+    std::filesystem::remove(output);
+  }
+
+  {
+    auto output = std::filesystem::temp_directory_path() / "pipnn_cli_app_hnsw_echo.json";
+    setenv("PIPNN_ECHO_CONFIG", "1", 1);
+    std::ostringstream out;
+    std::ostringstream err;
+    int rc = pipnn::cli::Run({"--mode",
+                              "hnsw",
+                              "--dataset",
+                              "synthetic",
+                              "--metric",
+                              "l2",
+                              "--output",
+                              output.string(),
+                              "--hnsw-m",
+                              "24",
+                              "--hnsw-ef-construction",
+                              "400",
+                              "--hnsw-ef-search",
+                              "160"},
+                             out, err);
+    unsetenv("PIPNN_ECHO_CONFIG");
+    assert(rc == 0);
+    assert(err.str().empty());
+    assert(out.str().find("hnsw_m=24") != std::string::npos);
+    assert(out.str().find("hnsw_ef_construction=400") != std::string::npos);
+    assert(out.str().find("hnsw_ef_search=160") != std::string::npos);
     std::filesystem::remove(output);
   }
 

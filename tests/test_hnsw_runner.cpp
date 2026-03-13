@@ -39,5 +39,16 @@ int main() {
   assert(without_truth.recall_at_10 >= 0.0);
   assert(without_truth.recall_at_10 <= 1.0);
 
+  pipnn::HnswParams tuned;
+  tuned.m = 16;
+  tuned.ef_construction = 128;
+  tuned.ef_search = 32;
+  auto tuned_metrics = pipnn::RunHnswBaseline(base, queries, truth, 2, tuned);
+  assert(std::string_view(tuned_metrics.mode) == "hnsw");
+  assert(tuned_metrics.edges == static_cast<int>(base.size()) * 16);
+  assert(tuned_metrics.qps > 0.0);
+  assert(tuned_metrics.recall_at_10 >= 0.0);
+  assert(tuned_metrics.recall_at_10 <= 1.0);
+
   return 0;
 }

@@ -177,6 +177,9 @@ int main() {
 
   pipnn::RunnerConfig hcfg;
   hcfg.mode = "hnsw";
+  hcfg.hnsw.m = 24;
+  hcfg.hnsw.ef_construction = 320;
+  hcfg.hnsw.ef_search = 96;
   sp.topk = 2;
   std::vector<std::vector<int>> truth = {
       {0, 1},
@@ -194,7 +197,7 @@ int main() {
       {5.2f, 5.1f},
   };
   auto hnsw_metrics = pipnn::RunBenchmark(hcfg, small_base, small_queries, truth, bp, sp);
-  assert(hnsw_metrics.edges == small_base.size() * 32);
+  assert(hnsw_metrics.edges == small_base.size() * 24);
   assert(hnsw_metrics.qps > 0.0);
 
   // Regression test: best-first search should not get trapped in a deep bad branch.

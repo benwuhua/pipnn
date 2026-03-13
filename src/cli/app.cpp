@@ -29,7 +29,8 @@ void PrintHelp(std::ostream& out) {
   out << "Usage: pipnn --mode <pipnn|hnsw> --dataset <synthetic|sift1m> --metric l2 "
          "--output <path> [--base <base.fvecs> --query <query.fvecs> --truth <gt.ivecs> "
          "--max-base N --max-query N --rbc-cmax N --rbc-fanout N --leader-frac F "
-         "--max-leaders N --replicas N --leaf-k N --leaf-scan-cap N --max-degree N --hash-bits N --beam N --bidirected 0|1]\n";
+         "--max-leaders N --replicas N --leaf-k N --leaf-scan-cap N --max-degree N --hash-bits N --beam N "
+         "--bidirected 0|1 --hnsw-m N --hnsw-ef-construction N --hnsw-ef-search N]\n";
 }
 
 bool NeedValue(const std::vector<std::string>& args, std::size_t& i, const std::string& option,
@@ -57,6 +58,20 @@ bool ParseIntValue(const std::string& option, const std::string& value, int& out
     return FailInvalidValue(option, value, err);
   }
   out = static_cast<int>(parsed);
+  return true;
+}
+
+bool ParsePositiveIntValue(const std::string& option, const std::string& value, int& out,
+                           std::ostream& err) {
+  if (!ParseIntValue(option, value, out, err)) return false;
+  if (out <= 0) return FailInvalidValue(option, value, err);
+  return true;
+}
+
+bool ParseNonNegativeIntValue(const std::string& option, const std::string& value, int& out,
+                              std::ostream& err) {
+  if (!ParseIntValue(option, value, out, err)) return false;
+  if (out < 0) return FailInvalidValue(option, value, err);
   return true;
 }
 
@@ -117,6 +132,9 @@ int Run(const std::vector<std::string>& args, std::ostream& out, std::ostream& e
     int hash_bits = 12;
     int beam = 128;
     bool bidirected = true;
+    int hnsw_m = 32;
+    int hnsw_ef_construction = 200;
+    int hnsw_ef_search = 0;
     using Handler = std::function<bool(const std::string&)>;
     const std::unordered_map<std::string, Handler> handlers = {
         {"--mode", [&](const std::string& value) {
@@ -187,7 +205,16 @@ int Run(const std::vector<std::string>& args, std::ostream& out, std::ostream& e
            return ParseIntValue("--beam", value, beam, err);
          }},
         {"--bidirected", [&](const std::string& value) {
-           return ParseBoolValue("--bidirected", value, bidirected, err);
+          return ParseBoolValue("--bidirected", value, bidirected, err);
+         }},
+        {"--hnsw-m", [&](const std::string& value) {
+           return ParsePositiveIntValue("--hnsw-m", value, hnsw_m, err);
+         }},
+        {"--hnsw-ef-construction", [&](const std::string& value) {
+           return ParsePositiveIntValue("--hnsw-ef-construction", value, hnsw_ef_construction, err);
+         }},
+        {"--hnsw-ef-search", [&](const std::string& value) {
+           return ParseNonNegativeIntValue("--hnsw-ef-search", value, hnsw_ef_search, err);
          }},
     };
 
@@ -241,6 +268,9 @@ int Run(const std::vector<std::string>& args, std::ostream& out, std::ostream& e
     pipnn::SearchParams sp;
     sp.beam = beam;
     sp.topk = 10;
+    cfg.hnsw.m = hnsw_m;
+    cfg.hnsw.ef_construction = hnsw_ef_construction;
+    cfg.hnsw.ef_search = hnsw_ef_search;
 
     if (std::getenv("PIPNN_ECHO_CONFIG") != nullptr) {
       out << "cfg mode=" << cfg.mode << " dataset=" << cfg.dataset << " max_base=" << max_base
@@ -250,7 +280,9 @@ int Run(const std::vector<std::string>& args, std::ostream& out, std::ostream& e
           << " leaf_k=" << bp.leaf_k << " leaf_scan_cap=" << bp.leaf_scan_cap
           << " max_degree=" << bp.hashprune.max_degree
           << " hash_bits=" << bp.hashprune.hash_bits << " beam=" << sp.beam
-          << " bidirected=" << bp.bidirected << "\n";
+          << " bidirected=" << bp.bidirected << " hnsw_m=" << cfg.hnsw.m
+          << " hnsw_ef_construction=" << cfg.hnsw.ef_construction
+          << " hnsw_ef_search=" << cfg.hnsw.ef_search << "\n";
     }
 
     auto metrics = pipnn::RunBenchmark(cfg, base, queries, truth, bp, sp);

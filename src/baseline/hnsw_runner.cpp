@@ -11,7 +11,8 @@
 
 namespace pipnn {
 Metrics RunHnswBaseline(const Matrix& base, const Matrix& queries,
-                        const std::vector<std::vector<int>>& truth, int topk) {
+                        const std::vector<std::vector<int>>& truth, int topk,
+                        const HnswParams& params) {
   Metrics m;
   m.mode = "hnsw";
   if (base.empty()) return m;
@@ -20,8 +21,9 @@ Metrics RunHnswBaseline(const Matrix& base, const Matrix& queries,
   hnswlib::L2Space space(dim);
 
   const std::size_t max_elements = base.size();
-  const std::size_t M = 32;
-  const std::size_t ef_construction = 200;
+  const std::size_t M = static_cast<std::size_t>(std::max(1, params.m));
+  const std::size_t ef_construction =
+      static_cast<std::size_t>(std::max(1, params.ef_construction));
 
   Timer tb;
   hnswlib::HierarchicalNSW<float> index(&space, max_elements, M, ef_construction);
@@ -30,7 +32,8 @@ Metrics RunHnswBaseline(const Matrix& base, const Matrix& queries,
   }
   m.build_sec = tb.Sec();
 
-  index.setEf(std::max(64, topk * 8));
+  const int ef_search = params.ef_search > 0 ? params.ef_search : std::max(64, topk * 8);
+  index.setEf(static_cast<std::size_t>(ef_search));
 
   Timer tq;
   std::vector<std::vector<int>> preds;

@@ -51,7 +51,7 @@ double ComputeQps(std::size_t query_count, double query_seconds) {
 Metrics RunBenchmark(const RunnerConfig& cfg, const Matrix& base, const Matrix& queries,
                      const std::vector<std::vector<int>>& truth, const PipnnBuildParams& build_params,
                      const SearchParams& search_params) {
-  if (cfg.mode == "hnsw") return RunHnswBaseline(base, queries, truth, search_params.topk);
+  if (cfg.mode == "hnsw") return RunHnswBaseline(base, queries, truth, search_params.topk, cfg.hnsw);
 
   Metrics m;
   m.mode = "pipnn";
