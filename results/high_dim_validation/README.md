@@ -384,3 +384,30 @@ Interpretation:
 - `leaf_k` increase helps recall with moderate build cost at `10k`, but the gain weakens at `20k` and still misses `0.95`.
 - `fanout=3` improves recall at `10k`, but build cost rises sharply; this is unlikely to be a good default for larger slices.
 - Current shortlist quality still does not scale to `20k/100` with acceptable speed/recall balance under this parameter family.
+
+## Shortlist Parameter Sweep (remote, 20k refinement)
+
+Artifacts:
+
+- `results/high_dim_validation/param_sweep_20k/pipnn_metrics_f2_l16_d32_20k.json`
+- `results/high_dim_validation/param_sweep_20k/pipnn_metrics_f2_l16_d48_20k.json`
+- `results/high_dim_validation/param_sweep_20k/pipnn_metrics_f2_l18_d32_20k.json`
+- `results/high_dim_validation/param_sweep_20k/pipnn_metrics_f2_l20_d32_20k.json`
+
+Configuration summary (`fanout=2` fixed):
+
+- `leaf_k=16, max_degree=32`: `build=281.981`, `recall=0.944`, `qps=54.1159`
+- `leaf_k=16, max_degree=48`: `build=258.047`, `recall=0.945`, `qps=52.8325`
+- `leaf_k=18, max_degree=32`: `build=298.69`, `recall=0.947`, `qps=50.3125`
+- `leaf_k=20, max_degree=32`: `build=287.254`, `recall=0.952`, `qps=47.7327`
+
+Interpretation:
+
+- Raising `max_degree` alone did not recover recall for this workload.
+- Increasing `leaf_k` is the dominant recall lever under current shortlist path.
+- The first configuration that passes the `>=0.95` recall threshold at `20k/100` is:
+  - `fanout=2, leaf_k=20, max_degree=32`
+- Tradeoff of this passing config vs current `leaf_k=16, max_degree=32` baseline:
+  - `build_sec: 281.981 -> 287.254` (`+5.273`)
+  - `recall_at_10: 0.944 -> 0.952` (`+0.008`)
+  - `qps: 54.1159 -> 47.7327` (`-6.3832`)
