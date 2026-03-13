@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 18/22 passing · Last: PiPNN-on-Vamana authority harness entry (2026-03-13) · Next: Feature 19 Wave 4 HashPrune fidelity
+Progress: 18/22 passing · Last: PiPNN-on-Vamana proc monitor harness (2026-03-13) · Next: Feature 19 Wave 4 HashPrune fidelity
 
 ---
 
@@ -514,3 +514,16 @@ Progress: 18/22 passing · Last: PiPNN-on-Vamana authority harness entry (2026-0
   - `CPU≈337%` to `531%`
   - `read_bytes≈3.06 GB`
   - output JSON has not been flushed yet
+
+### Session 29 — 2026-03-13
+- Continued the remote authority run investigation after the `1M/100` `pipnn_vamana` job remained stdout-silent for an extended period.
+- Confirmed the long-running process is compute-bound rather than stuck:
+  - process remains `RUNNING`
+  - elapsed time exceeded one hour
+  - `CPU≈267%`
+  - `read_bytes≈3.06 GB`
+  - no result directory yet because the binary flushes output only at the end
+- Added a repo-local long-run monitor harness:
+  - `scripts/bench/run_with_proc_monitor.sh`
+- Updated the `PiPNN-on-Vamana` runbook with the monitoring workflow:
+  - `docs/runbooks/pipnn-on-vamana.md`

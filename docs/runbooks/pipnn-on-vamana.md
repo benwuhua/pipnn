@@ -142,3 +142,25 @@ Why this entry exists separately:
 
 - the current repository-local `vamana` seam still uses an exact native candidate build
 - that seam is not suitable for `1M` scale, so the authority `PiPNN-on-Vamana` run needs a dedicated reproducible path
+
+## Long-Run Monitoring
+
+For long-running benchmarks that do not stream progress to stdout, use:
+
+```bash
+bash scripts/bench/run_with_proc_monitor.sh \
+  --snapshot results/wikipedia_cohere_1m_100/proc_snapshot.txt \
+  --interval 30 \
+  -- bash scripts/bench/run_wikipedia_cohere_1m_100_pipnn_vamana.sh
+```
+
+What it records:
+
+- `ps` snapshot (`etime`, `%cpu`, `%mem`, `comm`)
+- `/proc/<pid>/status` subset (`State`, `VmRSS`, `VmPeak`, `Threads`)
+- `/proc/<pid>/io`
+
+Why it exists:
+
+- some `PiPNN-on-Vamana` long runs do not emit progress logs before final JSON flush
+- this wrapper creates an auditable progress sidecar without changing the benchmarked binary

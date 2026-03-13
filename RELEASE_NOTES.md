@@ -77,6 +77,8 @@
   - `scripts/bench/run_wikipedia_cohere_1m_full.sh`
 - PiPNN-on-Vamana authority entry:
   - `scripts/bench/run_wikipedia_cohere_1m_100_pipnn_vamana.sh`
+- Long-run benchmark monitor:
+  - `scripts/bench/run_with_proc_monitor.sh`
 
 ### Changed
 - Updated the SIFT1M benchmark report with the completed `500k/100` subset-truth PiPNN/HNSW results and corrected remote command examples
@@ -134,6 +136,7 @@
 - Added coverage for the new file-backed dataset path in `tests/test_sift_reader.cpp`, `tests/test_cli_app.cpp`, and `tests/test_cli.cpp`
 - Updated `results/high_dim_validation/README.md` and `docs/runbooks/pipnn-on-vamana.md` with the new `wikipedia-cohere-1m` full-dataset entrypoint
 - Added a dedicated reproducible `1M/100` `pipnn_vamana` authority entry because the current repository-local `vamana` seam does not scale to `1M`
+- Added a repo-local `/proc` snapshot wrapper for long-running benchmarks whose stdout remains silent until final JSON flush
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used
