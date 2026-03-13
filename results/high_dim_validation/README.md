@@ -451,3 +451,36 @@ Observed metrics:
 Next step for stricter fairness:
 
 - Use `scripts/bench/sweep_hnsw_20k_100.sh` to generate recall-matched HNSW points under the same `20k/100` slice, then compare both methods at matched recall.
+
+## HNSW Recall-Matched Sweep (remote, 20k/100)
+
+Artifacts:
+
+- `scripts/bench/run_hnsw_match_sweep_20k_100_v1.sh`
+- `results/high_dim_validation/hnsw_sweep_20k_100_match_v1/summary.tsv`
+- `results/high_dim_validation/hnsw_sweep_20k_100_match_v1/hnsw_m16_efc100_efs28.json`
+- `results/high_dim_validation/hnsw_sweep_20k_100_match_v1/hnsw_m16_efc100_efs32.json`
+
+Sweep result highlights:
+
+- `m16, efc100, efs24`: `build=153.894`, `recall=0.944`, `qps=425.288`
+- `m16, efc100, efs28`: `build=154.722`, `recall=0.956`, `qps=379.074`
+- `m16, efc100, efs32`: `build=160.07`, `recall=0.965`, `qps=328.292`
+
+Recall-matched comparison (PiPNN target: `recall=0.952`):
+
+- PiPNN (`fanout=2, leaf_k=20, max_degree=32`):
+  - `build_sec = 287.254`
+  - `recall_at_10 = 0.952`
+  - `qps = 47.7327`
+- HNSW nearest point (`m16, efc100, efs28`):
+  - `build_sec = 154.722`
+  - `recall_at_10 = 0.956`
+  - `qps = 379.074`
+
+Interpretation:
+
+- At nearly matched recall (`+0.004` on HNSW), HNSW is faster on both axes in this slice:
+  - build: about `1.86x` faster (`287.254 / 154.722`)
+  - query: about `7.94x` higher QPS (`379.074 / 47.7327`)
+- The previous “PiPNN build faster” conclusion does not hold under this recall-matched HNSW tuning point on `20k/100`.

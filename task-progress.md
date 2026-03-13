@@ -414,3 +414,17 @@ Progress: 18/22 passing · Last: Increment Wave 4 algorithm iteration (2026-03-1
 - Updated `results/high_dim_validation/README.md` with an explicit fairness snapshot versus current passing PiPNN config (`f2,l20,d32`).
 - Fresh verification evidence:
   - `ctest --test-dir build --output-on-failure` -> `16/16` passing
+
+### Session 24 — 2026-03-13
+- Continued the fairness mainline with a targeted remote HNSW recall-matching sweep on simplewiki-openai `20k/100`.
+- Added targeted sweep entrypoint:
+  - `scripts/bench/run_hnsw_match_sweep_20k_100_v1.sh`
+- Ran the remote matrix (`m in {8,12,16}`, `ef_construction=100`, `ef_search in {8,16,24}`), fetched artifacts, and generated:
+  - `results/high_dim_validation/hnsw_sweep_20k_100_match_v1/summary.tsv`
+- Added two focused follow-up points to close the recall gap:
+  - `m16, efc100, efs28`
+  - `m16, efc100, efs32`
+- Fresh key evidence:
+  - `m16/efc100/efs28`: `build_sec=154.722`, `recall_at_10=0.956`, `qps=379.074`
+  - `m16/efc100/efs32`: `build_sec=160.07`, `recall_at_10=0.965`, `qps=328.292`
+- Updated `results/high_dim_validation/README.md` with the recall-matched comparison versus current PiPNN passing point (`0.952`).

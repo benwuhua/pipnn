@@ -63,8 +63,14 @@
   - `docs/superpowers/specs/2026-03-12-wave4-algorithm-iteration-design.md`
 - HNSW 20k sweep helper:
   - `scripts/bench/sweep_hnsw_20k_100.sh`
+- HNSW targeted recall-match sweep entry:
+  - `scripts/bench/run_hnsw_match_sweep_20k_100_v1.sh`
 - High-dim reference artifact:
   - `results/high_dim_validation/param_sweep_20k/hnsw_metrics_20k_ref.json`
+- High-dim recall-match artifacts:
+  - `results/high_dim_validation/hnsw_sweep_20k_100_match_v1/summary.tsv`
+  - `results/high_dim_validation/hnsw_sweep_20k_100_match_v1/hnsw_m16_efc100_efs28.json`
+  - `results/high_dim_validation/hnsw_sweep_20k_100_match_v1/hnsw_m16_efc100_efs32.json`
 
 ### Changed
 - Updated the SIFT1M benchmark report with the completed `500k/100` subset-truth PiPNN/HNSW results and corrected remote command examples
@@ -106,6 +112,7 @@
 - HNSW baseline is now parameterized from CLI (`--hnsw-m`, `--hnsw-ef-construction`, `--hnsw-ef-search`) and threaded through `RunnerConfig` into the `hnswlib` runner
 - Added coverage for the new HNSW parameter path in CLI and runner tests
 - Updated `results/high_dim_validation/README.md` with a fresh `20k/100` HNSW reference snapshot and explicit fairness delta versus the current passing PiPNN config
+- Added a recall-matched HNSW sweep on `20k/100` and documented the nearest-match comparison (`PiPNN 0.952` vs `HNSW 0.956`)
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used
