@@ -447,3 +447,17 @@ Progress: 18/22 passing · Last: Increment Wave 4 algorithm iteration (2026-03-1
   - updates to CLI and runner integration tests
 - Fresh verification evidence:
   - `ctest --test-dir build --output-on-failure` -> `19/19` passing
+
+### Session 26 — 2026-03-13
+- Probed the upstream `DiskANN cpp_main` branch on the remote x86 host to determine whether the local Vamana seams can be replaced directly with the official implementation.
+- Added reproducible upstream probe entrypoint:
+  - `scripts/bench/remote_probe_diskann_cpp_main.sh`
+- Added runbook:
+  - `docs/runbooks/pipnn-on-vamana.md`
+- Remote probe findings:
+  - `git`, `cmake`, `g++`, `libaio-dev`, and `Boost` are present
+  - `rustc` and `cargo` are also present on the same host
+  - `DiskANN cpp_main` configure currently fails at CMake time because `libiomp5` is missing
+  - no `MKL` packages are installed on the host
+- Mainline conclusion from this probe:
+  - replacing the local Vamana seams with upstream `DiskANN cpp_main` is currently environment-blocked, not code-blocked

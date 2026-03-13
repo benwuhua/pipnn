@@ -65,6 +65,8 @@
   - `scripts/bench/sweep_hnsw_20k_100.sh`
 - HNSW targeted recall-match sweep entry:
   - `scripts/bench/run_hnsw_match_sweep_20k_100_v1.sh`
+- DiskANN upstream probe entry:
+  - `scripts/bench/remote_probe_diskann_cpp_main.sh`
 - High-dim reference artifact:
   - `results/high_dim_validation/param_sweep_20k/hnsw_metrics_20k_ref.json`
 - High-dim recall-match artifacts:
@@ -122,6 +124,8 @@
   - `pipnn_vamana`
 - `pipnn_builder` now reuses the extracted candidate generator instead of owning candidate generation inline
 - Added test coverage for the new candidate/refiner/search seams and mode routing
+- Added `docs/runbooks/pipnn-on-vamana.md` documenting the current upstream integration state and remote probe result
+- Recorded that upstream `DiskANN cpp_main` is currently blocked on the remote x86 host by missing Intel OpenMP (`libiomp5`) and MKL packages
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used
