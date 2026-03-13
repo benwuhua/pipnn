@@ -5,12 +5,17 @@
 
 #include <algorithm>
 
+#if defined(_OPENMP)
+#include <omp.h>
+#endif
+
 namespace pipnn {
 CandidateAdjacency BuildPipnnCandidates(const Matrix& points, const PipnnCandidateParams& params,
                                         PipnnCandidateStats* stats) {
   CandidateAdjacency candidates(points.size());
   const int reps = std::max(1, params.replicas);
   for (int rep = 0; rep < reps; ++rep) {
+    CandidateAdjacency rep_candidates(points.size());
     Timer t_partition;
     auto rbc_params = params.rbc;
     rbc_params.seed = params.rbc.seed + rep;
@@ -34,12 +39,39 @@ CandidateAdjacency BuildPipnnCandidates(const Matrix& points, const PipnnCandida
     Timer t_score;
     ShortlistConfig shortlist_cfg;
     shortlist_cfg.candidate_cap = params.candidate_cap;
+#if defined(_OPENMP)
+#pragma omp parallel for schedule(dynamic, 256)
+#endif
     for (int point_id = 0; point_id < static_cast<int>(points.size()); ++point_id) {
       auto shortlist =
           BuildShortlistForPoint(point_id, rbc.leaves, rbc.point_memberships, shortlist_cfg);
-      auto edges = ScoreShortlistExact(points, point_id, shortlist, params.leaf_k, params.bidirected);
-      if (stats != nullptr) stats->candidate_edges += edges.size();
-      for (const auto& [u, v] : edges) candidates[u].push_back(v);
+      auto edges = ScoreShortlistExact(points, point_id, shortlist, params.leaf_k, false);
+      auto& row = rep_candidates[static_cast<std::size_t>(point_id)];
+      row.reserve(edges.size());
+      for (const auto& [u, v] : edges) {
+        (void)u;
+        row.push_back(v);
+      }
+    }
+
+    if (params.bidirected) {
+      const CandidateAdjacency directed = rep_candidates;
+      for (int u = 0; u < static_cast<int>(directed.size()); ++u) {
+        for (int v : directed[static_cast<std::size_t>(u)]) {
+          rep_candidates[static_cast<std::size_t>(v)].push_back(u);
+        }
+      }
+    }
+
+    if (stats != nullptr) {
+      std::size_t edge_count = 0;
+      for (const auto& row : rep_candidates) edge_count += row.size();
+      stats->candidate_edges += edge_count;
+    }
+    for (std::size_t i = 0; i < candidates.size(); ++i) {
+      auto& dst = candidates[i];
+      auto& src = rep_candidates[i];
+      dst.insert(dst.end(), src.begin(), src.end());
     }
     if (stats != nullptr) stats->score_sec += t_score.Sec();
   }

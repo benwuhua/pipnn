@@ -137,6 +137,8 @@
 - Updated `results/high_dim_validation/README.md` and `docs/runbooks/pipnn-on-vamana.md` with the new `wikipedia-cohere-1m` full-dataset entrypoint
 - Added a dedicated reproducible `1M/100` `pipnn_vamana` authority entry because the current repository-local `vamana` seam does not scale to `1M`
 - Added a repo-local `/proc` snapshot wrapper for long-running benchmarks whose stdout remains silent until final JSON flush
+- `BuildPipnnCandidates(...)` now parallelizes per-point shortlist scoring while preserving the existing bidirected candidate semantics
+- Added coverage that locks both symmetric (`bidirected=true`) and asymmetric (`bidirected=false`) candidate-generation behavior
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used

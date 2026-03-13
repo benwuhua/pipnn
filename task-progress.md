@@ -1,7 +1,7 @@
 # Task Progress — pipnn-poc
 
 ## Current State
-Progress: 18/22 passing · Last: PiPNN-on-Vamana proc monitor harness (2026-03-13) · Next: Feature 19 Wave 4 HashPrune fidelity
+Progress: 18/22 passing · Last: PiPNN candidate parallel shortlist scoring (2026-03-13) · Next: Feature 19 Wave 4 HashPrune fidelity
 
 ---
 
@@ -527,3 +527,23 @@ Progress: 18/22 passing · Last: PiPNN-on-Vamana proc monitor harness (2026-03-1
   - `scripts/bench/run_with_proc_monitor.sh`
 - Updated the `PiPNN-on-Vamana` runbook with the monitoring workflow:
   - `docs/runbooks/pipnn-on-vamana.md`
+
+### Session 30 — 2026-03-13
+- Switched from passive authority-job polling back to core algorithm work after locating a concrete bottleneck in `BuildPipnnCandidates(...)`.
+- Root-cause finding:
+  - the per-point shortlist construction and exact scoring loop in `src/candidates/pipnn_candidate_generator.cpp` was still serial
+  - this matched the remote `1M/100` process profile, where only a small subset of threads were busy
+- Added stronger behavior-lock tests in `tests/test_pipnn_candidate_generator.cpp`:
+  - `bidirected=true` must preserve symmetric adjacency
+  - `bidirected=false` must allow asymmetric edges on a directed example
+- Implemented candidate-path parallelization:
+  - per-point shortlist scoring now runs in parallel
+  - bidirected expansion is applied after the per-point pass, preserving thread safety and output semantics
+  - replica-local candidate adjacency is merged after each replica, avoiding duplicate bidirected expansion across replicas
+- Fresh local verification evidence:
+  - `ctest --test-dir build --output-on-failure` -> `19/19` passing
+- Fresh remote x86 smoke evidence on isolated repo `/data/work/pipnn-cand-par`:
+  - `env MAX_BASE=5000 MAX_QUERY=10 OUT_DIR=results/wikipedia_cohere_5k_10_smoke_after bash scripts/bench/run_wikipedia_cohere_1m_100_pipnn_vamana.sh`
+  - `pipnn_vamana build_sec=5.34864`
+  - previous comparable smoke on the same dataset path was `7.45575`
+  - note: `qps` on this run is not comparable because the host was concurrently occupied by the older `1M/100` authority job
