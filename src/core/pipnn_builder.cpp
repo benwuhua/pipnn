@@ -1,7 +1,7 @@
+#include "candidates/pipnn_candidate_generator.h"
 #include "core/pipnn_builder.h"
 
 #include "common/timer.h"
-#include "core/leaf_candidates.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -15,41 +15,26 @@
 namespace pipnn {
 Graph BuildPipnnGraph(const Matrix& points, const PipnnBuildParams& params, PipnnBuildStats* stats) {
   Graph g(static_cast<int>(points.size()));
-  std::vector<std::vector<int>> candidates(points.size());
-  const int reps = std::max(1, params.replicas);
-  for (int rep = 0; rep < reps; ++rep) {
-    Timer t_partition;
-    auto rbc_params = params.rbc;
-    rbc_params.seed = params.rbc.seed + rep;
-    RbcStats rbc_stats;
-    auto rbc = BuildRbc(points, rbc_params, stats != nullptr ? &rbc_stats : nullptr);
-    if (stats != nullptr) {
-      stats->partition_sec += t_partition.Sec();
-      stats->num_leaves += rbc.leaves.size();
-      stats->rbc_assignment_total += rbc_stats.assignment_total;
-      stats->rbc_points_with_overlap += rbc_stats.points_with_overlap;
-      stats->rbc_max_membership = std::max(stats->rbc_max_membership, rbc_stats.max_membership);
-      stats->rbc_max_leaf_size = std::max(stats->rbc_max_leaf_size, rbc_stats.max_leaf_size);
-      if (rbc_stats.min_leaf_size > 0) {
-        stats->rbc_min_leaf_size = stats->rbc_min_leaf_size == 0
-                                       ? rbc_stats.min_leaf_size
-                                       : std::min(stats->rbc_min_leaf_size, rbc_stats.min_leaf_size);
-      }
-      stats->rbc_fallback_chunk_splits += rbc_stats.fallback_chunk_splits;
-    }
+  PipnnCandidateParams candidate_params;
+  candidate_params.rbc = params.rbc;
+  candidate_params.replicas = params.replicas;
+  candidate_params.leaf_k = params.leaf_k;
+  candidate_params.bidirected = params.bidirected;
+  candidate_params.candidate_cap = std::max(1, params.hashprune.max_degree * 8);
 
-    Timer t_leaf;
-    ShortlistConfig shortlist_cfg;
-    shortlist_cfg.candidate_cap = std::max(1, params.hashprune.max_degree * 8);
-    for (int point_id = 0; point_id < static_cast<int>(points.size()); ++point_id) {
-      auto shortlist =
-          BuildShortlistForPoint(point_id, rbc.leaves, rbc.point_memberships, shortlist_cfg);
-      auto edges =
-          ScoreShortlistExact(points, point_id, shortlist, params.leaf_k, params.bidirected);
-      if (stats != nullptr) stats->candidate_edges += edges.size();
-      for (const auto& [u, v] : edges) candidates[u].push_back(v);
-    }
-    if (stats != nullptr) stats->leaf_knn_sec += t_leaf.Sec();
+  PipnnCandidateStats candidate_stats;
+  auto candidates = BuildPipnnCandidates(points, candidate_params, stats != nullptr ? &candidate_stats : nullptr);
+  if (stats != nullptr) {
+    stats->partition_sec = candidate_stats.partition_sec;
+    stats->leaf_knn_sec = candidate_stats.score_sec;
+    stats->num_leaves = candidate_stats.num_leaves;
+    stats->candidate_edges = candidate_stats.candidate_edges;
+    stats->rbc_assignment_total = candidate_stats.rbc_assignment_total;
+    stats->rbc_points_with_overlap = candidate_stats.rbc_points_with_overlap;
+    stats->rbc_max_membership = candidate_stats.rbc_max_membership;
+    stats->rbc_min_leaf_size = candidate_stats.rbc_min_leaf_size;
+    stats->rbc_max_leaf_size = candidate_stats.rbc_max_leaf_size;
+    stats->rbc_fallback_chunk_splits = candidate_stats.rbc_fallback_chunk_splits;
   }
 
   Timer t_prune;
@@ -60,8 +45,6 @@ Graph BuildPipnnGraph(const Matrix& points, const PipnnBuildParams& params, Pipn
 #endif
   for (int i = 0; i < n; ++i) {
     auto& c = candidates[i];
-    std::sort(c.begin(), c.end());
-    c.erase(std::unique(c.begin(), c.end()), c.end());
     HashPruneNodeStats node_stats;
     auto pruned = pruner.PruneNode(points, i, c, stats != nullptr ? &node_stats : nullptr);
     g.SetNeighbors(i, pruned);

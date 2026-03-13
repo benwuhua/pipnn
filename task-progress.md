@@ -428,3 +428,22 @@ Progress: 18/22 passing · Last: Increment Wave 4 algorithm iteration (2026-03-1
   - `m16/efc100/efs28`: `build_sec=154.722`, `recall_at_10=0.956`, `qps=379.074`
   - `m16/efc100/efs32`: `build_sec=160.07`, `recall_at_10=0.965`, `qps=328.292`
 - Updated `results/high_dim_validation/README.md` with the recall-matched comparison versus current PiPNN passing point (`0.952`).
+
+### Session 25 — 2026-03-13
+- Started executing the `PiPNN-on-Vamana` implementation plan from `docs/superpowers/plans/2026-03-13-pipnn-on-vamana.md`.
+- Extracted PiPNN candidate generation into:
+  - `src/candidates/pipnn_candidate_generator.*`
+- Added local Vamana seams for the converged path:
+  - `src/refine/vamana_refiner.*`
+  - `src/search/vamana_search_adapter.*`
+- Updated `BuildPipnnGraph(...)` so the legacy PiPNN path now reuses the extracted candidate generator before prune.
+- Added new benchmark modes:
+  - `vamana`
+  - `pipnn_vamana`
+- Extended tests with new seam and routing coverage:
+  - `tests/test_pipnn_candidate_generator.cpp`
+  - `tests/test_vamana_refiner.cpp`
+  - `tests/test_vamana_search_adapter.cpp`
+  - updates to CLI and runner integration tests
+- Fresh verification evidence:
+  - `ctest --test-dir build --output-on-failure` -> `19/19` passing

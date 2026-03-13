@@ -1,9 +1,12 @@
 #pragma once
 
 #include "baseline/hnsw_runner.h"
+#include "candidates/pipnn_candidate_generator.h"
 #include "common/types.h"
 #include "core/pipnn_builder.h"
+#include "refine/vamana_refiner.h"
 #include "search/greedy_beam.h"
+#include "search/vamana_search_adapter.h"
 
 #include <string>
 #include <vector>

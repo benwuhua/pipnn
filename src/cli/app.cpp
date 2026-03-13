@@ -26,7 +26,7 @@ pipnn::Matrix MakeSynthetic(int n, int dim, int seed) {
 }
 
 void PrintHelp(std::ostream& out) {
-  out << "Usage: pipnn --mode <pipnn|hnsw> --dataset <synthetic|sift1m> --metric l2 "
+  out << "Usage: pipnn --mode <pipnn|hnsw|vamana|pipnn_vamana> --dataset <synthetic|sift1m> --metric l2 "
          "--output <path> [--base <base.fvecs> --query <query.fvecs> --truth <gt.ivecs> "
          "--max-base N --max-query N --rbc-cmax N --rbc-fanout N --leader-frac F "
          "--max-leaders N --replicas N --leaf-k N --leaf-scan-cap N --max-degree N --hash-bits N --beam N "
@@ -138,6 +138,11 @@ int Run(const std::vector<std::string>& args, std::ostream& out, std::ostream& e
     using Handler = std::function<bool(const std::string&)>;
     const std::unordered_map<std::string, Handler> handlers = {
         {"--mode", [&](const std::string& value) {
+           if (value != "pipnn" && value != "hnsw" && value != "vamana" &&
+               value != "pipnn_vamana") {
+             err << "unsupported mode: " << value << "\n";
+             return false;
+           }
            cfg.mode = value;
            return true;
          }},

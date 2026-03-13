@@ -3,6 +3,7 @@
 #include "core/graph.h"
 #include "core/leaf_knn.h"
 #include "search/greedy_beam.h"
+#include "search/vamana_search_adapter.h"
 
 #include <cassert>
 #include <cstdlib>
@@ -175,6 +176,18 @@ int main() {
   assert(no_query.qps == 0.0);
   assert(no_query.recall_at_10 == 0.0);
 
+  pipnn::RunnerConfig vcfg;
+  vcfg.mode = "vamana";
+  auto vamana_metrics = pipnn::RunBenchmark(vcfg, base, queries, {}, bp, sp);
+  assert(vamana_metrics.edges > 0);
+  assert(vamana_metrics.qps > 0.0);
+
+  pipnn::RunnerConfig pvcfg;
+  pvcfg.mode = "pipnn_vamana";
+  auto pipnn_vamana_metrics = pipnn::RunBenchmark(pvcfg, base, queries, {}, bp, sp);
+  assert(pipnn_vamana_metrics.edges > 0);
+  assert(pipnn_vamana_metrics.qps > 0.0);
+
   pipnn::RunnerConfig hcfg;
   hcfg.mode = "hnsw";
   hcfg.hnsw.m = 24;
@@ -236,6 +249,13 @@ int main() {
   auto cycle_out = pipnn::SearchGraph(pts, g2, pipnn::Vec{0.0f, 0.0f}, sp4);
   assert(!cycle_out.empty());
   assert(static_cast<int>(cycle_out.size()) <= sp4.beam);
+
+  pipnn::VamanaSearchParams vsp;
+  vsp.entry = 0;
+  vsp.beam = 3;
+  vsp.topk = 1;
+  auto vamana_out = pipnn::SearchVamanaGraph(pts, g2, pipnn::Vec{0.0f, 0.0f}, vsp);
+  assert(!vamana_out.empty());
 
   auto json = pipnn::ToJson(hnsw_metrics);
   assert(json.find("\"mode\": \"hnsw\"") != std::string::npos);

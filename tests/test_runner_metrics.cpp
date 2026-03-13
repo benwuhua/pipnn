@@ -99,5 +99,19 @@ int main() {
     assert(out.find("prune_kept=") != std::string::npos);
     assert(out.find("prune_dropped=") != std::string::npos);
   }
+
+  pipnn::RunnerConfig vcfg;
+  vcfg.mode = "vamana";
+  auto vamana_metrics = pipnn::RunBenchmark(vcfg, rb_base, rb_queries, {}, bp, sp);
+  assert(vamana_metrics.edges > 0);
+  assert(vamana_metrics.qps > 0.0);
+  assert(vamana_metrics.recall_at_10 >= 0.0);
+
+  pipnn::RunnerConfig pvcfg;
+  pvcfg.mode = "pipnn_vamana";
+  auto pipnn_vamana_metrics = pipnn::RunBenchmark(pvcfg, rb_base, rb_queries, {}, bp, sp);
+  assert(pipnn_vamana_metrics.edges > 0);
+  assert(pipnn_vamana_metrics.qps > 0.0);
+  assert(pipnn_vamana_metrics.recall_at_10 >= 0.0);
   return 0;
 }

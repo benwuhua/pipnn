@@ -113,6 +113,15 @@
 - Added coverage for the new HNSW parameter path in CLI and runner tests
 - Updated `results/high_dim_validation/README.md` with a fresh `20k/100` HNSW reference snapshot and explicit fairness delta versus the current passing PiPNN config
 - Added a recall-matched HNSW sweep on `20k/100` and documented the nearest-match comparison (`PiPNN 0.952` vs `HNSW 0.956`)
+- Added initial `PiPNN-on-Vamana` implementation seams:
+  - `src/candidates/pipnn_candidate_generator.*`
+  - `src/refine/vamana_refiner.*`
+  - `src/search/vamana_search_adapter.*`
+- Added new benchmark modes:
+  - `vamana`
+  - `pipnn_vamana`
+- `pipnn_builder` now reuses the extracted candidate generator instead of owning candidate generation inline
+- Added test coverage for the new candidate/refiner/search seams and mode routing
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used

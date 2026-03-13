@@ -90,7 +90,7 @@ int main() {
   auto help = RunCli("--help");
   assert(help.exit_code == 0);
   assert(help.out.find("Usage: pipnn") != std::string::npos);
-  assert(help.out.find("--mode <pipnn|hnsw>") != std::string::npos);
+  assert(help.out.find("--mode <pipnn|hnsw|vamana|pipnn_vamana>") != std::string::npos);
   assert(help.out.find("--hnsw-m N") != std::string::npos);
 
   // [integration] HNSW mode should route through the standard baseline and emit the shared JSON schema.
@@ -104,6 +104,23 @@ int main() {
   assert(metrics.find("\"build_sec\": ") != std::string::npos);
   assert(metrics.find("\"recall_at_10\": ") != std::string::npos);
   std::filesystem::remove(json_path);
+
+  auto vamana_json_path = std::filesystem::temp_directory_path() / "pipnn_cli_vamana_metrics.json";
+  auto vamana =
+      RunCli("--mode vamana --dataset synthetic --metric l2 --output " + ShellQuote(vamana_json_path));
+  assert(vamana.exit_code == 0);
+  std::string vamana_metrics = ReadAll(vamana_json_path);
+  assert(vamana_metrics.find("\"mode\": \"vamana\"") != std::string::npos);
+  std::filesystem::remove(vamana_json_path);
+
+  auto pipnn_vamana_json_path =
+      std::filesystem::temp_directory_path() / "pipnn_cli_pipnn_vamana_metrics.json";
+  auto pipnn_vamana = RunCli("--mode pipnn_vamana --dataset synthetic --metric l2 --output " +
+                             ShellQuote(pipnn_vamana_json_path));
+  assert(pipnn_vamana.exit_code == 0);
+  std::string pipnn_vamana_metrics = ReadAll(pipnn_vamana_json_path);
+  assert(pipnn_vamana_metrics.find("\"mode\": \"pipnn_vamana\"") != std::string::npos);
+  std::filesystem::remove(pipnn_vamana_json_path);
 
   auto invalid_metric =
       RunCli("--mode pipnn --dataset synthetic --metric cosine --output '/tmp/pipnn_invalid_metric.json'");

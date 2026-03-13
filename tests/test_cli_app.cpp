@@ -163,6 +163,44 @@ int main() {
   }
 
   {
+    auto output = std::filesystem::temp_directory_path() / "pipnn_cli_app_vamana.json";
+    std::ostringstream out;
+    std::ostringstream err;
+    int rc = pipnn::cli::Run(
+        {"--mode", "vamana", "--dataset", "synthetic", "--metric", "l2", "--output", output.string()},
+        out, err);
+    assert(rc == 0);
+    assert(err.str().empty());
+    std::ifstream in(output);
+    std::stringstream metrics;
+    metrics << in.rdbuf();
+    assert(metrics.str().find("\"mode\": \"vamana\"") != std::string::npos);
+    std::filesystem::remove(output);
+  }
+
+  {
+    auto output = std::filesystem::temp_directory_path() / "pipnn_cli_app_pipnn_vamana.json";
+    std::ostringstream out;
+    std::ostringstream err;
+    int rc = pipnn::cli::Run({"--mode",
+                              "pipnn_vamana",
+                              "--dataset",
+                              "synthetic",
+                              "--metric",
+                              "l2",
+                              "--output",
+                              output.string()},
+                             out, err);
+    assert(rc == 0);
+    assert(err.str().empty());
+    std::ifstream in(output);
+    std::stringstream metrics;
+    metrics << in.rdbuf();
+    assert(metrics.str().find("\"mode\": \"pipnn_vamana\"") != std::string::npos);
+    std::filesystem::remove(output);
+  }
+
+  {
     auto output = std::filesystem::temp_directory_path() / "pipnn_cli_app_hnsw_bounds.json";
     std::ostringstream out;
     std::ostringstream err;

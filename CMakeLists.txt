@@ -43,6 +43,7 @@ endif()
 add_library(pipnn_core
   src/cli/app.cpp
   src/data/sift_reader.cpp
+  src/candidates/pipnn_candidate_generator.cpp
   src/core/hashprune.cpp
   src/core/rbc.cpp
   src/core/rbc_assignment.cpp
@@ -51,6 +52,8 @@ add_library(pipnn_core
   src/core/leaf_knn_blocked.cpp
   src/core/pipnn_builder.cpp
   src/search/greedy_beam.cpp
+  src/search/vamana_search_adapter.cpp
+  src/refine/vamana_refiner.cpp
   src/bench/runner.cpp
   src/baseline/hnsw_runner.cpp
 )

@@ -18,6 +18,18 @@ add_executable(test_leaf_candidates test_leaf_candidates.cpp)
 target_link_libraries(test_leaf_candidates PRIVATE pipnn_core)
 add_test(NAME leaf_candidates COMMAND test_leaf_candidates)
 
+add_executable(test_pipnn_candidate_generator test_pipnn_candidate_generator.cpp)
+target_link_libraries(test_pipnn_candidate_generator PRIVATE pipnn_core)
+add_test(NAME pipnn_candidate_generator COMMAND test_pipnn_candidate_generator)
+
+add_executable(test_vamana_refiner test_vamana_refiner.cpp)
+target_link_libraries(test_vamana_refiner PRIVATE pipnn_core)
+add_test(NAME vamana_refiner COMMAND test_vamana_refiner)
+
+add_executable(test_vamana_search_adapter test_vamana_search_adapter.cpp)
+target_link_libraries(test_vamana_search_adapter PRIVATE pipnn_core)
+add_test(NAME vamana_search_adapter COMMAND test_vamana_search_adapter)
+
 add_executable(test_distance test_distance.cpp)
 target_link_libraries(test_distance PRIVATE pipnn_core)
 add_test(NAME distance COMMAND test_distance)
