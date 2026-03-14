@@ -152,7 +152,16 @@ int main() {
   auto invalid_metric =
       RunCli("--mode pipnn --dataset synthetic --metric cosine --output '/tmp/pipnn_invalid_metric.json'");
   assert(invalid_metric.exit_code == 1);
-  assert(invalid_metric.err.find("only l2 metric supported") != std::string::npos);
+  assert(invalid_metric.err.find("unsupported metric: cosine") != std::string::npos);
+
+  auto hnsw_ip_json_path =
+      std::filesystem::temp_directory_path() / "pipnn_cli_hnsw_ip_metrics.json";
+  auto hnsw_ip =
+      RunCli("--mode hnsw --dataset synthetic --metric ip --output " + ShellQuote(hnsw_ip_json_path));
+  assert(hnsw_ip.exit_code == 0);
+  std::string hnsw_ip_metrics = ReadAll(hnsw_ip_json_path);
+  assert(hnsw_ip_metrics.find("\"mode\": \"hnsw\"") != std::string::npos);
+  std::filesystem::remove(hnsw_ip_json_path);
 
   auto invalid_beam =
       RunCli("--mode pipnn --dataset synthetic --metric l2 --output '/tmp/pipnn_invalid_beam.json' --beam nope");

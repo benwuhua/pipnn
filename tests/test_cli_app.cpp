@@ -103,7 +103,19 @@ int main() {
     std::ostringstream err;
     int rc = pipnn::cli::Run({"--metric", "cosine"}, out, err);
     assert(rc == 1);
-    assert(err.str().find("only l2 metric supported") != std::string::npos);
+    assert(err.str().find("unsupported metric: cosine") != std::string::npos);
+  }
+
+  {
+    auto output = std::filesystem::temp_directory_path() / "pipnn_cli_app_hnsw_ip.json";
+    std::ostringstream out;
+    std::ostringstream err;
+    int rc = pipnn::cli::Run(
+        {"--mode", "hnsw", "--dataset", "synthetic", "--metric", "ip", "--output", output.string()},
+        out, err);
+    assert(rc == 0);
+    assert(err.str().empty());
+    std::filesystem::remove(output);
   }
 
   {

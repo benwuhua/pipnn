@@ -53,6 +53,12 @@ int main() {
   assert(topk[1] == 2);
   assert(topk[2] == 0);
 
+  auto ip_topk = pipnn::ExactTopK(base, pipnn::Vec{1.0f}, 3, pipnn::MetricKind::InnerProduct);
+  assert(ip_topk.size() == 3);
+  assert(ip_topk[0] == 0);
+  assert(ip_topk[1] == 2);
+  assert(ip_topk[2] == 1);
+
   assert(pipnn::RecallAtK({}, {{1}}, 10) == 0.0);
   assert(pipnn::RecallAtK({{1}}, {}, 10) == 0.0);
 
@@ -113,5 +119,14 @@ int main() {
   assert(pipnn_vamana_metrics.edges > 0);
   assert(pipnn_vamana_metrics.qps > 0.0);
   assert(pipnn_vamana_metrics.recall_at_10 >= 0.0);
+
+  pipnn::Matrix ip_base = {{1.0f, 0.0f}, {0.0f, 1.0f}, {0.8f, 0.2f}, {0.2f, 0.8f}};
+  pipnn::Matrix ip_queries = {{1.0f, 0.0f}, {0.0f, 1.0f}};
+  std::vector<std::vector<int>> ip_truth = {{0, 2}, {1, 3}};
+  pipnn::RunnerConfig ip_cfg;
+  ip_cfg.mode = "pipnn_vamana";
+  ip_cfg.metric = pipnn::MetricKind::InnerProduct;
+  auto ip_metrics = pipnn::RunBenchmark(ip_cfg, ip_base, ip_queries, ip_truth, bp, sp);
+  assert(ip_metrics.recall_at_10 > 0.0);
   return 0;
 }

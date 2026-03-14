@@ -26,6 +26,11 @@ The repository also now has a generic file-backed dataset path:
 
 This is the bridge needed to run `PiPNN-on-Vamana` against `wikipedia-cohere-1m` without hard-coding dataset-specific readers.
 
+Metric note for `wikipedia-cohere-1m`:
+
+- the official `gt.ibin` aligns with inner product, not `l2`
+- for this dataset, `METRIC=ip` is the correct default for benchmark scripts
+
 ## Upstream Target
 
 Preferred upstream base:
@@ -120,6 +125,7 @@ Default behavior:
 - benchmarks:
   - `pipnn_vamana`
   - `vamana`
+- defaults to `METRIC=ip`
 - uses full dataset when `MAX_BASE=0` and `MAX_QUERY=0`
 
 ## Authority Entry Point
@@ -135,6 +141,7 @@ Default behavior:
 - runs `ctest`
 - benchmarks:
   - `pipnn_vamana`
+- defaults to `METRIC=ip`
 - uses full base when `MAX_BASE=0`
 - uses the first `100` official queries when `MAX_QUERY=100`
 
@@ -142,6 +149,43 @@ Why this entry exists separately:
 
 - the current repository-local `vamana` seam still uses an exact native candidate build
 - that seam is not suitable for `1M` scale, so the authority `PiPNN-on-Vamana` run needs a dedicated reproducible path
+
+## Metric Validation
+
+Root-cause probe result:
+
+- exact `inner product` top-10 matches the official `gt.ibin`
+- exact `l2` top-10 does not
+- therefore earlier `recall_at_10=0` results on `wikipedia-cohere-1m` were primarily a metric mismatch, not by themselves proof that the graph path was broken
+
+Remote smoke on `5k/10` with subset-internal exact truth and `METRIC=ip`:
+
+- `pipnn_vamana`:
+  - `build_sec=4.899`
+  - `recall_at_10=0.96`
+  - `qps=129.957`
+  - `edges=88377`
+- `hnsw`:
+  - `build_sec=8.81902`
+  - `recall_at_10=1.0`
+  - `qps=555.846`
+  - `edges=160000`
+
+Interpretation:
+
+- the `ip` metric plumbing is working on the current mainline
+- `pipnn_vamana` now produces non-zero recall on real `wikipedia-cohere-1m` data when evaluated under the correct metric
+
+## Current Authority Run
+
+Active remote authority rerun:
+
+- repo: `/data/work/pipnn-ip-metric`
+- scope: `1M/100`
+- mode: `pipnn_vamana`
+- metric: `ip`
+- pid: `2255227`
+- log: `/data/work/logs/wikipedia-cohere-pipnn-vamana-1m100-ip_20260314T024612Z.log`
 
 ## Long-Run Monitoring
 

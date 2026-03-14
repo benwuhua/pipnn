@@ -16,7 +16,7 @@
 
 namespace pipnn {
 namespace {
-CandidateAdjacency BuildNativeVamanaCandidates(const Matrix& base, int max_degree) {
+CandidateAdjacency BuildNativeVamanaCandidates(const Matrix& base, int max_degree, MetricKind metric) {
   CandidateAdjacency candidates(base.size());
   const int width = std::max(1, max_degree * 4);
   for (int i = 0; i < static_cast<int>(base.size()); ++i) {
@@ -24,7 +24,7 @@ CandidateAdjacency BuildNativeVamanaCandidates(const Matrix& base, int max_degre
     scored.reserve(base.size() > 0 ? base.size() - 1 : 0);
     for (int j = 0; j < static_cast<int>(base.size()); ++j) {
       if (i == j) continue;
-      scored.push_back({L2Squared(base[i], base[j]), j});
+      scored.push_back({MetricScore(base[i], base[j], metric), j});
     }
     const int keep = std::min(width, static_cast<int>(scored.size()));
     std::partial_sort(scored.begin(), scored.begin() + keep, scored.end());
@@ -36,7 +36,7 @@ CandidateAdjacency BuildNativeVamanaCandidates(const Matrix& base, int max_degre
 
 Metrics EvaluateGraph(const char* mode, const Matrix& base, const Matrix& queries,
                       const std::vector<std::vector<int>>& truth, const Graph& graph,
-                      const VamanaSearchParams& params, double build_sec) {
+                      const VamanaSearchParams& params, MetricKind metric, double build_sec) {
   Metrics m;
   m.mode = mode;
   m.build_sec = build_sec;
@@ -53,17 +53,19 @@ Metrics EvaluateGraph(const char* mode, const Matrix& base, const Matrix& querie
   } else {
     std::vector<std::vector<int>> exact;
     exact.reserve(queries.size());
-    for (const auto& q : queries) exact.push_back(ExactTopK(base, q, params.topk));
+    for (const auto& q : queries) exact.push_back(ExactTopK(base, q, params.topk, metric));
     m.recall_at_10 = RecallAtK(exact, pred, params.topk);
   }
   return m;
 }
 }  // namespace
 
-std::vector<int> ExactTopK(const Matrix& base, const Vec& query, int k) {
+std::vector<int> ExactTopK(const Matrix& base, const Vec& query, int k, MetricKind metric) {
   std::vector<std::pair<float, int>> d;
   d.reserve(base.size());
-  for (int i = 0; i < static_cast<int>(base.size()); ++i) d.push_back({L2Squared(base[i], query), i});
+  for (int i = 0; i < static_cast<int>(base.size()); ++i) {
+    d.push_back({MetricScore(base[i], query, metric), i});
+  }
   k = std::min(k, static_cast<int>(d.size()));
   std::partial_sort(d.begin(), d.begin() + k, d.end());
   std::vector<int> out;
@@ -99,20 +101,24 @@ double ComputeQps(std::size_t query_count, double query_seconds) {
 Metrics RunBenchmark(const RunnerConfig& cfg, const Matrix& base, const Matrix& queries,
                      const std::vector<std::vector<int>>& truth, const PipnnBuildParams& build_params,
                      const SearchParams& search_params) {
-  if (cfg.mode == "hnsw") return RunHnswBaseline(base, queries, truth, search_params.topk, cfg.hnsw);
+  if (cfg.mode == "hnsw") {
+    return RunHnswBaseline(base, queries, truth, search_params.topk, cfg.hnsw, cfg.metric);
+  }
 
   VamanaSearchParams vamana_search;
   vamana_search.beam = search_params.beam;
   vamana_search.topk = search_params.topk;
   vamana_search.entry = search_params.entry;
+  vamana_search.metric = cfg.metric;
 
   if (cfg.mode == "vamana") {
     Timer tbuild;
-    auto candidates = BuildNativeVamanaCandidates(base, build_params.hashprune.max_degree);
+    auto candidates = BuildNativeVamanaCandidates(base, build_params.hashprune.max_degree, cfg.metric);
     VamanaRefineParams refine;
     refine.max_degree = build_params.hashprune.max_degree;
+    refine.metric = cfg.metric;
     auto graph = RefineVamanaGraph(base, candidates, refine);
-    return EvaluateGraph("vamana", base, queries, truth, graph, vamana_search, tbuild.Sec());
+    return EvaluateGraph("vamana", base, queries, truth, graph, vamana_search, cfg.metric, tbuild.Sec());
   }
 
   if (cfg.mode == "pipnn_vamana") {
@@ -123,11 +129,14 @@ Metrics RunBenchmark(const RunnerConfig& cfg, const Matrix& base, const Matrix& 
     candidate_params.leaf_k = build_params.leaf_k;
     candidate_params.bidirected = build_params.bidirected;
     candidate_params.candidate_cap = std::max(1, build_params.hashprune.max_degree * 8);
+    candidate_params.metric = cfg.metric;
     auto candidates = BuildPipnnCandidates(base, candidate_params);
     VamanaRefineParams refine;
     refine.max_degree = build_params.hashprune.max_degree;
+    refine.metric = cfg.metric;
     auto graph = RefineVamanaGraph(base, candidates, refine);
-    return EvaluateGraph("pipnn_vamana", base, queries, truth, graph, vamana_search, tbuild.Sec());
+    return EvaluateGraph("pipnn_vamana", base, queries, truth, graph, vamana_search, cfg.metric,
+                         tbuild.Sec());
   }
 
   Metrics m;
@@ -158,7 +167,9 @@ Metrics RunBenchmark(const RunnerConfig& cfg, const Matrix& base, const Matrix& 
   Timer tquery;
   std::vector<std::vector<int>> pred;
   pred.reserve(queries.size());
-  for (const auto& q : queries) pred.push_back(SearchGraph(base, graph, q, search_params));
+  SearchParams metric_search = search_params;
+  metric_search.metric = cfg.metric;
+  for (const auto& q : queries) pred.push_back(SearchGraph(base, graph, q, metric_search));
   double qsec = tquery.Sec();
   m.qps = ComputeQps(queries.size(), qsec);
 
@@ -167,7 +178,7 @@ Metrics RunBenchmark(const RunnerConfig& cfg, const Matrix& base, const Matrix& 
   } else {
     std::vector<std::vector<int>> exact;
     exact.reserve(queries.size());
-    for (const auto& q : queries) exact.push_back(ExactTopK(base, q, 10));
+    for (const auto& q : queries) exact.push_back(ExactTopK(base, q, 10, cfg.metric));
     m.recall_at_10 = RecallAtK(exact, pred, 10);
   }
   return m;

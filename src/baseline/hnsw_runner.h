@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/types.h"
+#include "core/distance.h"
 
 #include <vector>
 
@@ -13,5 +14,6 @@ struct HnswParams {
 
 Metrics RunHnswBaseline(const Matrix& base, const Matrix& queries,
                         const std::vector<std::vector<int>>& truth, int topk,
-                        const HnswParams& params = {});
+                        const HnswParams& params = {},
+                        MetricKind metric = MetricKind::L2);
 }  // namespace pipnn

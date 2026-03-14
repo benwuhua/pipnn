@@ -10,7 +10,7 @@ namespace pipnn {
 std::vector<int> SearchGraph(const Matrix& points, const Graph& graph, const Vec& query,
                              const SearchParams& params) {
   if (points.empty()) return {};
-  auto qdist = [&](int id) { return std::make_pair(L2Squared(points[id], query), id); };
+  auto qdist = [&](int id) { return std::make_pair(MetricScore(points[id], query, params.metric), id); };
 
   using Cand = std::pair<float, int>;
   std::priority_queue<Cand, std::vector<Cand>, std::greater<Cand>> pq;

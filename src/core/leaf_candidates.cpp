@@ -30,15 +30,15 @@ std::vector<int> BuildShortlistForPoint(int point_id, const Leaves& leaves,
 
 std::vector<Edge> ScoreShortlistExact(const Matrix& points, int point_id,
                                       const std::vector<int>& shortlist, int k,
-                                      bool bidirected) {
+                                      bool bidirected, MetricKind metric) {
   if (k <= 0 || point_id < 0 || static_cast<std::size_t>(point_id) >= points.size()) return {};
   std::vector<std::pair<float, int>> dists;
   dists.reserve(shortlist.size());
   for (int candidate : shortlist) {
     if (candidate < 0 || static_cast<std::size_t>(candidate) >= points.size()) continue;
     if (candidate == point_id) continue;
-    dists.push_back({L2Squared(points[static_cast<std::size_t>(point_id)],
-                               points[static_cast<std::size_t>(candidate)]),
+    dists.push_back({MetricScore(points[static_cast<std::size_t>(point_id)],
+                                 points[static_cast<std::size_t>(candidate)], metric),
                      candidate});
   }
   const int kk = std::min(k, static_cast<int>(dists.size()));

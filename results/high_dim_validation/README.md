@@ -66,6 +66,7 @@ Default scope:
 - full base (`MAX_BASE=0`)
 - first `100` official queries (`MAX_QUERY=100`)
 - mode: `pipnn_vamana`
+- metric: `ip`
 
 Rationale:
 
@@ -112,6 +113,42 @@ Interpretation:
 - however, `recall_at_10` remained `0`
 - because this run uses the full base (`1M`) and the official query subset (`100`), this is not a subset-truth artifact
 - the current blocker has shifted from build throughput to graph/search correctness on `wikipedia-cohere-1m`
+
+## Metric Correction For `wikipedia-cohere-1m`
+
+Later diagnosis showed the official `gt.ibin` is aligned with inner product rather than `l2`.
+
+That means:
+
+- earlier `wikipedia-cohere-1m` runs with `--metric l2` were measuring against the wrong truth ordering
+- the observed `recall_at_10 = 0` on those runs was primarily a metric mismatch
+- the `wikipedia-cohere` entry scripts now default to `METRIC=ip`
+
+### Remote `5k/10` IP smoke with subset-internal exact truth
+
+Artifacts on remote repo `/data/work/pipnn-ip-metric`:
+
+- `results/wikipedia_cohere_5k_10_ip_internal_truth/pipnn_vamana_metrics.json`
+- `results/wikipedia_cohere_5k_10_ip_internal_truth/hnsw_metrics.json`
+
+Metrics:
+
+- `pipnn_vamana`:
+  - `build_sec = 4.899`
+  - `recall_at_10 = 0.96`
+  - `qps = 129.957`
+  - `edges = 88377`
+- `hnsw`:
+  - `build_sec = 8.81902`
+  - `recall_at_10 = 1.0`
+  - `qps = 555.846`
+  - `edges = 160000`
+
+Interpretation:
+
+- the current `ip` metric plumbing is working on the real `wikipedia-cohere-1m` vectors
+- `pipnn_vamana` no longer collapses to `recall_at_10 = 0` once the metric/truth pairing is corrected
+- the next authority conclusion should come from the active `1M/100` rerun under `METRIC=ip`, not from the older `l2` runs
 
 ## High-Dim Smoke
 

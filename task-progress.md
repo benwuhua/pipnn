@@ -567,3 +567,36 @@ Progress: 18/22 passing · Last: PiPNN-on-Vamana authority rerun result capture 
 - Important conclusion:
   - build throughput improved as intended
   - `recall_at_10` remained `0` even with full base + official query subset, so the next blocker is graph/search correctness rather than build throughput
+
+### Session 32 — 2026-03-14
+- Investigated the persistent `wikipedia-cohere-1m recall_at_10=0` issue before making further algorithm changes.
+- Root-cause result:
+  - the official `wikipedia-cohere-1m/gt.ibin` is aligned with inner product, not `l2`
+  - therefore the earlier `l2` authority runs were evaluating against the wrong ranking objective
+- Added `ip` metric support through the current mainline:
+  - CLI `--metric`
+  - exact top-k helper in `runner`
+  - `hnswlib` baseline using `InnerProductSpace`
+  - `vamana` / `pipnn_vamana` search and refine path
+  - `PiPNN` candidate-generation `RBC + shortlist` path
+- Updated the `wikipedia-cohere-1m` scripts so the default metric is now `ip`:
+  - `scripts/bench/run_wikipedia_cohere_1m_full.sh`
+  - `scripts/bench/run_wikipedia_cohere_1m_100_pipnn_vamana.sh`
+- Fresh local verification evidence:
+  - `git diff --check` -> passed
+  - `cmake --build build -j4` -> passed
+  - `ctest --test-dir build --output-on-failure` -> `19/19` passing
+  - targeted tests for `runner_metrics`, `hnsw_runner`, `cli_app`, and `cli` all passed after the metric changes
+- Fresh remote x86 smoke evidence on repo `/data/work/pipnn-ip-metric`:
+  - full sync completed via generic-x86-remote `sync.sh`
+  - `5k/10` run with official `gt.ibin` and `METRIC=ip` still reports `recall_at_10=0`, which is expected because `MAX_BASE=5000` does not match the full-base truth file
+  - `5k/10` run with subset-internal exact truth under `METRIC=ip` confirms the fix:
+    - `pipnn_vamana`: `build_sec=4.899`, `recall_at_10=0.96`, `qps=129.957`, `edges=88377`
+    - `hnsw`: `build_sec=8.81902`, `recall_at_10=1.0`, `qps=555.846`, `edges=160000`
+- Started the corrected remote authority rerun:
+  - repo: `/data/work/pipnn-ip-metric`
+  - mode: `pipnn_vamana`
+  - metric: `ip`
+  - scope: `1M/100`
+  - pid: `2255227`
+  - log: `/data/work/logs/wikipedia-cohere-pipnn-vamana-1m100-ip_20260314T024612Z.log`

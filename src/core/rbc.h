@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/types.h"
+#include "core/distance.h"
 
 #include <vector>
 
@@ -12,6 +13,7 @@ struct RbcParams {
   int fanout = 2;
   int max_leaders = 1000;
   int seed = 17;
+  MetricKind metric = MetricKind::L2;
 };
 
 using Leaves = std::vector<std::vector<int>>;

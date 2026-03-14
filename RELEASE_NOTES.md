@@ -143,6 +143,16 @@
   - `build_sec 8267.43 -> 7604.74`
   - `qps 26.5268 -> 28.7718`
   - `recall_at_10` remains `0`
+- Added `l2|ip` metric support to the benchmark/mainline plumbing:
+  - CLI `--metric`
+  - exact top-k and recall evaluation
+  - `hnswlib` baseline
+  - `vamana` / `pipnn_vamana` search and refine path
+  - PiPNN candidate-generation `RBC + shortlist` path
+- Updated the `wikipedia-cohere-1m` benchmark scripts to default to `METRIC=ip`
+- Recorded a real `wikipedia-cohere-1m` `5k/10` remote smoke with subset-internal exact truth under `ip`:
+  - `pipnn_vamana`: `build_sec=4.899`, `recall_at_10=0.96`, `qps=129.957`
+  - `hnsw`: `build_sec=8.81902`, `recall_at_10=1.0`, `qps=555.846`
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used

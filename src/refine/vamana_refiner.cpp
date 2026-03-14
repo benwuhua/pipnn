@@ -16,7 +16,7 @@ Graph RefineVamanaGraph(const Matrix& points, const CandidateAdjacency& candidat
     scored.reserve(candidates[i].size());
     for (int neighbor : candidates[i]) {
       if (neighbor < 0 || neighbor >= static_cast<int>(points.size()) || neighbor == i) continue;
-      scored.push_back({L2Squared(points[i], points[neighbor]), neighbor});
+      scored.push_back({MetricScore(points[i], points[neighbor], params.metric), neighbor});
     }
     std::sort(scored.begin(), scored.end());
     const int keep = std::min(max_degree, static_cast<int>(scored.size()));

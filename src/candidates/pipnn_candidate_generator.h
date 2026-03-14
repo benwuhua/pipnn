@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common/types.h"
+#include "core/distance.h"
 #include "core/rbc.h"
 
 #include <vector>
@@ -27,6 +28,7 @@ struct PipnnCandidateParams {
   int leaf_k = 24;
   bool bidirected = true;
   int candidate_cap = 0;
+  MetricKind metric = MetricKind::L2;
 };
 
 CandidateAdjacency BuildPipnnCandidates(const Matrix& points, const PipnnCandidateParams& params,

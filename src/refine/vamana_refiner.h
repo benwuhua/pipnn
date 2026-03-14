@@ -2,11 +2,13 @@
 
 #include "candidates/pipnn_candidate_generator.h"
 #include "common/types.h"
+#include "core/distance.h"
 #include "core/graph.h"
 
 namespace pipnn {
 struct VamanaRefineParams {
   int max_degree = 64;
+  MetricKind metric = MetricKind::L2;
 };
 
 Graph RefineVamanaGraph(const Matrix& points, const CandidateAdjacency& candidates,

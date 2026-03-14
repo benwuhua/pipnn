@@ -3,6 +3,7 @@ set -euo pipefail
 
 : "${WIKIPEDIA_COHERE_DIR:=/data/work/datasets/wikipedia-cohere-1m}"
 : "${OUT_DIR:=results/wikipedia_cohere_1m_100}"
+: "${METRIC:=ip}"
 : "${MAX_BASE:=0}"
 : "${MAX_QUERY:=100}"
 : "${RBC_CMAX:=128}"
@@ -35,7 +36,7 @@ ctest --test-dir build --output-on-failure
 PIPNN_PROFILE=1 ./build/pipnn \
   --mode pipnn_vamana \
   --dataset file \
-  --metric l2 \
+  --metric "${METRIC}" \
   --base "${BASE_FBIN}" \
   --query "${QUERY_FBIN}" \
   --truth "${TRUTH_IBIN}" \

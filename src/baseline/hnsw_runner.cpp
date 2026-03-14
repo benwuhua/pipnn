@@ -6,19 +6,25 @@
 #include "hnswlib/hnswlib.h"
 
 #include <algorithm>
+#include <memory>
 #include <queue>
 #include <unordered_set>
 
 namespace pipnn {
 Metrics RunHnswBaseline(const Matrix& base, const Matrix& queries,
                         const std::vector<std::vector<int>>& truth, int topk,
-                        const HnswParams& params) {
+                        const HnswParams& params, MetricKind metric) {
   Metrics m;
   m.mode = "hnsw";
   if (base.empty()) return m;
 
   const int dim = static_cast<int>(base.front().size());
-  hnswlib::L2Space space(dim);
+  std::unique_ptr<hnswlib::SpaceInterface<float>> space;
+  if (metric == MetricKind::InnerProduct) {
+    space = std::make_unique<hnswlib::InnerProductSpace>(dim);
+  } else {
+    space = std::make_unique<hnswlib::L2Space>(dim);
+  }
 
   const std::size_t max_elements = base.size();
   const std::size_t M = static_cast<std::size_t>(std::max(1, params.m));
@@ -26,7 +32,7 @@ Metrics RunHnswBaseline(const Matrix& base, const Matrix& queries,
       static_cast<std::size_t>(std::max(1, params.ef_construction));
 
   Timer tb;
-  hnswlib::HierarchicalNSW<float> index(&space, max_elements, M, ef_construction);
+  hnswlib::HierarchicalNSW<float> index(space.get(), max_elements, M, ef_construction);
   for (std::size_t i = 0; i < base.size(); ++i) {
     index.addPoint(base[i].data(), static_cast<hnswlib::labeltype>(i));
   }
@@ -69,7 +75,7 @@ Metrics RunHnswBaseline(const Matrix& base, const Matrix& queries,
       std::vector<std::pair<float, int>> exact;
       exact.reserve(base.size());
       for (int i = 0; i < static_cast<int>(base.size()); ++i) {
-        exact.push_back({L2Squared(base[i], queries[qi]), i});
+        exact.push_back({MetricScore(base[i], queries[qi], metric), i});
       }
       std::partial_sort(exact.begin(), exact.begin() + topk, exact.end());
       for (int p : preds[qi]) {

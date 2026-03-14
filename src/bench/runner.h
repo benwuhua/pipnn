@@ -3,6 +3,7 @@
 #include "baseline/hnsw_runner.h"
 #include "candidates/pipnn_candidate_generator.h"
 #include "common/types.h"
+#include "core/distance.h"
 #include "core/pipnn_builder.h"
 #include "refine/vamana_refiner.h"
 #include "search/greedy_beam.h"
@@ -16,10 +17,12 @@ struct RunnerConfig {
   std::string mode = "pipnn";
   std::string dataset = "synthetic";
   std::string output = "results/metrics.json";
+  MetricKind metric = MetricKind::L2;
   HnswParams hnsw;
 };
 
-std::vector<int> ExactTopK(const Matrix& base, const Vec& query, int k);
+std::vector<int> ExactTopK(const Matrix& base, const Vec& query, int k,
+                           MetricKind metric = MetricKind::L2);
 double RecallAtK(const std::vector<std::vector<int>>& truth, const std::vector<std::vector<int>>& pred, int k);
 double ComputeQps(std::size_t query_count, double query_seconds);
 

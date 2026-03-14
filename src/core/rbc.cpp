@@ -62,7 +62,8 @@ RbcNode BuildNode(const Matrix& points, const RbcParams& params, std::mt19937& g
   std::vector<std::vector<int>> buckets(leader_count);
   const RbcAssignConfig assign_cfg;
   const auto assign_mode = SelectRbcAssignMode(ids.size(), leaders.size(), assign_cfg);
-  const auto assignments = AssignPointsToLeaders(points, ids, leaders, assign_mode, assign_cfg);
+  const auto assignments =
+      AssignPointsToLeaders(points, ids, leaders, assign_mode, params.metric, assign_cfg);
 
   for (std::size_t i = 0; i < ids.size(); ++i) {
     const int best_index = assignments[i];
@@ -96,11 +97,11 @@ void CollectLeaves(RbcNode& node, LeafBuckets& out) {
 }
 
 std::vector<int> ChooseTopChildren(const Matrix& points, std::size_t point_id,
-                                   const std::vector<RbcNode>& children, int topk) {
+                                   const std::vector<RbcNode>& children, int topk, MetricKind metric) {
   std::vector<std::pair<float, int>> near;
   near.reserve(children.size());
   for (int i = 0; i < static_cast<int>(children.size()); ++i) {
-    near.push_back({L2Squared(points[point_id], points[children[i].representative]), i});
+    near.push_back({MetricScore(points[point_id], points[children[i].representative], metric), i});
   }
   topk = std::min(topk, static_cast<int>(near.size()));
   std::partial_sort(near.begin(), near.begin() + topk, near.end(), [&](const auto& lhs, const auto& rhs) {
@@ -114,10 +115,10 @@ std::vector<int> ChooseTopChildren(const Matrix& points, std::size_t point_id,
   return out;
 }
 
-int RoutePointToLeaf(const Matrix& points, std::size_t point_id, const RbcNode& node) {
+int RoutePointToLeaf(const Matrix& points, std::size_t point_id, const RbcNode& node, MetricKind metric) {
   if (node.IsLeaf()) return node.leaf_index;
-  const auto next = ChooseTopChildren(points, point_id, node.children, 1);
-  return RoutePointToLeaf(points, point_id, node.children[next.front()]);
+  const auto next = ChooseTopChildren(points, point_id, node.children, 1, metric);
+  return RoutePointToLeaf(points, point_id, node.children[next.front()], metric);
 }
 
 Leaves ApplyLeafOverlap(const Matrix& points, const RbcParams& params, const RbcNode& root,
@@ -134,11 +135,11 @@ Leaves ApplyLeafOverlap(const Matrix& points, const RbcParams& params, const Rbc
   }
 
   for (std::size_t point_id = 0; point_id < points.size(); ++point_id) {
-    const auto child_indices = ChooseTopChildren(points, point_id, root.children, fanout);
+    const auto child_indices = ChooseTopChildren(points, point_id, root.children, fanout, params.metric);
     const int home = home_leaf[point_id];
     int selected = 0;
     for (int child_index : child_indices) {
-      const int leaf_index = RoutePointToLeaf(points, point_id, root.children[child_index]);
+      const int leaf_index = RoutePointToLeaf(points, point_id, root.children[child_index], params.metric);
       if (leaf_index < 0 || leaf_index == home) continue;
       leaves[static_cast<std::size_t>(leaf_index)].push_back(static_cast<int>(point_id));
       ++selected;

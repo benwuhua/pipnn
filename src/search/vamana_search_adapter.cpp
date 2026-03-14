@@ -9,6 +9,7 @@ std::vector<int> SearchVamanaGraph(const Matrix& points, const Graph& graph, con
   legacy.beam = params.beam;
   legacy.topk = params.topk;
   legacy.entry = params.entry;
+  legacy.metric = params.metric;
   return SearchGraph(points, graph, query, legacy);
 }
 }  // namespace pipnn

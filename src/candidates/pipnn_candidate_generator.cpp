@@ -45,7 +45,7 @@ CandidateAdjacency BuildPipnnCandidates(const Matrix& points, const PipnnCandida
     for (int point_id = 0; point_id < static_cast<int>(points.size()); ++point_id) {
       auto shortlist =
           BuildShortlistForPoint(point_id, rbc.leaves, rbc.point_memberships, shortlist_cfg);
-      auto edges = ScoreShortlistExact(points, point_id, shortlist, params.leaf_k, false);
+      auto edges = ScoreShortlistExact(points, point_id, shortlist, params.leaf_k, false, params.metric);
       auto& row = rep_candidates[static_cast<std::size_t>(point_id)];
       row.reserve(edges.size());
       for (const auto& [u, v] : edges) {

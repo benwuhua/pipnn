@@ -50,5 +50,23 @@ int main() {
   assert(tuned_metrics.recall_at_10 >= 0.0);
   assert(tuned_metrics.recall_at_10 <= 1.0);
 
+  pipnn::Matrix ip_base = {
+      {1.0f, 0.0f},
+      {0.0f, 1.0f},
+      {0.8f, 0.2f},
+      {0.2f, 0.8f},
+  };
+  pipnn::Matrix ip_queries = {
+      {1.0f, 0.0f},
+      {0.0f, 1.0f},
+  };
+  std::vector<std::vector<int>> ip_truth = {
+      {0, 2},
+      {1, 3},
+  };
+  auto ip_metrics =
+      pipnn::RunHnswBaseline(ip_base, ip_queries, ip_truth, 2, tuned, pipnn::MetricKind::InnerProduct);
+  assert(ip_metrics.recall_at_10 == 1.0);
+
   return 0;
 }

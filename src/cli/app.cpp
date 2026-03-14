@@ -26,7 +26,8 @@ pipnn::Matrix MakeSynthetic(int n, int dim, int seed) {
 }
 
 void PrintHelp(std::ostream& out) {
-  out << "Usage: pipnn --mode <pipnn|hnsw|vamana|pipnn_vamana> --dataset <synthetic|sift1m|file> --metric l2 "
+  out << "Usage: pipnn --mode <pipnn|hnsw|vamana|pipnn_vamana> --dataset <synthetic|sift1m|file> "
+         "--metric <l2|ip> "
          "--output <path> [--base <base.fvecs> --query <query.fvecs> --truth <gt.ivecs> "
          "--max-base N --max-query N --rbc-cmax N --rbc-fanout N --leader-frac F "
          "--max-leaders N --replicas N --leaf-k N --leaf-scan-cap N --max-degree N --hash-bits N --beam N "
@@ -151,8 +152,10 @@ int Run(const std::vector<std::string>& args, std::ostream& out, std::ostream& e
            return true;
          }},
         {"--metric", [&](const std::string& value) {
-           if (value != "l2") {
-             err << "only l2 metric supported\n";
+           if (value == "l2") cfg.metric = pipnn::MetricKind::L2;
+           else if (value == "ip") cfg.metric = pipnn::MetricKind::InnerProduct;
+           else {
+             err << "unsupported metric: " << value << "\n";
              return false;
            }
            return true;
@@ -271,6 +274,7 @@ int Run(const std::vector<std::string>& args, std::ostream& out, std::ostream& e
     bp.rbc.fanout = rbc_fanout;
     bp.rbc.leader_frac = leader_frac;
     bp.rbc.max_leaders = max_leaders;
+    bp.rbc.metric = cfg.metric;
     bp.replicas = replicas;
     bp.leaf_k = leaf_k;
     bp.leaf_scan_cap = leaf_scan_cap;
@@ -281,9 +285,15 @@ int Run(const std::vector<std::string>& args, std::ostream& out, std::ostream& e
     pipnn::SearchParams sp;
     sp.beam = beam;
     sp.topk = 10;
+    sp.metric = cfg.metric;
     cfg.hnsw.m = hnsw_m;
     cfg.hnsw.ef_construction = hnsw_ef_construction;
     cfg.hnsw.ef_search = hnsw_ef_search;
+
+    if (cfg.mode == "pipnn" && cfg.metric != pipnn::MetricKind::L2) {
+      err << "mode pipnn currently supports only l2 metric\n";
+      return 1;
+    }
 
     if (std::getenv("PIPNN_ECHO_CONFIG") != nullptr) {
       out << "cfg mode=" << cfg.mode << " dataset=" << cfg.dataset << " max_base=" << max_base
