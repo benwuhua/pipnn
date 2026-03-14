@@ -202,6 +202,21 @@ Interpretation:
 - this is the current valid authority checkpoint for `wikipedia-cohere-1m`
 - it supersedes the older `l2`-based `1M/100` result, which was evaluated against the wrong truth ordering
 
+Reference `HNSW` result on the same scope:
+
+- local fetched artifact:
+  - `results/wikipedia_cohere_1m_100_ip_hnsw/hnsw_metrics.json`
+- metrics:
+  - `build_sec=6867.99`
+  - `recall_at_10=0.992`
+  - `qps=177.786`
+  - `edges=32000000`
+
+Current authority takeaway:
+
+- `pipnn_vamana` builds faster than `hnswlib` on this corrected `1M/100 ip` checkpoint
+- `hnswlib` still wins clearly on recall and qps
+
 ## Long-Run Monitoring
 
 For long-running benchmarks that do not stream progress to stdout, use:

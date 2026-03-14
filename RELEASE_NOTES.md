@@ -153,6 +153,9 @@
 - Recorded a real `wikipedia-cohere-1m` `5k/10` remote smoke with subset-internal exact truth under `ip`:
   - `pipnn_vamana`: `build_sec=4.899`, `recall_at_10=0.96`, `qps=129.957`
   - `hnsw`: `build_sec=8.81902`, `recall_at_10=1.0`, `qps=555.846`
+- Recorded corrected `wikipedia-cohere-1m` authority results on the same `1M/100 ip` scope:
+  - `pipnn_vamana`: `build_sec=5963.18`, `recall_at_10=0.802`, `qps=43.9503`, `edges=18274237`
+  - `hnsw`: `build_sec=6867.99`, `recall_at_10=0.992`, `qps=177.786`, `edges=32000000`
 
 ### Fixed
 - Documented that subset-scale quality evaluation must omit full `groundtruth.ivecs` when `--max-base` is used

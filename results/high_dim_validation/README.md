@@ -173,6 +173,45 @@ Interpretation:
 - recall is now substantial but still well below a production-comfortable target such as `0.95`
 - the next algorithm work should focus on graph quality under `ip`, not on metric plumbing
 
+### Same-scope `HNSW 1M/100` run under `ip`
+
+Local fetched artifact:
+
+- `results/wikipedia_cohere_1m_100_ip_hnsw/hnsw_metrics.json`
+
+Metrics:
+
+- `hnsw`:
+  - `build_sec = 6867.99`
+  - `recall_at_10 = 0.992`
+  - `qps = 177.786`
+  - `edges = 32000000`
+
+### Authority comparison summary
+
+- `pipnn_vamana`:
+  - `build_sec = 5963.18`
+  - `recall_at_10 = 0.802`
+  - `qps = 43.9503`
+  - `edges = 18274237`
+- `hnsw`:
+  - `build_sec = 6867.99`
+  - `recall_at_10 = 0.992`
+  - `qps = 177.786`
+  - `edges = 32000000`
+
+Interpretation:
+
+- on the corrected `1M/100 ip` authority slice, current `pipnn_vamana` now shows a real build-time advantage over standard `hnswlib`
+- build: `5963.18s` vs `6867.99s`, about `1.15x` faster for `pipnn_vamana`
+- quality and search remain clearly behind:
+  - recall gap: `0.802` vs `0.992`
+  - qps gap: `43.9503` vs `177.786`, about `4.0x` lower for `pipnn_vamana`
+- this sharpens the current mainline conclusion:
+  - metric plumbing is fixed
+  - build-side value is plausible
+  - the next blocker is graph quality under `ip`, not benchmarking mechanics
+
 ## High-Dim Smoke
 
 Dataset:

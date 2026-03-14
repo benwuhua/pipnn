@@ -600,3 +600,27 @@ Progress: 18/22 passing · Last: PiPNN-on-Vamana authority rerun result capture 
   - scope: `1M/100`
   - pid: `2255227`
   - log: `/data/work/logs/wikipedia-cohere-pipnn-vamana-1m100-ip_20260314T024612Z.log`
+
+### Session 33 — 2026-03-14
+- Collected the completed corrected `pipnn_vamana` authority result and committed the fetched artifacts:
+  - `results/wikipedia_cohere_1m_100_ip/pipnn_vamana_metrics.json`
+  - `build_sec=5963.18`
+  - `recall_at_10=0.802`
+  - `qps=43.9503`
+  - `edges=18274237`
+- Built a fresh isolated remote repo for the same-scope `hnsw` authority comparison:
+  - repo: `/data/work/pipnn-hnsw-ip-auth`
+  - configure/build/test all passed
+  - remote verification: `ctest --test-dir /data/work/pipnn-hnsw-ip-auth/build --output-on-failure` -> `19/19`
+- After removing two duplicate retry processes, completed the clean `hnsw` authority run on the same `1M/100 ip` scope.
+- Fetched artifact:
+  - `results/wikipedia_cohere_1m_100_ip_hnsw/hnsw_metrics.json`
+- Final same-scope `hnsw` authority result:
+  - `build_sec=6867.99`
+  - `recall_at_10=0.992`
+  - `qps=177.786`
+  - `edges=32000000`
+- Mainline conclusion after the corrected same-scope comparison:
+  - `pipnn_vamana` is faster to build than `hnswlib` on `wikipedia-cohere-1m 1M/100 ip`
+  - `hnswlib` still leads substantially on recall and query throughput
+  - the next algorithm iteration should focus on graph-quality improvements under `ip`
