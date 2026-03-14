@@ -150,6 +150,29 @@ Interpretation:
 - `pipnn_vamana` no longer collapses to `recall_at_10 = 0` once the metric/truth pairing is corrected
 - the next authority conclusion should come from the active `1M/100` rerun under `METRIC=ip`, not from the older `l2` runs
 
+### Corrected authority `1M/100` run under `ip`
+
+Local fetched artifacts:
+
+- `results/wikipedia_cohere_1m_100_ip/pipnn_vamana_metrics.json`
+- `results/wikipedia_cohere_1m_100_ip/pipnn_vamana.stdout`
+- `results/wikipedia_cohere_1m_100_ip/proc_snapshot.txt`
+
+Metrics:
+
+- `pipnn_vamana`:
+  - `build_sec = 5963.18`
+  - `recall_at_10 = 0.802`
+  - `qps = 43.9503`
+  - `edges = 18274237`
+
+Interpretation:
+
+- this replaces the earlier `l2`-truth-mismatched authority result as the current valid `wikipedia-cohere-1m` checkpoint
+- the corrected authority run confirms the current `pipnn_vamana` path is not failing catastrophically on the full `1M` high-dimensional dataset
+- recall is now substantial but still well below a production-comfortable target such as `0.95`
+- the next algorithm work should focus on graph quality under `ip`, not on metric plumbing
+
 ## High-Dim Smoke
 
 Dataset:

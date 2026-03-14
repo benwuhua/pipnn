@@ -176,16 +176,31 @@ Interpretation:
 - the `ip` metric plumbing is working on the current mainline
 - `pipnn_vamana` now produces non-zero recall on real `wikipedia-cohere-1m` data when evaluated under the correct metric
 
-## Current Authority Run
+## Current Authority Result
 
-Active remote authority rerun:
+Completed remote authority rerun:
 
 - repo: `/data/work/pipnn-ip-metric`
 - scope: `1M/100`
 - mode: `pipnn_vamana`
 - metric: `ip`
-- pid: `2255227`
 - log: `/data/work/logs/wikipedia-cohere-pipnn-vamana-1m100-ip_20260314T024612Z.log`
+- local fetched artifacts:
+  - `results/wikipedia_cohere_1m_100_ip/pipnn_vamana_metrics.json`
+  - `results/wikipedia_cohere_1m_100_ip/pipnn_vamana.stdout`
+  - `results/wikipedia_cohere_1m_100_ip/proc_snapshot.txt`
+
+Metrics:
+
+- `build_sec=5963.18`
+- `recall_at_10=0.802`
+- `qps=43.9503`
+- `edges=18274237`
+
+Interpretation:
+
+- this is the current valid authority checkpoint for `wikipedia-cohere-1m`
+- it supersedes the older `l2`-based `1M/100` result, which was evaluated against the wrong truth ordering
 
 ## Long-Run Monitoring
 

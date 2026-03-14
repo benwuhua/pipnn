@@ -1,0 +1,7 @@
+{
+  "mode": "pipnn_vamana",
+  "build_sec": 5963.18,
+  "recall_at_10": 0.802,
+  "qps": 43.9503,
+  "edges": 18274237
+}
